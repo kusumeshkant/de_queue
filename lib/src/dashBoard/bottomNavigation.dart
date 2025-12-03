@@ -12,11 +12,13 @@ class Bottomnavigation extends StatefulWidget {
 
 class _BottomnavigationState extends State<Bottomnavigation> {
   int _setectedIndex = 0;
+
   final List<Widget> _screenList = [
-    DashboardScreen(),
-    CartScreen(),
-    SettingScreeen(),
+    Dashboard(),
+    CartPage(),
+    SettingsPage(),
   ];
+
   void _onItemTapped(int index) {
     setState(() {
       _setectedIndex = index;
@@ -26,13 +28,30 @@ class _BottomnavigationState extends State<Bottomnavigation> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: IndexedStack(index: _setectedIndex, children: _screenList),
+      body: IndexedStack(
+        index: _setectedIndex,
+        children: _screenList,
+      ),
+
+      // 🚀 Floating button with scanner icon
+      floatingActionButton: FloatingActionButton(
+        child: const Icon(Icons.qr_code_scanner),
+        onPressed: () {
+          // 👇 Navigate to scanner page or trigger scanner feature
+          print("Scanner button pressed");
+          // Navigator.push(...);
+        },
+      ),
+      floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
+
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: _setectedIndex,
         onTap: _onItemTapped,
         selectedItemColor: Colors.lightBlue,
         unselectedItemColor: Colors.grey,
-        items: [
+
+        // Add space in center for FAB
+        items: const [
           BottomNavigationBarItem(icon: Icon(Icons.home), label: ''),
           BottomNavigationBarItem(icon: Icon(Icons.car_crash), label: ''),
           BottomNavigationBarItem(icon: Icon(Icons.settings), label: ''),
