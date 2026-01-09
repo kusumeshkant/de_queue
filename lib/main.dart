@@ -1,4 +1,4 @@
-import 'package:dq_app/src/auth/login_page.dart';
+import 'package:dq_app/src/presentation/auth/login_page.dart';
 import 'package:flutter/material.dart';
 
 void main() {

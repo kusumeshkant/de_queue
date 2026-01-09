@@ -1,6 +1,8 @@
 import 'dart:ui';
 
-import 'package:dq_app/src/auth/login_page.dart';
+import 'package:dq_app/src/presentation/auth/signup_page.dart';
+import 'package:dq_app/src/presentation/dashBoard/bottomNavigation.dart';
+import 'package:dq_app/src/presentation/dashBoard/dashboard.dart';
 import 'package:dq_app/src/utils/appsystem_ui.dart';
 import 'package:dq_app/widgets/dq_button.dart';
 import 'package:dq_app/widgets/dq_container.dart';
@@ -8,16 +10,15 @@ import 'package:dq_app/widgets/dq_inputField.dart';
 import 'package:flutter/material.dart';
 
 
-class SignUpPage extends StatefulWidget {
-  const SignUpPage({super.key});
+class LoginPage extends StatefulWidget {
+  const LoginPage({super.key});
 
   @override
-  State<SignUpPage> createState() => _SignUpPageState();
+  State<LoginPage> createState() => _LoginPageState();
 }
 
-class _SignUpPageState extends State<SignUpPage> {
-
-  @override
+class _LoginPageState extends State<LoginPage> {
+   @override
   void initState() {
     super.initState();
     // Make notification icons white
@@ -26,14 +27,12 @@ class _SignUpPageState extends State<SignUpPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      extendBodyBehindAppBar: true,
       // put a nice background to appreciate the blur
       body: Stack(
         fit: StackFit.expand,
         children: [
           // Semi-dark overlay so glass stands out
           Container(color: Colors.black.withValues(alpha: .7)),
-
           // Centered glass card
           Center(
             child: ClipRRect(
@@ -48,30 +47,25 @@ class _SignUpPageState extends State<SignUpPage> {
                     children: [
                       SizedBox(height: 10),
                       GlassTextField(
-                        label: 'Name',
-                        controller: TextEditingController(),
-                        hintText: 'User Name',
-                      ),
-                      SizedBox(height: 10),
-                      GlassTextField(
                         label: 'Mobile Number',
                         controller: TextEditingController(),
                         hintText: '+91 000 000 0000',
                       ),
                       SizedBox(height: 10),
-                      Visibility(
+                       Visibility(
                         visible: true,
-                        child: GlassTextField(
+                         child: GlassTextField(
                           label: 'OTP',
                           controller: TextEditingController(),
                           hintText: '0000',
-                        ),
-                      ),
+                                               ),
+                       ),
                       SizedBox(height: 15),
                       GlassButton(
                         text: "Get OTP",
                         onPressed: () {
                           debugPrint("Button pressed!");
+                          Navigator.push(context, MaterialPageRoute(builder: (context)=> Bottomnavigation()));
                         },
                       ),
                     ],
@@ -81,31 +75,17 @@ class _SignUpPageState extends State<SignUpPage> {
             ),
           ),
           Positioned(
-            top: 40,
-            left: 10,
-            child: GlassButton(
-              text: "Back",
-              onPressed: () {
-                Navigator.pop(context);
-              },
-            ),
-          ),
-
-          Positioned(
             bottom: 40,
             // left: 0,
             right: 12,
             child: Column(
               children: [
                 GlassButton(
-                  text: '   Sign In   ',
-                  onPressed: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(builder: (context) => LoginPage()),
-                    );
-                  },
-                ),
+                        text: '   Sign Up   ',
+                        onPressed: () {
+                          Navigator.push(context, MaterialPageRoute(builder: (context) => SignUpPage()));
+                        },
+                      ),
               ],
             ),
           ),
