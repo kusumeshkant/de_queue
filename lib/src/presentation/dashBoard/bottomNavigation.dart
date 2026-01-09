@@ -1,6 +1,7 @@
 import 'package:dq_app/src/presentation/Setting/setting_screeen.dart';
 import 'package:dq_app/src/presentation/cart/cart_screen.dart';
 import 'package:dq_app/src/presentation/dashBoard/dashboard.dart';
+import 'package:dq_app/src/presentation/scanner_page/scanner_page.dart';
 import 'package:flutter/material.dart';
 
 class Bottomnavigation extends StatefulWidget {
@@ -11,50 +12,111 @@ class Bottomnavigation extends StatefulWidget {
 }
 
 class _BottomnavigationState extends State<Bottomnavigation> {
-  int _setectedIndex = 0;
+  int _selectedIndex = 0;
 
-  final List<Widget> _screenList = [
-    Dashboard(),
-    CartPage(),
-    SettingsPage(),
-  ];
+  final List<Widget> _screens = const [Dashboard(), CartPage(), SettingsPage()];
 
-  void _onItemTapped(int index) {
-    setState(() {
-      _setectedIndex = index;
-    });
+  void _onTabTap(int index) {
+    setState(() => _selectedIndex = index);
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: IndexedStack(
-        index: _setectedIndex,
-        children: _screenList,
+      body: Stack(
+        children: [
+          IndexedStack(index: _selectedIndex, children: _screens),
+
+          if (_selectedIndex == 0)
+            Positioned(
+              bottom: 15,
+              left: 0,
+              right: 0,
+              child: Center(
+                child: FloatingActionButton(
+                  backgroundColor: Colors.white38,
+                  elevation: 12,
+                  onPressed: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (_) => const ScannerPage()),
+                    );
+                  },
+                  child: const Icon(
+                    Icons.qr_code_scanner,
+                    size: 28,
+                    color: Colors.black,
+                  ),
+                ),
+              ),
+            ),
+        ],
       ),
 
-      // 🚀 Floating button with scanner icon
-      floatingActionButton: FloatingActionButton(
-        child: const Icon(Icons.qr_code_scanner),
-        onPressed: () {
-          // 👇 Navigate to scanner page or trigger scanner feature
-          print("Scanner button pressed");
-          // Navigator.push(...);
-        },
+      bottomNavigationBar: Container(
+        height: 58,
+        decoration: BoxDecoration(
+          color: Colors.black.withOpacity(0.40),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.25),
+              blurRadius: 12,
+              spreadRadius: 1,
+              offset: const Offset(0, -3),
+            ),
+          ],
+        ),
+        child: Row(
+          children: [
+            Expanded(
+              child: _navItem(icon: Icons.home, label: 'Home', index: 0),
+            ),
+            Expanded(
+              child: _navItem(
+                icon: Icons.shopping_cart,
+                label: 'Cart',
+                index: 1,
+              ),
+            ),
+            Expanded(
+              child: _navItem(
+                icon: Icons.settings,
+                label: 'Settings',
+                index: 2,
+              ),
+            ),
+          ],
+        ),
       ),
-      floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
+    );
+  }
 
-      bottomNavigationBar: BottomNavigationBar(
-        currentIndex: _setectedIndex,
-        onTap: _onItemTapped,
-        selectedItemColor: Colors.lightBlue,
-        unselectedItemColor: Colors.grey,
+  Widget _navItem({
+    required IconData icon,
+    required String label,
+    required int index,
+  }) {
+    final isSelected = _selectedIndex == index;
 
-        // Add space in center for FAB
-        items: const [
-          BottomNavigationBarItem(icon: Icon(Icons.home), label: ''),
-          BottomNavigationBarItem(icon: Icon(Icons.car_crash), label: ''),
-          BottomNavigationBarItem(icon: Icon(Icons.settings), label: ''),
+    return GestureDetector(
+      onTap: () => _onTabTap(index),
+      behavior: HitTestBehavior.opaque,
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(
+            icon,
+            size: 22,
+            color: isSelected ? Colors.lightBlue : Colors.grey.shade300,
+          ),
+          const SizedBox(height: 2),
+          Text(
+            label,
+            style: TextStyle(
+              fontSize: 11,
+              color: isSelected ? Colors.lightBlue : Colors.grey.shade300,
+            ),
+          ),
         ],
       ),
     );

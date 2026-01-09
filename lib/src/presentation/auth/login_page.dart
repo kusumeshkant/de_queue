@@ -2,7 +2,6 @@ import 'dart:ui';
 
 import 'package:dq_app/src/presentation/auth/signup_page.dart';
 import 'package:dq_app/src/presentation/dashBoard/bottomNavigation.dart';
-import 'package:dq_app/src/presentation/dashBoard/dashboard.dart';
 import 'package:dq_app/src/utils/appsystem_ui.dart';
 import 'package:dq_app/widgets/dq_button.dart';
 import 'package:dq_app/widgets/dq_container.dart';
