@@ -1,6 +1,6 @@
-import 'package:dq_app/src/Setting/setting_screeen.dart';
-import 'package:dq_app/src/cart/cart_screen.dart';
-import 'package:dq_app/src/dashBoard/dashboard.dart';
+import 'package:dq_app/src/presentation/Setting/setting_screeen.dart';
+import 'package:dq_app/src/presentation/cart/cart_screen.dart';
+import 'package:dq_app/src/presentation/dashBoard/dashboard.dart';
 import 'package:flutter/material.dart';
 
 class Bottomnavigation extends StatefulWidget {
