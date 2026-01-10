@@ -10,20 +10,28 @@ class CartPage extends StatelessWidget {
     return Scaffold(
       backgroundColor: const Color(0xFFF6F7FB),
       appBar: AppBar(
-        title: const Text("My Cart"),
         backgroundColor: Colors.transparent,
         elevation: 0,
         foregroundColor: Colors.black,
-        actions: const [
-          Padding(
-            padding: EdgeInsets.only(right: 16),
-            child: Text("Remove (2)",
-                style: TextStyle(color: Colors.red, fontSize: 12)),
-          )
-        ],
       ),
       body: Column(
         children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Padding(
+                padding: EdgeInsets.only(left: 18),
+                child: const Text("My Cart"),
+              ),
+              Padding(
+                padding: EdgeInsets.only(right: 16),
+                child: Text(
+                  "Remove (2)",
+                  style: TextStyle(color: Colors.red, fontSize: 12),
+                ),
+              ),
+            ],
+          ),
           Expanded(
             child: ListView(
               padding: const EdgeInsets.all(16),

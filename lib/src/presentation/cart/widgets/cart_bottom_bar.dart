@@ -14,29 +14,32 @@ class CartBottomBar extends StatelessWidget {
         color: Colors.white,
         borderRadius: const BorderRadius.vertical(top: Radius.circular(22)),
         boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.08),
-            blurRadius: 12,
-          )
+          BoxShadow(color: Colors.black.withOpacity(0.08), blurRadius: 12),
         ],
       ),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
+      child: Row(
         children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Text("Total",
-                  style: TextStyle(fontSize: 16, color: Colors.grey)),
-              Text("₹${total.toStringAsFixed(0)}",
-                  style: const TextStyle(
-                      fontSize: 18, fontWeight: FontWeight.bold)),
+              const Text(
+                "Total",
+                style: TextStyle(fontSize: 16, color: Colors.grey),
+              ),
+              Text(
+                "₹${total.toStringAsFixed(0)}",
+                style: const TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
             ],
           ),
-          const SizedBox(height: 16),
-          PrimaryButton(
-            title: "Checkout",
-            onTap: () {},
+
+          const SizedBox(width: 16),
+
+          Expanded(
+            child: PrimaryButton(title: "Checkout", onTap: () {}),
           ),
         ],
       ),

@@ -77,11 +77,11 @@ class CartItemCard extends StatelessWidget {
             ),
           ),
 
-          Column(
+          Row(
             children: [
               QuantityButton(icon: Icons.remove, onTap: () {}),
               Padding(
-                padding: const EdgeInsets.symmetric(vertical: 6),
+                padding: const EdgeInsets.symmetric(vertical: 6, horizontal: 5),
                 child: Text(quantity.toString(),
                     style: const TextStyle(fontWeight: FontWeight.w600)),
               ),
