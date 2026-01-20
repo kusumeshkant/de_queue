@@ -1,8 +1,8 @@
 import 'package:dq_app/src/constants/app_string.dart';
-import 'package:dq_app/src/dq_widgets/Nearby_store_title_tile .dart';
-import 'package:dq_app/src/dq_widgets/screen_brightness_overlay.dart';
-import 'package:dq_app/src/dq_widgets/store_card.dart';
-import 'package:dq_app/src/dq_widgets/title_subHeading.dart';
+import 'package:dq_app/src/utils/dq_widgets/Nearby_store_title_tile%20.dart';
+import 'package:dq_app/src/utils/dq_widgets/screen_brightness_overlay.dart';
+import 'package:dq_app/src/utils/dq_widgets/store_card.dart';
+import 'package:dq_app/src/utils/dq_widgets/title_subHeading.dart';
 import 'package:dq_app/src/presentation/dashBoard/widgets/dashboard_header_banner.dart';
 import 'package:flutter/material.dart';
 

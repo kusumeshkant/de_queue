@@ -1,6 +1,6 @@
 import 'package:dq_app/src/constants/images_path_const.dart';
-import 'package:dq_app/src/dq_widgets/custom_search_text_field.dart';
-import 'package:dq_app/src/dq_widgets/darkened_image_banner.dart';
+import 'package:dq_app/src/utils/dq_widgets/custom_search_text_field.dart';
+import 'package:dq_app/src/utils/dq_widgets/darkened_image_banner.dart';
 import 'package:flutter/material.dart';
 
 class DashboardHeaderBanner extends StatelessWidget {
