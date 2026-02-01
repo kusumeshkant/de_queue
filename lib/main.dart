@@ -1,5 +1,5 @@
 import 'package:dq_app/core/manager/hive_manager.dart';
-import 'package:dq_app/src/presentation/auth/login_page.dart';
+import 'package:dq_app/src/presentation/auth/login/login_page.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 
