@@ -19,8 +19,8 @@ class AuthLocalDataSource {
     if (data == null) return null;
 
     return AuthEntity(
-      token: data['token'],
-      isLoggedIn: data['isLoggedIn'],
+      token:  data['token'],
+      isLoggedIn:   data['isLoggedIn'],
     );
   }
 

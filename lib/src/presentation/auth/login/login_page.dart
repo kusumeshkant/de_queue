@@ -1,6 +1,12 @@
+import 'dart:developer';
 import 'dart:ui';
 
 import 'package:auto_route/auto_route.dart';
+import 'package:dq_app/core/enums/db_tables_enums.dart';
+import 'package:dq_app/core/manager/hive_manager.dart';
+import 'package:dq_app/src/domain/entity/auth_entity.dart';
+import 'package:dq_app/src/domain/entity/user_entity.dart';
+import 'package:dq_app/src/presentation/auth/login/login_controller.dart';
 import 'package:dq_app/src/presentation/auth/signup/signup_page.dart';
 import 'package:dq_app/src/presentation/dashBoard/bottomNavigation.dart';
 import 'package:dq_app/src/utils/appsystem_ui.dart';
@@ -8,6 +14,7 @@ import 'package:dq_app/widgets/dq_button.dart';
 import 'package:dq_app/widgets/dq_container.dart';
 import 'package:dq_app/widgets/dq_inputField.dart';
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 
 @RoutePage()
 class LoginPage extends StatefulWidget {
@@ -23,9 +30,10 @@ class _LoginPageState extends State<LoginPage> {
     super.initState();
     AppSystemUI.setTransparentStatusBar();
   }
-  
+
   @override
   Widget build(BuildContext context) {
+    var loginController = Get.put<LoginController>(LoginController());
     return Scaffold(
       body: Stack(
         fit: StackFit.expand,
@@ -42,41 +50,82 @@ class _LoginPageState extends State<LoginPage> {
                 child: GlassContainer(
                   width: MediaQuery.of(context).size.width * .95,
                   padding: const EdgeInsets.all(20),
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      const SizedBox(height: 10),
-                      GlassTextField(
-                        label: 'Mobile Number',
-                        hintText: '+91 000 000 0000',
-                        controller: TextEditingController(),
-                      ),
-                      const SizedBox(height: 10),
-                       GlassTextField(
-                        label: 'OTP',
-                        hintText: '0000',
-                        controller: TextEditingController(),
-                      ),
-                      const SizedBox(height: 15),
+                  child: Form(
+                    key: loginController.loginFormKey,
+                    autovalidateMode: AutovalidateMode.onUserInteraction,
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        const SizedBox(height: 10),
+                        GlassTextField(
+                          label: 'Email',
+                          hintText: 'example@ybl.com',
+                          controller: loginController.emailController,
+                          onChanged: (v) {
+                            loginController.isEnable();
+                          },
+                          validator: loginController.emailValidator,
+                        ),
+                        const SizedBox(height: 10),
+                        GlassTextField(
+                          label: 'Password',
+                          hintText: '*******',
+                          controller: loginController.passwordController,
+                          obscureText: true,
+                          onChanged: (v) {
+                            loginController.isEnable();
+                          },
+                          validator: loginController.passwordCheck,
+                        ),
+                        const SizedBox(height: 15),
 
-                      /// Login → App
-                      GlassButton(
-                        text: "Get OTP",
-                        onPressed: () {
-                          debugPrint("Button pressed!");
+                        /// Login → App
+                        Obx(
+                          () => GlassButton(
+                            text: "SignIn",
+                            enabled: loginController.isButtonEnable.value,
+                            onPressed: loginController.isButtonEnable.value
+                                ? () async {
+                                  HiveManager.delete(DbTable.users, 'Users');
+                                    final existingAuth = HiveManager.get(
+                                      DbTable.users,
+                                      'Users',
+                                    );
 
-                            Navigator.push(
-                      context,
-                      MaterialPageRoute(builder: (_) => const Bottomnavigation()),
-                    );
+                                    if (existingAuth == null) {
+                                        await HiveManager.put(
+                                        DbTable.users,
+                                        'Users',
+                                        {
+                                          'id': 'demo_001',
+                                          'email': 'demo@test.com',
+                                          'password': '123456',
+                                        },
+                                      );
 
-                          /// ✅ AutoRoute navigation
-                          // context.router.replace(
-                          //    BottomNavigationRoute(),
-                          // );
-                        },
-                      ),
-                    ],
+                                    await  HiveManager.put(DbTable.auth, 'current', {
+                                        'token': 'abcd',
+                                        'isLoggedIn': true,
+                                      });
+                                    
+                                    }
+                                    if (loginController
+                                        .loginFormKey
+                                        .currentState!
+                                        .validate()) {
+                                      loginController.login(
+                                        onError: (v){},
+                                        onSuccess: (){
+                                          Get.offAll(Bottomnavigation());
+                                        }
+                                      );
+                                    }
+                                  }
+                                : () {},
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
                 ),
               ),
@@ -90,10 +139,11 @@ class _LoginPageState extends State<LoginPage> {
             child: GlassButton(
               text: '   Sign Up   ',
               onPressed: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(builder: (_) => const SignUpPage()),
-                    );
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (_) => const SignUpPage()),
+                );
+
                 /// ✅ AutoRoute navigation
                 // context.router.push(const SignUpRoute());
               },

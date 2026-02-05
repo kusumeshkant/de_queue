@@ -23,7 +23,7 @@ class AuthRepositoryImpl implements AuthRepository {
     String password,
   ) async {
     if (source == DataSourceType.local) {
-      final auth = local.get();
+      final auth = await local.get();
       if (auth == null) {
         throw Exception('No local auth found');
       }
