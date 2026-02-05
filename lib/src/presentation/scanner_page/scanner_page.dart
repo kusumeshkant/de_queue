@@ -1,8 +1,10 @@
+import 'package:auto_route/auto_route.dart';
 import 'package:dq_app/src/presentation/scanner_page/widgets/scanner_overlay.dart';
 import 'package:flutter/material.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 
+// @RoutePage()
 class ScannerPage extends StatefulWidget {
   const ScannerPage({super.key});
 

@@ -1,6 +1,6 @@
-import 'package:dq_app/src/presentation/Setting/setting_screeen.dart';
-import 'package:dq_app/src/presentation/cart/cart_screen.dart';
-import 'package:dq_app/src/presentation/dashBoard/dashboard.dart';
+import 'package:dq_app/src/presentation/Setting/setting_page.dart';
+import 'package:dq_app/src/presentation/cart/cart_page.dart';
+import 'package:dq_app/src/presentation/dashBoard/dashboard_page.dart';
 import 'package:dq_app/src/presentation/scanner_page/scanner_page.dart';
 import 'package:flutter/material.dart';
 
@@ -14,7 +14,7 @@ class Bottomnavigation extends StatefulWidget {
 class _BottomnavigationState extends State<Bottomnavigation> {
   int _selectedIndex = 0;
 
-  final List<Widget> _screens = const [Dashboard(), CartPage(), SettingsPage()];
+  final List<Widget> _screens = const [DashboardPage(), CartPage(), SettingsPage()];
 
   void _onTabTap(int index) {
     setState(() => _selectedIndex = index);

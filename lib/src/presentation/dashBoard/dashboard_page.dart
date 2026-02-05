@@ -1,3 +1,4 @@
+import 'package:auto_route/auto_route.dart';
 import 'package:dq_app/src/constants/app_string.dart';
 import 'package:dq_app/src/utils/dq_widgets/Nearby_store_title_tile%20.dart';
 import 'package:dq_app/src/utils/dq_widgets/screen_brightness_overlay.dart';
@@ -6,14 +7,15 @@ import 'package:dq_app/src/utils/dq_widgets/title_subHeading.dart';
 import 'package:dq_app/src/presentation/dashBoard/widgets/dashboard_header_banner.dart';
 import 'package:flutter/material.dart';
 
-class Dashboard extends StatefulWidget {
-  const Dashboard({Key? key}) : super(key: key);
+// @RoutePage()
+class DashboardPage extends StatefulWidget {
+  const DashboardPage({Key? key}) : super(key: key);
 
   @override
-  State<Dashboard> createState() => _DashboardState();
+  State<DashboardPage> createState() => _DashboardPageState();
 }
 
-class _DashboardState extends State<Dashboard> {
+class _DashboardPageState extends State<DashboardPage> {
   final bool isLoading = true;
 
   TextEditingController searchController = TextEditingController();

@@ -2,6 +2,7 @@ import 'package:dq_app/core/manager/hive_manager.dart';
 import 'package:dq_app/src/presentation/auth/login/login_page.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 
 import 'firebase_options.dart';
 
@@ -24,7 +25,7 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
+    return GetMaterialApp(
       debugShowCheckedModeBanner: false,
       title: 'DQ',
       theme: ThemeData(

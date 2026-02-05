@@ -1,13 +1,15 @@
 import 'dart:ui';
 
+import 'package:auto_route/auto_route.dart';
 import 'package:dq_app/src/presentation/auth/login/login_page.dart';
+import 'package:dq_app/src/routes/app_router.dart';
 import 'package:dq_app/src/utils/appsystem_ui.dart';
 import 'package:dq_app/widgets/dq_button.dart';
 import 'package:dq_app/widgets/dq_container.dart';
 import 'package:dq_app/widgets/dq_inputField.dart';
 import 'package:flutter/material.dart';
 
-
+@RoutePage()
 class SignUpPage extends StatefulWidget {
   const SignUpPage({super.key});
 
@@ -16,25 +18,23 @@ class SignUpPage extends StatefulWidget {
 }
 
 class _SignUpPageState extends State<SignUpPage> {
-
   @override
   void initState() {
     super.initState();
-    // Make notification icons white
-     AppSystemUI.setTransparentStatusBar();
+    AppSystemUI.setTransparentStatusBar();
   }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       extendBodyBehindAppBar: true,
-      // put a nice background to appreciate the blur
       body: Stack(
         fit: StackFit.expand,
         children: [
-          // Semi-dark overlay so glass stands out
+          /// Dark overlay
           Container(color: Colors.black.withValues(alpha: .7)),
 
-          // Centered glass card
+          /// Glass Card
           Center(
             child: ClipRRect(
               borderRadius: BorderRadius.circular(20),
@@ -45,34 +45,29 @@ class _SignUpPageState extends State<SignUpPage> {
                   padding: const EdgeInsets.all(20),
                   child: Column(
                     mainAxisSize: MainAxisSize.min,
-                    children: [
+                    children:  [
                       SizedBox(height: 10),
                       GlassTextField(
                         label: 'Name',
-                        controller: TextEditingController(),
                         hintText: 'User Name',
+                        controller: TextEditingController(),
                       ),
                       SizedBox(height: 10),
                       GlassTextField(
                         label: 'Mobile Number',
-                        controller: TextEditingController(),
                         hintText: '+91 000 000 0000',
+                        controller: TextEditingController(),
                       ),
                       SizedBox(height: 10),
-                      Visibility(
-                        visible: true,
-                        child: GlassTextField(
-                          label: 'OTP',
-                          controller: TextEditingController(),
-                          hintText: '0000',
-                        ),
+                      GlassTextField(
+                        label: 'OTP',
+                        hintText: '0000',
+                        controller: TextEditingController(),
                       ),
                       SizedBox(height: 15),
                       GlassButton(
                         text: "Get OTP",
-                        onPressed: () {
-                          debugPrint("Button pressed!");
-                        },
+                        onPressed: (){},
                       ),
                     ],
                   ),
@@ -80,33 +75,32 @@ class _SignUpPageState extends State<SignUpPage> {
               ),
             ),
           ),
+
+          /// Back Button
           Positioned(
             top: 40,
             left: 10,
             child: GlassButton(
               text: "Back",
               onPressed: () {
-                Navigator.pop(context);
+                context.router.pop();
               },
             ),
           ),
 
+          /// Sign In Button
           Positioned(
             bottom: 40,
-            // left: 0,
             right: 12,
-            child: Column(
-              children: [
-                GlassButton(
-                  text: '   Sign In   ',
-                  onPressed: () {
+            child: GlassButton(
+              text: '   Sign In   ',
+              onPressed: () {
                     Navigator.push(
                       context,
-                      MaterialPageRoute(builder: (context) => LoginPage()),
+                      MaterialPageRoute(builder: (_) => const LoginPage()),
                     );
-                  },
-                ),
-              ],
+                // context.router.replace(const LoginRoute());
+              },
             ),
           ),
         ],
