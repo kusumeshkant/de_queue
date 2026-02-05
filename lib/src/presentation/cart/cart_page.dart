@@ -11,13 +11,14 @@ class CartPage extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(0xFFF6F7FB),
-      appBar: AppBar(
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-        foregroundColor: Colors.black,
-      ),
+      // appBar: AppBar(
+      //   backgroundColor: Colors.transparent,
+      //   elevation: 0,
+      //   foregroundColor: Colors.black,
+      // ),
       body: Column(
         children: [
+          SizedBox(height: 60),
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [

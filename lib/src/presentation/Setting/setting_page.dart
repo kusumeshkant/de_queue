@@ -9,15 +9,16 @@ class SettingsPage extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(0xFFF7F8FC),
-      appBar: AppBar(
-        title: const Text("Settings"),
-        elevation: 0,
-        backgroundColor: Colors.transparent,
-        foregroundColor: Colors.black,
-      ),
+      // appBar: AppBar(
+      //   title: const Text("Settings"),
+      //   elevation: 0,
+      //   backgroundColor: Colors.transparent,
+      //   foregroundColor: Colors.black,
+      // ),
       body: ListView(
         padding: const EdgeInsets.all(16),
         children: [
+          SizedBox(height: 50),
           _buildSectionTitle("Common"),
           _buildSettingsGroup([
             _buildSettingsTile(
@@ -53,11 +54,7 @@ class SettingsPage extends StatelessWidget {
               title: "Phone number",
               onTap: () {},
             ),
-            _buildSettingsTile(
-              icon: Icons.email,
-              title: "Email",
-              onTap: () {},
-            ),
+            _buildSettingsTile(icon: Icons.email, title: "Email", onTap: () {}),
             _buildSettingsTile(
               icon: Icons.logout,
               title: "Sign out",
@@ -127,9 +124,7 @@ class SettingsPage extends StatelessWidget {
           ),
         ],
       ),
-      child: Column(
-        children: children,
-      ),
+      child: Column(children: children),
     );
   }
 
@@ -147,10 +142,7 @@ class SettingsPage extends StatelessWidget {
         mainAxisSize: MainAxisSize.min,
         children: [
           if (value != null)
-            Text(
-              value,
-              style: TextStyle(color: Colors.grey.shade600),
-            ),
+            Text(value, style: TextStyle(color: Colors.grey.shade600)),
           const Icon(Icons.chevron_right, color: Colors.grey),
         ],
       ),
