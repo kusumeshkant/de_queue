@@ -14,7 +14,7 @@ class ScannerPage extends StatefulWidget {
 
 class _ScannerPageState extends State<ScannerPage> {
   final MobileScannerController _controller = MobileScannerController();
-  final Set<String> scannedBarcodes = {}; // prevents duplicates
+  final Set<String> scannedBarcodes = {}; 
 
   bool _isScanningPaused = false;
 
@@ -33,9 +33,7 @@ class _ScannerPageState extends State<ScannerPage> {
         textColor: Colors.white,
       );
     } else {
-      setState(() {
-        scannedBarcodes.add(barcode);
-      });
+      scannedBarcodes.add(barcode);
 
       Fluttertoast.showToast(
         msg: "Product added to cart",
@@ -48,12 +46,11 @@ class _ScannerPageState extends State<ScannerPage> {
     _isScanningPaused = false;
   }
 
-
-@override
-void dispose() {
-  _controller.dispose();
-  super.dispose();
-}
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -62,10 +59,7 @@ void dispose() {
       body: Stack(
         children: [
           /// CAMERA VIEW
-          MobileScanner(
-            controller: _controller,
-            onDetect: _onBarcodeDetected,
-          ),
+          MobileScanner(controller: _controller, onDetect: _onBarcodeDetected),
 
           /// DARK OVERLAY
           ScannerOverlay(),

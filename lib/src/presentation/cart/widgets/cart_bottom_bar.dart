@@ -9,6 +9,7 @@ class CartBottomBar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
+      height: 180,
       padding: const EdgeInsets.fromLTRB(16, 14, 16, 20),
       decoration: BoxDecoration(
         color: Colors.white,
@@ -17,14 +18,16 @@ class CartBottomBar extends StatelessWidget {
           BoxShadow(color: Colors.black.withOpacity(0.08), blurRadius: 12),
         ],
       ),
-      child: Row(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Column(
+          Row(
             crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               const Text(
-                "Total",
-                style: TextStyle(fontSize: 16, color: Colors.grey),
+                "Sub-Total",
+                style: TextStyle(fontSize: 16, color: Colors.black),
               ),
               Text(
                 "₹${total.toStringAsFixed(0)}",
@@ -35,9 +38,41 @@ class CartBottomBar extends StatelessWidget {
               ),
             ],
           ),
-
-          const SizedBox(width: 16),
-
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              const Text(
+                "Tax",
+                style: TextStyle(fontSize: 16, color: Colors.black),
+              ),
+              Text(
+                "₹118",
+                style: const TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ],
+          ),
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              const Text(
+                "Total",
+                style: TextStyle(fontSize: 16, color: Colors.black),
+              ),
+              Text(
+                "₹${total.toStringAsFixed(0)}",
+                style: const TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 13),
           Expanded(
             child: PrimaryButton(title: "Checkout", onTap: () {}),
           ),

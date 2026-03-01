@@ -1,5 +1,7 @@
 import 'package:auto_route/auto_route.dart';
+import 'package:dq_app/src/presentation/order/order_page.dart';
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 
 @RoutePage()
 class SettingsPage extends StatelessWidget {
@@ -19,32 +21,44 @@ class SettingsPage extends StatelessWidget {
         padding: const EdgeInsets.all(16),
         children: [
           SizedBox(height: 50),
-          _buildSectionTitle("Common"),
+          _buildSectionTitle("Setting"),
           _buildSettingsGroup([
-            _buildSettingsTile(
-              icon: Icons.language,
-              title: "Language",
-              value: "English",
+             _buildSettingsTile(
+              icon: Icons.person,
+              title: "Profile",
               onTap: () {},
             ),
-            _buildSettingsTile(
-              icon: Icons.cloud_outlined,
-              title: "Environment",
-              value: "Production",
-              onTap: () {},
+             _buildSettingsTile(
+              icon: Icons.person,
+              title: "Your Orders",
+              onTap: () {
+                Get.to(OrderPage());
+              },
             ),
-            _buildSettingsTile(
-              icon: Icons.devices_other,
-              title: "Platform",
-              value: "Default",
-              onTap: () {},
-            ),
-            _buildSwitchTile(
-              icon: Icons.color_lens_outlined,
-              title: "Enable custom theme",
-              value: false,
-              onChanged: (val) {},
-            ),
+            // _buildSettingsTile(
+            //   icon: Icons.language,
+            //   title: "Language",
+            //   value: "English",
+            //   onTap: () {},
+            // ),
+            // _buildSettingsTile(
+            //   icon: Icons.cloud_outlined,
+            //   title: "Environment",
+            //   value: "Production",
+            //   onTap: () {},
+            // ),
+            // _buildSettingsTile(
+            //   icon: Icons.devices_other,
+            //   title: "Platform",
+            //   value: "Default",
+            //   onTap: () {},
+            // ),
+            // _buildSwitchTile(
+            //   icon: Icons.color_lens_outlined,
+            //   title: "Enable custom theme",
+            //   value: false,
+            //   onChanged: (val) {},
+            // ),
           ]),
           const SizedBox(height: 25),
           _buildSectionTitle("Account"),
@@ -62,36 +76,37 @@ class SettingsPage extends StatelessWidget {
             ),
           ]),
           const SizedBox(height: 25),
-          _buildSectionTitle("Security"),
-          _buildSettingsGroup([
-            _buildSwitchTile(
-              icon: Icons.lock_outline,
-              title: "Lock app in background",
-              value: true,
-              onChanged: (val) {},
-            ),
-            _buildSwitchTile(
-              icon: Icons.fingerprint,
-              title: "Use fingerprint",
-              value: true,
-              onChanged: (val) {},
-            ),
-          ]),
-          const SizedBox(height: 15),
-          _buildSettingsGroup([
-            _buildSwitchTile(
-              icon: Icons.password,
-              title: "Change password",
-              value: true,
-              onChanged: (val) {},
-            ),
-            _buildSwitchTile(
-              icon: Icons.notifications_active_outlined,
-              title: "Enable notifications",
-              value: true,
-              onChanged: (val) {},
-            ),
-          ]),
+          // _buildSectionTitle("Security"),
+          // _buildSettingsGroup([
+          //   _buildSwitchTile(
+          //     icon: Icons.lock_outline,
+          //     title: "Lock app in background",
+          //     value: true,
+          //     onChanged: (val) {},
+          //   ),
+          //   _buildSwitchTile(
+          //     icon: Icons.fingerprint,
+          //     title: "Use fingerprint",
+          //     value: true,
+          //     onChanged: (val) {},
+          //   ),
+          // ]),
+          // const SizedBox(height: 15),
+          // _buildSettingsGroup([
+          //   _buildSwitchTile(
+          //     icon: Icons.password,
+          //     title: "Change password",
+          //     value: true,
+          //     onChanged: (val) {},
+          //   ),
+          //   _buildSwitchTile(
+          //     icon: Icons.notifications_active_outlined,
+          //     title: "Enable notifications",
+          //     value: true,
+          //     onChanged: (val) {},
+          //   ),
+          // ]),
+      
         ],
       ),
     );

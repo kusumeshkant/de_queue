@@ -22,17 +22,28 @@ class CartPage extends StatelessWidget {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Padding(
-                padding: EdgeInsets.only(left: 18),
-                child: const Text("My Cart"),
-              ),
-              Padding(
-                padding: EdgeInsets.only(right: 16),
-                child: Text(
-                  "Remove (2)",
-                  style: TextStyle(color: Colors.red, fontSize: 12),
+              SizedBox(
+                child: Row(
+                  children: [
+                    Padding(
+                      padding: EdgeInsets.only(left: 20),
+                      child: const Text("My Cart"),
+                    ),
+                    SizedBox(width: 15),
+                     Padding(
+                      padding: EdgeInsets.only(left: 18),
+                      child: const Text("Zudio"),
+                    ),
+                  ],
                 ),
               ),
+              // Padding(
+              //   padding: EdgeInsets.only(right: 16),
+              //   child: Text(
+              //     "Remove (2)",
+              //     style: TextStyle(color: Colors.red, fontSize: 12),
+              //   ),
+              // ),
             ],
           ),
           Expanded(
@@ -60,7 +71,7 @@ class CartPage extends StatelessWidget {
               ],
             ),
           ),
-          const CartBottomBar(total: 28000),
+          const CartBottomBar(total: 2800),
         ],
       ),
     );
