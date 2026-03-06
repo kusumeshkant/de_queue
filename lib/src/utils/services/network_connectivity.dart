@@ -6,6 +6,6 @@ class NetworkConnectivity {
 
   static Future<bool> isConnected() async {
     final result = await _connectivity.checkConnectivity();
-    return result != ConnectivityResult.none;
+    return result.isNotEmpty && result.any((r) => r != ConnectivityResult.none);
   }
 }

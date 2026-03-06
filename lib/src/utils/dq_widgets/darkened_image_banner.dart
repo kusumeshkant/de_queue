@@ -7,12 +7,12 @@ class DarkenedImageBanner extends StatelessWidget {
   final double darkness; // 0.0 → no dark, 1.0 → fully dark
 
   const DarkenedImageBanner({
-    Key? key,
+    super.key,
     required this.imagePath,
     required this.height,
     this.borderRadius,
-    this.darkness = 0.35, // ✅ default brightness reduction
-  }) : super(key: key);
+    this.darkness = 0.35,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -25,7 +25,7 @@ class DarkenedImageBanner extends StatelessWidget {
           image: AssetImage(imagePath),
           fit: BoxFit.cover,
           colorFilter: ColorFilter.mode(
-            Colors.black.withOpacity(darkness),
+            Colors.black.withValues(alpha: darkness),
             BlendMode.darken,
           ),
         ),

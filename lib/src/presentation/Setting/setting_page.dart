@@ -1,149 +1,198 @@
-import 'package:auto_route/auto_route.dart';
+import 'dart:ui';
+import 'package:dq_app/core/enums/db_tables_enums.dart';
+import 'package:dq_app/core/manager/hive_manager.dart';
+import 'package:dq_app/src/constants/app_config.dart';
+import 'package:dq_app/src/l10n/language_controller.dart';
+import 'package:dq_app/src/l10n/translation_keys.dart';
+import 'package:dq_app/src/presentation/auth/login/login_page.dart';
+import 'package:dq_app/src/presentation/order/order_binding.dart';
 import 'package:dq_app/src/presentation/order/order_page.dart';
+import 'package:dq_app/src/presentation/profile/profile_binding.dart';
+import 'package:dq_app/src/presentation/profile/profile_page.dart';
+import 'package:dq_app/src/service_core/networks/graphql_client_provider.dart';
+import 'package:dq_app/src/theme/theme_controller.dart';
+import 'package:dq_app/widgets/themed_background.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
-@RoutePage()
 class SettingsPage extends StatelessWidget {
-  const SettingsPage({Key? key}) : super(key: key);
+  const SettingsPage({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: const Color(0xFFF7F8FC),
-      // appBar: AppBar(
-      //   title: const Text("Settings"),
-      //   elevation: 0,
-      //   backgroundColor: Colors.transparent,
-      //   foregroundColor: Colors.black,
-      // ),
-      body: ListView(
-        padding: const EdgeInsets.all(16),
-        children: [
-          SizedBox(height: 50),
-          _buildSectionTitle("Setting"),
-          _buildSettingsGroup([
-             _buildSettingsTile(
-              icon: Icons.person,
-              title: "Profile",
-              onTap: () {},
-            ),
-             _buildSettingsTile(
-              icon: Icons.person,
-              title: "Your Orders",
-              onTap: () {
-                Get.to(OrderPage());
-              },
-            ),
-            // _buildSettingsTile(
-            //   icon: Icons.language,
-            //   title: "Language",
-            //   value: "English",
-            //   onTap: () {},
-            // ),
-            // _buildSettingsTile(
-            //   icon: Icons.cloud_outlined,
-            //   title: "Environment",
-            //   value: "Production",
-            //   onTap: () {},
-            // ),
-            // _buildSettingsTile(
-            //   icon: Icons.devices_other,
-            //   title: "Platform",
-            //   value: "Default",
-            //   onTap: () {},
-            // ),
-            // _buildSwitchTile(
-            //   icon: Icons.color_lens_outlined,
-            //   title: "Enable custom theme",
-            //   value: false,
-            //   onChanged: (val) {},
-            // ),
-          ]),
-          const SizedBox(height: 25),
-          _buildSectionTitle("Account"),
-          _buildSettingsGroup([
-            _buildSettingsTile(
-              icon: Icons.phone,
-              title: "Phone number",
-              onTap: () {},
-            ),
-            _buildSettingsTile(icon: Icons.email, title: "Email", onTap: () {}),
-            _buildSettingsTile(
-              icon: Icons.logout,
-              title: "Sign out",
-              onTap: () {},
-            ),
-          ]),
-          const SizedBox(height: 25),
-          // _buildSectionTitle("Security"),
-          // _buildSettingsGroup([
-          //   _buildSwitchTile(
-          //     icon: Icons.lock_outline,
-          //     title: "Lock app in background",
-          //     value: true,
-          //     onChanged: (val) {},
-          //   ),
-          //   _buildSwitchTile(
-          //     icon: Icons.fingerprint,
-          //     title: "Use fingerprint",
-          //     value: true,
-          //     onChanged: (val) {},
-          //   ),
-          // ]),
-          // const SizedBox(height: 15),
-          // _buildSettingsGroup([
-          //   _buildSwitchTile(
-          //     icon: Icons.password,
-          //     title: "Change password",
-          //     value: true,
-          //     onChanged: (val) {},
-          //   ),
-          //   _buildSwitchTile(
-          //     icon: Icons.notifications_active_outlined,
-          //     title: "Enable notifications",
-          //     value: true,
-          //     onChanged: (val) {},
-          //   ),
-          // ]),
-      
-        ],
-      ),
-    );
-  }
+    final tc = Get.find<ThemeController>();
+    final lc = Get.find<LanguageController>();
 
-  Widget _buildSectionTitle(String title) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 8),
-      child: Text(
-        title,
-        style: const TextStyle(
-          fontSize: 14,
-          fontWeight: FontWeight.w600,
-          color: Colors.grey,
+    return ThemedBackground(
+      child: Scaffold(
+        body: ListView(
+          padding: const EdgeInsets.all(16),
+          children: [
+            const SizedBox(height: 50),
+            Obx(() => _buildSectionTitle(AppKeys.setting.tr, tc)),
+            Obx(() => _buildSettingsGroup(tc, [
+                  _buildSettingsTile(
+                    tc: tc,
+                    icon: Icons.person_outline,
+                    title: AppKeys.profile.tr,
+                    onTap: () {
+                      Get.to(() => const ProfilePage(), binding: ProfileBinding());
+                    },
+                  ),
+                  _buildDivider(tc),
+                  _buildSettingsTile(
+                    tc: tc,
+                    icon: Icons.receipt_long_outlined,
+                    title: AppKeys.yourOrders.tr,
+                    onTap: () {
+                      Get.to(() => const OrderPage(), binding: OrderBinding());
+                    },
+                  ),
+                  _buildDivider(tc),
+                  _buildSwitchTile(
+                    tc: tc,
+                    icon: Icons.palette_outlined,
+                    title: 'Green Theme',
+                    value: tc.isGreenTheme.value,
+                    onChanged: (_) => tc.toggle(),
+                  ),
+                  _buildDivider(tc),
+                  _buildLanguageTile(tc, lc),
+                ])),
+            const SizedBox(height: 25),
+            Obx(() => _buildSectionTitle(AppKeys.account.tr, tc)),
+            Obx(() => _buildSettingsGroup(tc, [
+                  _buildSettingsTile(
+                    tc: tc,
+                    icon: Icons.phone_outlined,
+                    title: AppKeys.phoneNumber.tr,
+                    onTap: () {},
+                  ),
+                  _buildDivider(tc),
+                  _buildSettingsTile(
+                    tc: tc,
+                    icon: Icons.email_outlined,
+                    title: AppKeys.email.tr,
+                    onTap: () {},
+                  ),
+                  _buildDivider(tc),
+                  _buildSettingsTile(
+                    tc: tc,
+                    icon: Icons.logout,
+                    title: AppKeys.signOut.tr,
+                    onTap: () async {
+                      try {
+                        await FirebaseAuth.instance.signOut();
+                      } catch (_) {}
+                      await HiveManager.clear(DbTable.auth);
+                      await GraphQLClientProvider.init(
+                        baseUrl: AppConfig.graphqlEndpoint,
+                      );
+                      Get.offAll(() => const LoginPage());
+                    },
+                  ),
+                ])),
+            const SizedBox(height: 25),
+          ],
         ),
       ),
     );
   }
 
-  Widget _buildSettingsGroup(List<Widget> children) {
-    return Container(
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(14),
-        boxShadow: [
-          BoxShadow(
-            blurRadius: 10,
-            color: Colors.black.withOpacity(0.05),
-            offset: const Offset(0, 5),
+  Widget _buildLanguageTile(ThemeController tc, LanguageController lc) {
+    return Obx(() => ListTile(
+          leading: Icon(Icons.language, color: tc.textSecondary),
+          title: Text(AppKeys.language.tr, style: TextStyle(color: tc.textPrimary)),
+          trailing: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(
+                lc.isCurrentLocale(AppLocales.english)
+                    ? AppKeys.langEnglish.tr
+                    : AppKeys.langHindi.tr,
+                style: TextStyle(color: tc.textSecondary, fontSize: 13),
+              ),
+              const SizedBox(width: 4),
+              Icon(Icons.chevron_right, color: tc.textSecondary),
+            ],
           ),
-        ],
+          onTap: () => _showLanguageDialog(tc, lc),
+        ));
+  }
+
+  void _showLanguageDialog(ThemeController tc, LanguageController lc) {
+    Get.dialog(
+      Obx(() => AlertDialog(
+            backgroundColor: tc.cardSurface.withValues(alpha: 0.95),
+            title: Text(
+              AppKeys.selectLanguage.tr,
+              style: TextStyle(color: tc.textPrimary),
+            ),
+            content: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: AppLocales.supported.map((entry) {
+                final isSelected = lc.isCurrentLocale(entry.locale);
+                return ListTile(
+                  onTap: () {
+                    lc.changeLocale(entry.locale);
+                    Get.back();
+                  },
+                  leading: Icon(
+                    isSelected ? Icons.radio_button_checked : Icons.radio_button_off,
+                    color: isSelected ? tc.primary : tc.textSecondary,
+                  ),
+                  title: Text(
+                    entry.nameKey.tr,
+                    style: TextStyle(
+                      color: tc.textPrimary,
+                      fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
+                    ),
+                  ),
+                );
+              }).toList(),
+            ),
+          )),
+    );
+  }
+
+  Widget _buildSectionTitle(String title, ThemeController tc) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 8),
+      child: Text(
+        title,
+        style: TextStyle(
+          fontSize: 14,
+          fontWeight: FontWeight.w600,
+          color: tc.textSecondary,
+        ),
       ),
-      child: Column(children: children),
+    );
+  }
+
+  Widget _buildDivider(ThemeController tc) {
+    return Divider(height: 1, color: tc.cardBorder);
+  }
+
+  Widget _buildSettingsGroup(ThemeController tc, List<Widget> children) {
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(14),
+      child: BackdropFilter(
+        filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+        child: Container(
+          decoration: BoxDecoration(
+            color: tc.cardSurface,
+            borderRadius: BorderRadius.circular(14),
+            border: Border.all(color: tc.cardBorder),
+          ),
+          child: Column(children: children),
+        ),
+      ),
     );
   }
 
   Widget _buildSettingsTile({
+    required ThemeController tc,
     required IconData icon,
     required String title,
     String? value,
@@ -151,30 +200,34 @@ class SettingsPage extends StatelessWidget {
   }) {
     return ListTile(
       onTap: onTap,
-      leading: Icon(icon, color: Colors.grey.shade700),
-      title: Text(title),
+      leading: Icon(icon, color: tc.textSecondary),
+      title: Text(title, style: TextStyle(color: tc.textPrimary)),
       trailing: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
           if (value != null)
-            Text(value, style: TextStyle(color: Colors.grey.shade600)),
-          const Icon(Icons.chevron_right, color: Colors.grey),
+            Text(value, style: TextStyle(color: tc.textSecondary)),
+          Icon(Icons.chevron_right, color: tc.textSecondary),
         ],
       ),
     );
   }
 
   Widget _buildSwitchTile({
+    required ThemeController tc,
     required IconData icon,
     required String title,
     required bool value,
-    required Function(bool) onChanged,
+    required ValueChanged<bool> onChanged,
   }) {
-    return SwitchListTile(
-      secondary: Icon(icon, color: Colors.grey.shade700),
-      title: Text(title),
-      value: value,
-      onChanged: onChanged,
+    return ListTile(
+      leading: Icon(icon, color: tc.textSecondary),
+      title: Text(title, style: TextStyle(color: tc.textPrimary)),
+      trailing: Switch(
+        value: value,
+        onChanged: onChanged,
+        activeThumbColor: tc.primary,
+      ),
     );
   }
 }

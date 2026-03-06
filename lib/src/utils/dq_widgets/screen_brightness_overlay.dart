@@ -6,11 +6,11 @@ class ScreenBrightnessOverlay extends StatelessWidget {
   final bool enabled;
 
   const ScreenBrightnessOverlay({
-    Key? key,
+    super.key,
     required this.child,
-    this.darkness = 0.15, // ✅ subtle default dim
+    this.darkness = 0.15,
     this.enabled = true,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -24,7 +24,7 @@ class ScreenBrightnessOverlay extends StatelessWidget {
         IgnorePointer(
           ignoring: true, // allows touches to pass through
           child: Container(
-            color: Colors.black.withOpacity(darkness),
+            color: Colors.black.withValues(alpha: darkness),
           ),
         ),
       ],

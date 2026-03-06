@@ -1,7 +1,9 @@
 import 'package:dq_app/src/constants/images_path_const.dart';
+import 'package:dq_app/src/l10n/translation_keys.dart';
 import 'package:dq_app/src/utils/dq_widgets/custom_search_text_field.dart';
 import 'package:dq_app/src/utils/dq_widgets/darkened_image_banner.dart';
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 
 class DashboardHeaderBanner extends StatelessWidget {
   final TextEditingController searchController;
@@ -52,16 +54,16 @@ class DashboardHeaderBanner extends StatelessWidget {
                   Container(
                     padding: const EdgeInsets.symmetric(horizontal: 14),
                     decoration: BoxDecoration(
-                      color: Colors.black.withOpacity(0.35),
+                      color: Colors.black.withValues(alpha: 0.35),
                       borderRadius: BorderRadius.circular(14),
                       border: Border.all(
-                        color: Colors.white.withOpacity(0.9),
+                        color: Colors.white.withValues(alpha: 0.9),
                         width: 2.5,
                       ),
                     ),
                     child: CustomSearchTextField<String>(
                       controller: searchController,
-                      hintText: 'Search store or product',
+                      hintText: AppKeys.searchHint.tr,
                       showDropdown: true,
                       items: storeList,
                       itemLabel: (item) => item,
@@ -86,7 +88,7 @@ class DashboardHeaderBanner extends StatelessWidget {
                         children: [
                           /// 🔥 Bigger & visible
                           Text(
-                            'You are in',
+                            AppKeys.youAreIn.tr,
                             style: Theme.of(context)
                                 .textTheme
                                 .titleMedium

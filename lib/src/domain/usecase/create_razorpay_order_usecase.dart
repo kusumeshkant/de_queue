@@ -1,0 +1,11 @@
+import 'package:dq_app/src/domain/entity/order_entity.dart';
+import 'package:dq_app/src/domain/repo/order_repository.dart';
+
+class CreateRazorpayOrderUseCase {
+  final OrderRepository repository;
+
+  CreateRazorpayOrderUseCase({required this.repository});
+
+  Future<RazorpayOrderEntity> execute(double amount) =>
+      repository.createRazorpayOrder(amount);
+}

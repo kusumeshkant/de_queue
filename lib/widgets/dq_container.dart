@@ -33,23 +33,23 @@ class GlassContainer extends StatelessWidget {
             height: height,
             padding: padding,
             decoration: BoxDecoration(
-              color: Colors.white.withOpacity(opacity), // frosted glass
+              color: Colors.white.withValues(alpha: opacity), // frosted glass
               borderRadius: BorderRadius.circular(borderRadius),
               border: Border.all(
-                color: Colors.white.withOpacity(0.25), // subtle rim
+                color: Colors.white.withValues(alpha: 0.25), // subtle rim
                 width: 1.2,
               ),
               gradient: LinearGradient(
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
                 colors: [
-                  Colors.white.withOpacity(0.08),
-                  Colors.white.withOpacity(0.02),
+                  Colors.white.withValues(alpha: 0.08),
+                  Colors.white.withValues(alpha: 0.02),
                 ],
               ),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withOpacity(0.15),
+                  color: Colors.black.withValues(alpha: 0.15),
                   blurRadius: 10,
                   offset: const Offset(0, 4),
                 ),

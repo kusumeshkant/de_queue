@@ -1,93 +1,112 @@
-import 'dart:developer';
-
+import 'package:dq_app/src/constants/app_config.dart';
 import 'package:dq_app/src/domain/usecase/login_usecase.dart';
+import 'package:dq_app/src/service_core/networks/graphql_client_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
 class LoginController extends GetxController {
+  final LoginUseCase loginUseCase;
 
-   LoginUseCase loginUseCase = LoginUseCase();
+  LoginController({required this.loginUseCase});
 
+  final phoneController = TextEditingController();
+  final otpController = TextEditingController();
 
   var isLoading = false.obs;
+  var otpSent = false.obs;
   var error = RxnString();
-  var isButtonEnable = false.obs;
 
-  TextEditingController emailController = TextEditingController();
-  TextEditingController passwordController = TextEditingController();
-  final GlobalKey<FormState> loginFormKey = GlobalKey<FormState>();
+  String? _verificationId;
 
-
-bool isEnable() {
-  final emailError = emailValidator(emailController.text);
-  final passwordError = passwordCheck(passwordController.text);
-
-  final isValid =
-      emailError == null &&
-      passwordError == null &&
-      emailController.text.isNotEmpty &&
-      passwordController.text.isNotEmpty;
-
-  isButtonEnable.value = isValid;
-  return isValid;
-}
-
-
-String? emailValidator(String? value) {
-  if (value == null || value.isEmpty) {
-    return 'Email is required';
+  String? phoneValidator(String? value) {
+    if (value == null || value.isEmpty) return 'Phone number is required';
+    if (!RegExp(r'^\d+$').hasMatch(value)) return 'Only digits allowed';
+    if (value.length != 10) return 'Enter a valid 10-digit phone number';
+    return null;
   }
 
-  final emailRegex =
-      RegExp(r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$');
+  Future<void> sendOtp({
+    required void Function(String message) onError,
+  }) async {
+    final raw = phoneController.text.trim();
+    final validationError = phoneValidator(raw);
+    if (validationError != null) {
+      onError(validationError);
+      return;
+    }
 
-  if (!emailRegex.hasMatch(value)) {
-    return 'Please enter a valid email address';
-  }
+    // Auto-prepend country code for Firebase
+    final phone = '+91$raw';
 
-  return null;
-}
-
-String? passwordCheck(String? value) {
-  if (value == null || value.isEmpty) {
-    return 'Password is required';
-  }
-
-  final passwordRegex = RegExp(
-    r'^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#\$%^&*(),.?":{}|<>]).{8,}$',
-  );
-
-  if (!passwordRegex.hasMatch(value)) {
-    return 'Password must contain uppercase, lowercase, number & special character';
-  }
-
-  return null;
-}
-
-
-Future<void> login({
-  required void Function() onSuccess,
-  required void Function(String message) onError,
-}) async {
-  try {
     isLoading.value = true;
     error.value = null;
 
-    final response = await loginUseCase.login(
-      emailController.text,
-      passwordController.text,
+    // Timeout in case Firebase never fires any callback
+    Future.delayed(const Duration(seconds: 30), () {
+      if (isLoading.value) {
+        isLoading.value = false;
+        onError('OTP request timed out. Please try again.');
+      }
+    });
+
+    await loginUseCase.sendOtp(
+      phoneNumber: phone,
+      onCodeSent: (verificationId) {
+        _verificationId = verificationId;
+        otpSent.value = true;
+        isLoading.value = false;
+      },
+      onFailed: (message) {
+        isLoading.value = false;
+        error.value = message;
+        onError(message);
+      },
     );
-
-    isLoading.value = false;
-
-    onSuccess();
-
-  } catch (e) {
-    isLoading.value = false;
-    error.value = e.toString();
-
-    onError(e.toString());
   }
-}
 
+  Future<void> verifyOtp({
+    required void Function() onSuccess,
+    required void Function(String message) onError,
+  }) async {
+    if (_verificationId == null) {
+      onError('Please request an OTP first');
+      return;
+    }
+
+    final otp = otpController.text.trim();
+    if (otp.isEmpty) {
+      onError('Please enter the OTP');
+      return;
+    }
+
+    isLoading.value = true;
+    error.value = null;
+
+    try {
+      final auth = await loginUseCase.verifyOtp(
+        verificationId: _verificationId!,
+        otp: otp,
+      );
+
+      // Re-init GraphQL with real Firebase token
+      await GraphQLClientProvider.init(
+        baseUrl: AppConfig.graphqlEndpoint,
+        token: auth.token,
+      );
+
+      isLoading.value = false;
+      onSuccess();
+    } catch (e) {
+      isLoading.value = false;
+      error.value = e.toString();
+      onError(e.toString());
+    }
+  }
+
+  @override
+  void onClose() {
+    phoneController.dispose();
+    otpController.dispose();
+    super.onClose();
+  }
 }

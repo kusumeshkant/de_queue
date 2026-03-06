@@ -9,7 +9,7 @@ class ScannerOverlay extends StatelessWidget {
       children: [
         ColorFiltered(
           colorFilter: ColorFilter.mode(
-            Colors.black.withOpacity(0.7),
+            Colors.black.withValues(alpha: 0.7),
             BlendMode.srcOut,
           ),
           child: Stack(

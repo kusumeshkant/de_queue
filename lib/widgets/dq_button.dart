@@ -36,27 +36,19 @@ class GlassButton extends StatelessWidget {
               borderRadius: BorderRadius.circular(borderRadius),
 
               // 🎨 Background
-              color: Colors.white.withOpacity(
-                enabled ? 0.12 : 0.06,
-              ),
+              color: Colors.white.withValues(alpha: enabled ? 0.12 : 0.06),
 
               // 🧊 Border
               border: Border.all(
-                color: Colors.white.withOpacity(
-                  enabled ? 0.2 : 0.1,
-                ),
+                color: Colors.white.withValues(alpha: enabled ? 0.2 : 0.1),
                 width: 1.2,
               ),
 
               // 🌈 Gradient
               gradient: LinearGradient(
                 colors: [
-                  Colors.white.withOpacity(
-                    enabled ? 0.08 : 0.03,
-                  ),
-                  Colors.white.withOpacity(
-                    enabled ? 0.03 : 0.015,
-                  ),
+                  Colors.white.withValues(alpha: enabled ? 0.08 : 0.03),
+                  Colors.white.withValues(alpha: enabled ? 0.03 : 0.015),
                 ],
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
@@ -66,7 +58,7 @@ class GlassButton extends StatelessWidget {
               boxShadow: enabled
                   ? [
                       BoxShadow(
-                        color: Colors.black.withOpacity(0.25),
+                        color: Colors.black.withValues(alpha: 0.25),
                         blurRadius: 8,
                         offset: const Offset(0, 4),
                       )

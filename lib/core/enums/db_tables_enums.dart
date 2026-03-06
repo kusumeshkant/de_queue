@@ -1,11 +1,8 @@
 enum DbTable {
   users,
   auth,
+  settings,
 }
-
-
-
-
 
 extension DbTableExt on DbTable {
   String get name {
@@ -14,6 +11,8 @@ extension DbTableExt on DbTable {
         return 'users';
       case DbTable.auth:
         return 'auth';
+      case DbTable.settings:
+        return 'settings';
     }
   }
 }

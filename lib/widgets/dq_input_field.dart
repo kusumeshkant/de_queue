@@ -80,12 +80,12 @@ class GlassTextField extends StatelessWidget {
             child: Container(
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(16),
-                color: Colors.white.withOpacity(0.12),
-                border: Border.all(color: Colors.white.withOpacity(0.2)),
+                color: Colors.white.withValues(alpha: 0.12),
+                border: Border.all(color: Colors.white.withValues(alpha: 0.2)),
                 gradient: LinearGradient(
                   colors: [
-                    Colors.white.withOpacity(0.08),
-                    Colors.white.withOpacity(0.03),
+                    Colors.white.withValues(alpha: 0.08),
+                    Colors.white.withValues(alpha: 0.03),
                   ],
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
@@ -116,7 +116,7 @@ class GlassTextField extends StatelessWidget {
 
                 decoration: InputDecoration(
                   hintText: hintText ?? "Enter $label",
-                  hintStyle: TextStyle(color: Colors.white.withOpacity(0.5)),
+                  hintStyle: TextStyle(color: Colors.white.withValues(alpha: 0.5)),
                   border: InputBorder.none,
                   counterText: '',
                   prefixIcon: prefixIcon,

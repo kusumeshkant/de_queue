@@ -1,77 +1,77 @@
-import 'package:auto_route/auto_route.dart';
+import 'package:dq_app/src/l10n/translation_keys.dart';
+import 'package:dq_app/src/presentation/cart/cart_controller.dart';
+import 'package:dq_app/src/theme/theme_controller.dart';
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 import 'widgets/cart_item_card.dart';
 import 'widgets/cart_bottom_bar.dart';
 
-@RoutePage()
 class CartPage extends StatelessWidget {
   const CartPage({super.key});
 
   @override
   Widget build(BuildContext context) {
+    final c = Get.find<CartController>();
+    final tc = Get.find<ThemeController>();
+
     return Scaffold(
-      backgroundColor: const Color(0xFFF6F7FB),
-      // appBar: AppBar(
-      //   backgroundColor: Colors.transparent,
-      //   elevation: 0,
-      //   foregroundColor: Colors.black,
-      // ),
       body: Column(
         children: [
-          SizedBox(height: 60),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              SizedBox(
-                child: Row(
+          const SizedBox(height: 60),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 20),
+            child: Obx(() => Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Padding(
-                      padding: EdgeInsets.only(left: 20),
-                      child: const Text("My Cart"),
+                    Text(
+                      AppKeys.myCart.tr,
+                      style: TextStyle(
+                        fontSize: 20,
+                        fontWeight: FontWeight.bold,
+                        color: tc.textPrimary,
+                      ),
                     ),
-                    SizedBox(width: 15),
-                     Padding(
-                      padding: EdgeInsets.only(left: 18),
-                      child: const Text("Zudio"),
+                    Text(
+                      '${c.totalItemCount} ${AppKeys.items.tr}',
+                      style:
+                          TextStyle(color: tc.textSecondary, fontSize: 13),
                     ),
                   ],
-                ),
-              ),
-              // Padding(
-              //   padding: EdgeInsets.only(right: 16),
-              //   child: Text(
-              //     "Remove (2)",
-              //     style: TextStyle(color: Colors.red, fontSize: 12),
-              //   ),
-              // ),
-            ],
+                )),
           ),
+          const SizedBox(height: 12),
           Expanded(
-            child: ListView(
-              padding: const EdgeInsets.all(16),
-              children: const [
-                CartItemCard(
-                  title: "Nike Air Max 95",
-                  subtitle: "Laser Fuschia · UK 10",
-                  price: 2000,
-                  quantity: 1,
-                ),
-                CartItemCard(
-                  title: "Nike Air Max 95",
-                  subtitle: "Laser Fuschia · UK 10",
-                  price: 2000,
-                  quantity: 1,
-                ),
-                CartItemCard(
-                  title: "Nike Air Max 95",
-                  subtitle: "Laser Fuschia · UK 10",
-                  price: 2000,
-                  quantity: 1,
-                ),
-              ],
-            ),
+            child: Obx(() {
+              if (c.items.isEmpty) {
+                return Center(
+                  child: Text(
+                    AppKeys.cartEmpty.tr,
+                    textAlign: TextAlign.center,
+                    style: TextStyle(color: tc.textSecondary, fontSize: 15),
+                  ),
+                );
+              }
+              return ListView.builder(
+                padding: const EdgeInsets.all(16),
+                itemCount: c.items.length,
+                itemBuilder: (context, index) {
+                  final item = c.items[index];
+                  return CartItemCard(
+                    title: item.name,
+                    subtitle: item.subtitle,
+                    price: item.price,
+                    quantity: item.quantity,
+                    onIncrement: () => c.incrementQuantity(item.barcode),
+                    onDecrement: () => c.decrementQuantity(item.barcode),
+                    onRemove: () => c.removeItem(item.barcode),
+                  );
+                },
+              );
+            }),
           ),
-          const CartBottomBar(total: 2800),
+          Obx(() => c.items.isNotEmpty
+              ? const CartBottomBar()
+              : const SizedBox.shrink()),
         ],
       ),
     );
