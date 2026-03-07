@@ -20,10 +20,10 @@ class ProfileRemoteDataSource {
     return UserModel.fromJson(data);
   }
 
-  Future<UserModel> updateProfile({required String name}) async {
+  Future<UserModel> updateProfile({String? name, String? email}) async {
     const mutation = '''
-      mutation UpdateProfile(\$name: String!) {
-        updateProfile(name: \$name) {
+      mutation UpdateProfile(\$name: String, \$email: String) {
+        updateProfile(name: \$name, email: \$email) {
           id
           phone
           name
@@ -32,9 +32,13 @@ class ProfileRemoteDataSource {
       }
     ''';
 
+    final variables = <String, dynamic>{};
+    if (name != null) variables['name'] = name;
+    if (email != null) variables['email'] = email;
+
     final result = await GraphQLService.performMutation(
       mutation: mutation,
-      variables: {'name': name},
+      variables: variables,
     );
     final data = result.data?['updateProfile'];
     if (data == null) throw Exception('Failed to update profile');

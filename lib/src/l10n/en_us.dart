@@ -15,6 +15,7 @@ const Map<String, String> enUs = {
   AppKeys.back: 'Back',
   AppKeys.name: 'Name',
   AppKeys.yourName: 'Your Name',
+  AppKeys.emailHint: 'your@email.com',
 
   // Common
   AppKeys.error: 'Error',

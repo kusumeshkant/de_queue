@@ -14,6 +14,7 @@ abstract class AppKeys {
   static const back = 'Back';
   static const name = 'Name';
   static const yourName = 'Your Name';
+  static const emailHint = 'Email Hint';
 
   // ── Common ────────────────────────────────────────────────────────────────
   static const error = 'Error';

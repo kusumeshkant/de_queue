@@ -45,5 +45,14 @@
 	<true/>
 	<key>UIApplicationSupportsIndirectInputEvents</key>
 	<true/>
+	<!-- Push Notifications: background modes -->
+	<key>UIBackgroundModes</key>
+	<array>
+		<string>fetch</string>
+		<string>remote-notification</string>
+	</array>
+	<!-- Required for flutter_local_notifications on iOS -->
+	<key>NSUserNotificationUsageDescription</key>
+	<string>We send you order confirmation and update notifications.</string>
 </dict>
 </plist>

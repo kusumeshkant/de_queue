@@ -15,6 +15,7 @@ const Map<String, String> hiIn = {
   AppKeys.back: 'वापस',
   AppKeys.name: 'नाम',
   AppKeys.yourName: 'आपका नाम',
+  AppKeys.emailHint: 'आपका@ईमेल.com',
 
   // Common
   AppKeys.error: 'त्रुटि',

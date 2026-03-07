@@ -54,6 +54,15 @@ class _SignUpPageState extends State<SignUpPage> {
                               label: AppKeys.name.tr,
                               hintText: AppKeys.yourName.tr,
                               controller: c.nameController,
+                              enabled: !c.otpSent.value,
+                            ),
+                            const SizedBox(height: 10),
+                            GlassTextField(
+                              label: AppKeys.email.tr,
+                              hintText: AppKeys.emailHint.tr,
+                              controller: c.emailController,
+                              keyboardType: TextInputType.emailAddress,
+                              enabled: !c.otpSent.value,
                             ),
                             const SizedBox(height: 10),
                             GlassTextField(

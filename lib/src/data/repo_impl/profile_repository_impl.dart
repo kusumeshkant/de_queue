@@ -11,6 +11,6 @@ class ProfileRepositoryImpl implements ProfileRepository {
   Future<UserEntity> getProfile() => remote.getProfile();
 
   @override
-  Future<UserEntity> updateProfile({required String name}) =>
-      remote.updateProfile(name: name);
+  Future<UserEntity> updateProfile({String? name, String? email}) =>
+      remote.updateProfile(name: name, email: email);
 }
