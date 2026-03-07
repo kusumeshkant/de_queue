@@ -17,8 +17,12 @@ class OrderPage extends StatelessWidget {
 
     return ThemedBackground(
       child: Scaffold(
+        backgroundColor: Colors.transparent,
         appBar: AppBar(
-          title: Text(AppKeys.yourOrders.tr),
+          backgroundColor: Colors.transparent,
+          elevation: 0,
+          title: Obx(() => Text(AppKeys.yourOrders.tr,
+              style: TextStyle(color: tc.textPrimary))),
           centerTitle: false,
         ),
         body: Obx(() {

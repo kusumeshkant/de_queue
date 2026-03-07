@@ -1,228 +1,13 @@
 import 'dart:ui';
-import 'package:dq_app/src/presentation/auth/login/login_binding.dart';
-import 'package:dq_app/src/presentation/auth/login/login_controller.dart';
-import 'package:dq_app/src/presentation/auth/signup/signup_page.dart';
-import 'package:dq_app/src/presentation/dashBoard/bottom_navigation.dart';
-import 'package:dq_app/src/theme/theme_controller.dart';
-import 'package:dq_app/src/utils/appsystem_ui.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:get/get.dart';
-
-class LoginPage extends StatefulWidget {
-  const LoginPage({super.key});
-
-  @override
-  State<LoginPage> createState() => _LoginPageState();
-}
-
-class _LoginPageState extends State<LoginPage> {
-  @override
-  void initState() {
-    super.initState();
-    AppSystemUI.setTransparentStatusBar();
-    if (!Get.isRegistered<LoginController>()) {
-      LoginBinding().dependencies();
-    }
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final c = Get.find<LoginController>();
-    final tc = Get.find<ThemeController>();
-
-    return Obx(() {
-      final isDark = tc.isGreenTheme.value;
-
-      // ── Colours ───────────────────────────────────────────────────────────
-      final primary =
-          isDark ? const Color(0xFF00E676) : const Color(0xFF6C63FF);
-      final textPrimary =
-          isDark ? const Color(0xFFF2F2F7) : const Color(0xFF1C1C1E);
-      final textSecondary =
-          isDark ? const Color(0xFF8E8E93) : const Color(0xFF6C6C70);
-
-      // Background gradient — minimal but eye-catching
-      final bgColors = isDark
-          ? [const Color(0xFF080612), const Color(0xFF0E0820)]
-          : [const Color(0xFFF0EEFF), const Color(0xFFF8F0FF)];
-
-      return Container(
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-            colors: bgColors,
-          ),
-        ),
-        child: Scaffold(
-          backgroundColor: Colors.transparent,
-          body: SafeArea(
-            child: SingleChildScrollView(
-              padding: const EdgeInsets.symmetric(horizontal: 24),
-              child: Obx(() => Column(
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    children: [
-                      const SizedBox(height: 64),
-
-                      // ── Logo ──────────────────────────────────────────────
-                      _LiquidGlassIcon(
-                          icon: Icons.shopping_bag_rounded,
-                          color: primary,
-                          isDark: isDark),
-                      const SizedBox(height: 16),
-                      Text('DQ',
-                          style: TextStyle(
-                              color: textPrimary,
-                              fontSize: 30,
-                              fontWeight: FontWeight.w800,
-                              letterSpacing: 5)),
-                      const SizedBox(height: 4),
-                      Text('Smart Shopping, Simplified',
-                          style: TextStyle(
-                              color: textSecondary,
-                              fontSize: 13,
-                              letterSpacing: 0.4)),
-
-                      const SizedBox(height: 48),
-
-                      // ── Glass card ────────────────────────────────────────
-                      _LiquidGlassCard(
-                        isDark: isDark,
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text('Sign In',
-                                style: TextStyle(
-                                    color: textPrimary,
-                                    fontSize: 22,
-                                    fontWeight: FontWeight.bold)),
-                            const SizedBox(height: 4),
-                            Text('Enter your mobile number to continue',
-                                style: TextStyle(
-                                    color: textSecondary, fontSize: 13)),
-                            const SizedBox(height: 24),
-
-                            _LiquidInputField(
-                              label: 'Mobile Number',
-                              hint: '10-digit number',
-                              controller: c.phoneController,
-                              keyboardType: TextInputType.number,
-                              enabled: !c.otpSent.value,
-                              maxLength: 10,
-                              inputFormatters: [
-                                FilteringTextInputFormatter.digitsOnly,
-                                LengthLimitingTextInputFormatter(10),
-                              ],
-                              prefix: Text('+91',
-                                  style: TextStyle(
-                                      color: textPrimary,
-                                      fontWeight: FontWeight.w600,
-                                      fontSize: 14)),
-                              textColor: textPrimary,
-                              hintColor: textSecondary,
-                              isDark: isDark,
-                            ),
-
-                            if (c.otpSent.value) ...[
-                              const SizedBox(height: 14),
-                              _LiquidInputField(
-                                label: 'OTP',
-                                hint: '6-digit OTP',
-                                controller: c.otpController,
-                                keyboardType: TextInputType.number,
-                                maxLength: 6,
-                                inputFormatters: [
-                                  FilteringTextInputFormatter.digitsOnly,
-                                  LengthLimitingTextInputFormatter(6),
-                                ],
-                                textColor: textPrimary,
-                                hintColor: textSecondary,
-                                isDark: isDark,
-                              ),
-                            ],
-
-                            const SizedBox(height: 24),
-
-                            c.isLoading.value
-                                ? Center(
-                                    child: CircularProgressIndicator(
-                                        color: primary, strokeWidth: 2))
-                                : _LiquidButton(
-                                    text: c.otpSent.value
-                                        ? 'Verify OTP'
-                                        : 'Get OTP',
-                                    color: primary,
-                                    textColor:
-                                        isDark ? Colors.black : Colors.white,
-                                    onTap: () {
-                                      if (!c.otpSent.value) {
-                                        c.sendOtp(
-                                          onError: (msg) => Get.snackbar(
-                                            'Error', msg,
-                                            backgroundColor: Colors.red,
-                                            colorText: Colors.white,
-                                            snackPosition: SnackPosition.BOTTOM,
-                                          ),
-                                        );
-                                      } else {
-                                        c.verifyOtp(
-                                          onSuccess: () => Get.offAll(
-                                              () => const Bottomnavigation()),
-                                          onError: (msg) => Get.snackbar(
-                                            'Error', msg,
-                                            backgroundColor: Colors.red,
-                                            colorText: Colors.white,
-                                            snackPosition: SnackPosition.BOTTOM,
-                                          ),
-                                        );
-                                      }
-                                    },
-                                  ),
-                          ],
-                        ),
-                      ),
-
-                      const SizedBox(height: 28),
-
-                      // ── Sign up link ──────────────────────────────────────
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Text("New here?  ",
-                              style: TextStyle(
-                                  color: textSecondary, fontSize: 14)),
-                          GestureDetector(
-                            onTap: () => Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                  builder: (_) => const SignUpPage()),
-                            ),
-                            child: Text('Create Account',
-                                style: TextStyle(
-                                    color: primary,
-                                    fontSize: 14,
-                                    fontWeight: FontWeight.w600)),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 32),
-                    ],
-                  )),
-            ),
-          ),
-        ),
-      );
-    });
-  }
-}
 
 // ── iOS 26 Liquid Glass Card ─────────────────────────────────────────────────
 
-class _LiquidGlassCard extends StatelessWidget {
+class LiquidGlassCard extends StatelessWidget {
   final Widget child;
   final bool isDark;
-  const _LiquidGlassCard({required this.child, required this.isDark});
+  const LiquidGlassCard({super.key, required this.child, required this.isDark});
 
   @override
   Widget build(BuildContext context) {
@@ -273,7 +58,7 @@ class _LiquidGlassCard extends StatelessWidget {
 
 // ── iOS 26 Liquid Input Field ────────────────────────────────────────────────
 
-class _LiquidInputField extends StatelessWidget {
+class LiquidInputField extends StatelessWidget {
   final String label;
   final String hint;
   final TextEditingController controller;
@@ -286,7 +71,8 @@ class _LiquidInputField extends StatelessWidget {
   final Color hintColor;
   final bool isDark;
 
-  const _LiquidInputField({
+  const LiquidInputField({
+    super.key,
     required this.label,
     required this.hint,
     required this.controller,
@@ -403,16 +189,17 @@ class _LiquidInputField extends StatelessWidget {
 
 // ── iOS 26 Glassy Sphere Button ───────────────────────────────────────────────
 
-class _LiquidButton extends StatelessWidget {
+class LiquidButton extends StatelessWidget {
   final String text;
   final Color color;
   final Color textColor;
   final VoidCallback onTap;
 
-  const _LiquidButton({
+  const LiquidButton({
+    super.key,
     required this.text,
     required this.color,
-    required this.textColor,
+    this.textColor = Colors.white,
     required this.onTap,
   });
 
@@ -470,12 +257,12 @@ class _LiquidButton extends StatelessWidget {
 
 // ── iOS 26 Glassy Sphere Icon ─────────────────────────────────────────────────
 
-class _LiquidGlassIcon extends StatelessWidget {
+class LiquidGlassIcon extends StatelessWidget {
   final IconData icon;
   final Color color;
   final bool isDark;
-  const _LiquidGlassIcon(
-      {required this.icon, required this.color, required this.isDark});
+  const LiquidGlassIcon(
+      {super.key, required this.icon, required this.color, required this.isDark});
 
   @override
   Widget build(BuildContext context) {
@@ -538,7 +325,7 @@ class _LiquidGlassIcon extends StatelessWidget {
               ),
             ),
           ),
-          // Bottom rim light
+          // Bottom rim light — adds sphere roundness
           Positioned(
             bottom: 10,
             left: 20,

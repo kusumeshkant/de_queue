@@ -1,3 +1,4 @@
+import 'dart:ui';
 import 'package:dq_app/src/l10n/translation_keys.dart';
 import 'package:dq_app/src/presentation/cart/cart_controller.dart';
 import 'package:dq_app/src/theme/theme_controller.dart';
@@ -15,31 +16,71 @@ class CartPage extends StatelessWidget {
     final tc = Get.find<ThemeController>();
 
     return Scaffold(
+      backgroundColor: Colors.transparent,
       body: Column(
         children: [
-          const SizedBox(height: 60),
+          const SizedBox(height: 52),
+
+          // ── Glassy header ──────────────────────────────────────────────────
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 20),
-            child: Obx(() => Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Text(
-                      AppKeys.myCart.tr,
-                      style: TextStyle(
-                        fontSize: 20,
-                        fontWeight: FontWeight.bold,
-                        color: tc.textPrimary,
+            child: Obx(() {
+              final isDark = tc.isGreenTheme.value;
+              return ClipRRect(
+                borderRadius: BorderRadius.circular(20),
+                child: BackdropFilter(
+                  filter: ImageFilter.blur(sigmaX: 28, sigmaY: 28),
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 18, vertical: 14),
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(20),
+                      gradient: LinearGradient(
+                        begin: Alignment.topCenter,
+                        end: Alignment.bottomCenter,
+                        colors: isDark
+                            ? [
+                                Colors.white.withValues(alpha: 0.10),
+                                Colors.white.withValues(alpha: 0.04),
+                              ]
+                            : [
+                                Colors.white.withValues(alpha: 0.72),
+                                Colors.white.withValues(alpha: 0.44),
+                              ],
+                      ),
+                      border: Border.all(
+                        color: isDark
+                            ? Colors.white.withValues(alpha: 0.18)
+                            : Colors.white.withValues(alpha: 0.90),
+                        width: 0.8,
                       ),
                     ),
-                    Text(
-                      '${c.totalItemCount} ${AppKeys.items.tr}',
-                      style:
-                          TextStyle(color: tc.textSecondary, fontSize: 13),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text(
+                          AppKeys.myCart.tr,
+                          style: TextStyle(
+                            fontSize: 20,
+                            fontWeight: FontWeight.bold,
+                            color: tc.textPrimary,
+                          ),
+                        ),
+                        Text(
+                          '${c.totalItemCount} ${AppKeys.items.tr}',
+                          style: TextStyle(
+                              color: tc.textSecondary, fontSize: 13),
+                        ),
+                      ],
                     ),
-                  ],
-                )),
+                  ),
+                ),
+              );
+            }),
           ),
+
           const SizedBox(height: 12),
+
           Expanded(
             child: Obx(() {
               if (c.items.isEmpty) {

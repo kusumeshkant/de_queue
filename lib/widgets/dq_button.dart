@@ -9,6 +9,7 @@ class GlassButton extends StatelessWidget {
   final double borderRadius;
   final EdgeInsetsGeometry padding;
   final Color textColor;
+  final Color? backgroundColor;
 
   const GlassButton({
     super.key,
@@ -18,6 +19,7 @@ class GlassButton extends StatelessWidget {
     this.borderRadius = 20,
     this.padding = const EdgeInsets.symmetric(vertical: 14, horizontal: 24),
     this.textColor = Colors.white,
+    this.backgroundColor,
   });
 
   @override
@@ -36,23 +38,29 @@ class GlassButton extends StatelessWidget {
               borderRadius: BorderRadius.circular(borderRadius),
 
               // 🎨 Background
-              color: Colors.white.withValues(alpha: enabled ? 0.12 : 0.06),
+              color: backgroundColor != null
+                  ? backgroundColor!.withValues(alpha: enabled ? 1.0 : 0.5)
+                  : null,
 
               // 🧊 Border
               border: Border.all(
-                color: Colors.white.withValues(alpha: enabled ? 0.2 : 0.1),
+                color: backgroundColor != null
+                    ? Colors.transparent
+                    : Colors.white.withValues(alpha: enabled ? 0.65 : 0.3),
                 width: 1.2,
               ),
 
               // 🌈 Gradient
-              gradient: LinearGradient(
-                colors: [
-                  Colors.white.withValues(alpha: enabled ? 0.08 : 0.03),
-                  Colors.white.withValues(alpha: enabled ? 0.03 : 0.015),
-                ],
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-              ),
+              gradient: backgroundColor == null
+                  ? LinearGradient(
+                      colors: [
+                        Colors.white.withValues(alpha: enabled ? 0.45 : 0.2),
+                        Colors.white.withValues(alpha: enabled ? 0.20 : 0.1),
+                      ],
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                    )
+                  : null,
 
               // 🌑 Shadow
               boxShadow: enabled

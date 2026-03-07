@@ -26,6 +26,7 @@ class SettingsPage extends StatelessWidget {
 
     return ThemedBackground(
       child: Scaffold(
+        backgroundColor: Colors.transparent,
         body: ListView(
           padding: const EdgeInsets.all(16),
           children: [
@@ -175,15 +176,40 @@ class SettingsPage extends StatelessWidget {
   }
 
   Widget _buildSettingsGroup(ThemeController tc, List<Widget> children) {
+    final isDark = tc.isGreenTheme.value;
     return ClipRRect(
-      borderRadius: BorderRadius.circular(14),
+      borderRadius: BorderRadius.circular(20),
       child: BackdropFilter(
-        filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+        filter: ImageFilter.blur(sigmaX: 32, sigmaY: 32),
         child: Container(
           decoration: BoxDecoration(
-            color: tc.cardSurface,
-            borderRadius: BorderRadius.circular(14),
-            border: Border.all(color: tc.cardBorder),
+            borderRadius: BorderRadius.circular(20),
+            gradient: LinearGradient(
+              begin: Alignment.topCenter,
+              end: Alignment.bottomCenter,
+              colors: isDark
+                  ? [
+                      Colors.white.withValues(alpha: 0.10),
+                      Colors.white.withValues(alpha: 0.04),
+                    ]
+                  : [
+                      Colors.white.withValues(alpha: 0.72),
+                      Colors.white.withValues(alpha: 0.44),
+                    ],
+            ),
+            border: Border.all(
+              color: isDark
+                  ? Colors.white.withValues(alpha: 0.18)
+                  : Colors.white.withValues(alpha: 0.90),
+              width: 0.8,
+            ),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withValues(alpha: isDark ? 0.35 : 0.06),
+                blurRadius: 24,
+                offset: const Offset(0, 8),
+              ),
+            ],
           ),
           child: Column(children: children),
         ),
