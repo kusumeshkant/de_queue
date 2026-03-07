@@ -9,6 +9,7 @@ class ProductRemoteDataSource {
         productByBarcode(barcode: \$barcode, storeId: \$storeId) {
           id
           barcode
+          sku
           name
           description
           price
