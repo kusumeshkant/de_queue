@@ -15,7 +15,6 @@ const Map<String, String> hiIn = {
   AppKeys.back: 'वापस',
   AppKeys.name: 'नाम',
   AppKeys.yourName: 'आपका नाम',
-  AppKeys.emailHint: 'आपका@ईमेल.com',
 
   // Common
   AppKeys.error: 'त्रुटि',
@@ -68,6 +67,12 @@ const Map<String, String> hiIn = {
   AppKeys.orderPlaced: 'ऑर्डर दर्ज हो गया!',
   AppKeys.orderSuccess: 'आपका ऑर्डर सफलतापूर्वक दर्ज हो गया।',
   AppKeys.checkoutFailed: 'चेकआउट विफल',
+  AppKeys.orderConfirmed: 'ऑर्डर कन्फर्म',
+  AppKeys.paymentSuccessful: 'भुगतान सफल',
+  AppKeys.showToStaff: 'यह स्टोर स्टाफ को दिखाएं',
+  AppKeys.orderIdLabel: 'ऑर्डर ID',
+  AppKeys.orderIdCopied: 'ऑर्डर ID कॉपी हुई',
+  AppKeys.backToHome: 'होम पर वापस जाएं',
 
   // Order statuses
   AppKeys.statusPending: 'प्रतीक्षित',

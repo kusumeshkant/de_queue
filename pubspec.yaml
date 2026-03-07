@@ -30,6 +30,7 @@ dependencies:
   firebase_messaging: ^16.1.1
   flutter_local_notifications: ^18.0.1
   geolocator: ^13.0.2
+  qr_flutter: ^4.1.0
 
 
 
@@ -47,6 +48,7 @@ flutter_launcher_icons:
   ios: true
   image_path: "assets/app_logo/DQ_logo_1.png"
   min_sdk_android: 21
+  remove_alpha_ios: true
   web:
     generate: false
 

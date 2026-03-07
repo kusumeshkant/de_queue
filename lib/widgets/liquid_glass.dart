@@ -193,6 +193,7 @@ class LiquidButton extends StatelessWidget {
   final String text;
   final Color color;
   final Color textColor;
+  final bool isDark;
   final VoidCallback onTap;
 
   const LiquidButton({
@@ -200,6 +201,7 @@ class LiquidButton extends StatelessWidget {
     required this.text,
     required this.color,
     this.textColor = Colors.white,
+    this.isDark = false,
     required this.onTap,
   });
 
@@ -216,27 +218,29 @@ class LiquidButton extends StatelessWidget {
             height: 52,
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(50),
-              // Same radial-style depth as the sphere — off-center light from top-left
-              gradient: const LinearGradient(
-                begin: Alignment.topCenter,
-                end: Alignment.bottomCenter,
-                colors: [
-                  Color(0xCC1A1A1A),
-                  Color(0xE8000000),
-                ],
-              ),
+              gradient: isDark
+                  ? const LinearGradient(
+                      begin: Alignment.topCenter,
+                      end: Alignment.bottomCenter,
+                      colors: [Color(0xCC1A1A1A), Color(0xE8000000)],
+                    )
+                  : LinearGradient(
+                      begin: Alignment.topCenter,
+                      end: Alignment.bottomCenter,
+                      colors: [
+                        color.withValues(alpha: 0.70),
+                        color.withValues(alpha: 0.88),
+                      ],
+                    ),
               border: Border.all(
-                  color: Colors.white.withValues(alpha: 0.28), width: 0.9),
+                  color: Colors.white.withValues(alpha: isDark ? 0.22 : 0.40),
+                  width: 0.9),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withValues(alpha: 0.50),
-                  blurRadius: 22,
-                  offset: const Offset(0, 8),
-                ),
-                BoxShadow(
-                  color: color.withValues(alpha: 0.20),
+                  color: (isDark ? Colors.black : color)
+                      .withValues(alpha: 0.30),
                   blurRadius: 18,
-                  offset: const Offset(0, 4),
+                  offset: const Offset(0, 6),
                 ),
               ],
             ),

@@ -36,16 +36,16 @@ class _LoginPageState extends State<LoginPage> {
 
       // ── Colours ───────────────────────────────────────────────────────────
       final primary =
-          isDark ? const Color(0xFF00E676) : const Color(0xFF6C63FF);
+          isDark ? const Color(0xFF00E676) : const Color(0xFF00C853);
       final textPrimary =
-          isDark ? const Color(0xFFF2F2F7) : const Color(0xFF1C1C1E);
+          isDark ? const Color(0xFFF2F2F7) : const Color(0xFF0D0D0D);
       final textSecondary =
-          isDark ? const Color(0xFF8E8E93) : const Color(0xFF6C6C70);
+          isDark ? const Color(0xFF8E8E93) : const Color(0xFF555555);
 
-      // Background gradient — minimal but eye-catching
+      // Background gradient
       final bgColors = isDark
           ? [const Color(0xFF080612), const Color(0xFF0E0820)]
-          : [const Color(0xFFF0EEFF), const Color(0xFFF8F0FF)];
+          : [const Color(0xFFE8F5E9), const Color(0xFFF1F8E9)];
 
       return Container(
         decoration: BoxDecoration(
@@ -153,8 +153,8 @@ class _LoginPageState extends State<LoginPage> {
                                         ? 'Verify OTP'
                                         : 'Get OTP',
                                     color: primary,
-                                    textColor:
-                                        isDark ? Colors.black : Colors.white,
+                                    textColor: Colors.white,
+                                    isDark: isDark,
                                     onTap: () {
                                       if (!c.otpSent.value) {
                                         c.sendOtp(
@@ -407,12 +407,14 @@ class _LiquidButton extends StatelessWidget {
   final String text;
   final Color color;
   final Color textColor;
+  final bool isDark;
   final VoidCallback onTap;
 
   const _LiquidButton({
     required this.text,
     required this.color,
     required this.textColor,
+    required this.isDark,
     required this.onTap,
   });
 
@@ -429,27 +431,29 @@ class _LiquidButton extends StatelessWidget {
             height: 52,
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(50),
-              // Same radial-style depth as the sphere — off-center light from top-left
-              gradient: const LinearGradient(
-                begin: Alignment.topCenter,
-                end: Alignment.bottomCenter,
-                colors: [
-                  Color(0xCC1A1A1A),
-                  Color(0xE8000000),
-                ],
-              ),
+              gradient: isDark
+                  ? const LinearGradient(
+                      begin: Alignment.topCenter,
+                      end: Alignment.bottomCenter,
+                      colors: [Color(0xCC1A1A1A), Color(0xE8000000)],
+                    )
+                  : LinearGradient(
+                      begin: Alignment.topCenter,
+                      end: Alignment.bottomCenter,
+                      colors: [
+                        color.withValues(alpha: 0.70),
+                        color.withValues(alpha: 0.88),
+                      ],
+                    ),
               border: Border.all(
-                  color: Colors.white.withValues(alpha: 0.28), width: 0.9),
+                  color: Colors.white.withValues(alpha: isDark ? 0.22 : 0.40),
+                  width: 0.9),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withValues(alpha: 0.50),
-                  blurRadius: 22,
-                  offset: const Offset(0, 8),
-                ),
-                BoxShadow(
-                  color: color.withValues(alpha: 0.20),
+                  color: (isDark ? Colors.black : color)
+                      .withValues(alpha: 0.30),
                   blurRadius: 18,
-                  offset: const Offset(0, 4),
+                  offset: const Offset(0, 6),
                 ),
               ],
             ),

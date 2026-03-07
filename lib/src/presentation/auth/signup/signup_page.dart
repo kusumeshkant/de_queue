@@ -32,14 +32,14 @@ class _SignUpPageState extends State<SignUpPage> {
     return Obx(() {
       final isDark = tc.isGreenTheme.value;
       final primary =
-          isDark ? const Color(0xFF00E676) : const Color(0xFF6C63FF);
+          isDark ? const Color(0xFF00E676) : const Color(0xFF00C853);
       final textPrimary =
-          isDark ? const Color(0xFFF2F2F7) : const Color(0xFF1C1C1E);
+          isDark ? const Color(0xFFF2F2F7) : const Color(0xFF0D0D0D);
       final textSecondary =
-          isDark ? const Color(0xFF8E8E93) : const Color(0xFF6C6C70);
+          isDark ? const Color(0xFF8E8E93) : const Color(0xFF555555);
       final bgColors = isDark
           ? [const Color(0xFF080612), const Color(0xFF0E0820)]
-          : [const Color(0xFFF0EEFF), const Color(0xFFF8F0FF)];
+          : [const Color(0xFFE8F5E9), const Color(0xFFF1F8E9)];
 
       return Container(
         decoration: BoxDecoration(
@@ -156,8 +156,7 @@ class _SignUpPageState extends State<SignUpPage> {
                                         ? 'Verify OTP'
                                         : 'Get OTP',
                                     color: primary,
-                                    textColor:
-                                        isDark ? Colors.black : Colors.white,
+                                    isDark: isDark,
                                     onTap: () {
                                       if (!c.otpSent.value) {
                                         c.sendOtp(

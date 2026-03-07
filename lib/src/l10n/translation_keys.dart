@@ -14,7 +14,6 @@ abstract class AppKeys {
   static const back = 'Back';
   static const name = 'Name';
   static const yourName = 'Your Name';
-  static const emailHint = 'Email Hint';
 
   // ── Common ────────────────────────────────────────────────────────────────
   static const error = 'Error';
@@ -67,6 +66,12 @@ abstract class AppKeys {
   static const orderPlaced = 'Order Placed!';
   static const orderSuccess = 'Your order has been placed successfully.';
   static const checkoutFailed = 'Checkout Failed';
+  static const orderConfirmed = 'Order Confirmed';
+  static const paymentSuccessful = 'Payment Successful';
+  static const showToStaff = 'Show this to the store staff';
+  static const orderIdLabel = 'Order ID';
+  static const orderIdCopied = 'Order ID copied to clipboard';
+  static const backToHome = 'Back to Home';
 
   // ── Orders ────────────────────────────────────────────────────────────────
   // ── Order statuses ───────────────────────────────────────────────────────

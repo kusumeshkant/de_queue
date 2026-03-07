@@ -1,4 +1,5 @@
 import 'package:dq_app/src/domain/entity/cart_item_entity.dart';
+import 'package:dq_app/src/domain/entity/order_entity.dart';
 import 'package:dq_app/src/domain/usecase/create_order_usecase.dart';
 import 'package:dq_app/src/domain/usecase/create_razorpay_order_usecase.dart';
 import 'package:dq_app/src/presentation/dashBoard/dashboard_view_model.dart';
@@ -23,7 +24,7 @@ class CartController extends GetxController {
   final RxBool hasPaymentFailed = false.obs;
   final RxString failureMessage = ''.obs;
 
-  void Function(String orderId)? _onSuccess;
+  void Function(OrderEntity order)? _onSuccess;
   void Function(String message)? _onError;
 
   double get subtotal =>
@@ -121,7 +122,7 @@ class CartController extends GetxController {
   }
 
   Future<void> checkout({
-    required void Function(String orderId) onSuccess,
+    required void Function(OrderEntity order) onSuccess,
     required void Function(String message) onError,
   }) async {
     // Reset previous failure state on new attempt
@@ -173,7 +174,7 @@ class CartController extends GetxController {
       );
 
       clearCart();
-      _onSuccess?.call(order.id);
+      _onSuccess?.call(order);
     } catch (e) {
       _onError?.call('Payment succeeded but order failed: ${e.toString()}');
     } finally {

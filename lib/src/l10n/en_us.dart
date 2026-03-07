@@ -15,7 +15,6 @@ const Map<String, String> enUs = {
   AppKeys.back: 'Back',
   AppKeys.name: 'Name',
   AppKeys.yourName: 'Your Name',
-  AppKeys.emailHint: 'your@email.com',
 
   // Common
   AppKeys.error: 'Error',
@@ -68,6 +67,12 @@ const Map<String, String> enUs = {
   AppKeys.orderPlaced: 'Order Placed!',
   AppKeys.orderSuccess: 'Your order has been placed successfully.',
   AppKeys.checkoutFailed: 'Checkout Failed',
+  AppKeys.orderConfirmed: 'Order Confirmed',
+  AppKeys.paymentSuccessful: 'Payment Successful',
+  AppKeys.showToStaff: 'Show this to the store staff',
+  AppKeys.orderIdLabel: 'Order ID',
+  AppKeys.orderIdCopied: 'Order ID copied to clipboard',
+  AppKeys.backToHome: 'Back to Home',
 
   // Order statuses
   AppKeys.statusPending: 'Pending',

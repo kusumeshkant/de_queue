@@ -1,9 +1,7 @@
 import 'dart:ui';
 import 'package:dq_app/src/l10n/translation_keys.dart';
 import 'package:dq_app/src/presentation/cart/cart_controller.dart';
-import 'package:dq_app/src/presentation/dashBoard/navigation_controller.dart';
-import 'package:dq_app/src/presentation/order/order_binding.dart';
-import 'package:dq_app/src/presentation/order/order_page.dart';
+import 'package:dq_app/src/presentation/order/order_confirmation_page.dart';
 import 'package:dq_app/src/theme/theme_controller.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -20,7 +18,7 @@ class CartBottomBar extends StatelessWidget {
     return Obx(() => ClipRRect(
           borderRadius: const BorderRadius.vertical(top: Radius.circular(22)),
           child: BackdropFilter(
-            filter: ImageFilter.blur(sigmaX: 12, sigmaY: 12),
+            filter: ImageFilter.blur(sigmaX: 32, sigmaY: 32),
             child: Container(
               padding: const EdgeInsets.fromLTRB(16, 14, 16, 20),
               decoration: BoxDecoration(
@@ -84,28 +82,10 @@ class CartBottomBar extends StatelessWidget {
                                 ? AppKeys.retryPayment.tr
                                 : AppKeys.checkout.tr,
                             onTap: () => c.checkout(
-                              onSuccess: (orderId) {
-                                // Navigate back to Home tab
-                                Get.find<NavigationController>().goToHome();
-                                Get.snackbar(
-                                  AppKeys.orderPlaced.tr,
-                                  AppKeys.orderSuccess.tr,
-                                  backgroundColor: Colors.green,
-                                  colorText: Colors.white,
-                                  snackPosition: SnackPosition.BOTTOM,
-                                  duration: const Duration(seconds: 4),
-                                  mainButton: TextButton(
-                                    onPressed: () => Get.to(
-                                      () => const OrderPage(),
-                                      binding: OrderBinding(),
-                                    ),
-                                    child: Text(
-                                      AppKeys.viewOrders.tr,
-                                      style: const TextStyle(
-                                          color: Colors.white,
-                                          fontWeight: FontWeight.bold),
-                                    ),
-                                  ),
+                              onSuccess: (order) {
+                                Get.to(
+                                  () => OrderConfirmationPage(order: order),
+                                  transition: Transition.fadeIn,
                                 );
                               },
                               onError: (msg) => Get.snackbar(
