@@ -3,7 +3,7 @@ import 'package:dq_app/src/service_core/networks/graphql_service.dart';
 
 class StoreRemoteDataSource {
   static const _storeFields = '''
-    id name address imageUrl latitude longitude distanceKm
+    id storeCode name address imageUrl latitude longitude distanceKm
   ''';
 
   Future<List<StoreModel>> getStores() async {

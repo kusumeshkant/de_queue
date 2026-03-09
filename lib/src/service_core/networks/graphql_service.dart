@@ -1,6 +1,17 @@
+import 'dart:async';
+
 import 'package:dq_app/src/service_core/auth/session_manager.dart';
+import 'package:get/get.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
+import 'app_logger.dart';
 import 'graphql_client_provider.dart';
+import 'network_service.dart';
+
+/// How long to wait before showing a "slow connection" toast.
+const _kSlowWarningDuration = Duration(seconds: 6);
+
+/// Hard timeout — request is abandoned after this.
+const _kTimeoutDuration = Duration(seconds: 20);
 
 class GraphQLService {
   /// GLOBAL QUERY METHOD
@@ -9,17 +20,20 @@ class GraphQLService {
     Map<String, dynamic>? variables,
     FetchPolicy fetchPolicy = FetchPolicy.networkOnly,
   }) async {
+    _assertNetwork();
+
     final options = QueryOptions(
       document: gql(query),
       variables: variables ?? {},
       fetchPolicy: fetchPolicy,
     );
 
-    final result = await GraphQLClientProvider.client.query(options);
-
-    await _handleException(result);
-
-    return result;
+    return _withSlowNetworkGuard(
+      () => GraphQLClientProvider.client.query(options),
+    ).then((result) async {
+      await _handleException(result);
+      return result;
+    });
   }
 
   /// GLOBAL MUTATION METHOD
@@ -27,16 +41,56 @@ class GraphQLService {
     required String mutation,
     Map<String, dynamic>? variables,
   }) async {
+    _assertNetwork();
+
     final options = MutationOptions(
       document: gql(mutation),
       variables: variables ?? {},
     );
 
-    final result = await GraphQLClientProvider.client.mutate(options);
+    return _withSlowNetworkGuard(
+      () => GraphQLClientProvider.client.mutate(options),
+    ).then((result) async {
+      await _handleException(result);
+      return result;
+    });
+  }
 
-    await _handleException(result);
+  // ---------------------------------------------------------------------------
+  // Helpers
+  // ---------------------------------------------------------------------------
 
-    return result;
+  /// Checks network connectivity and throws immediately if offline.
+  static void _assertNetwork() {
+    final network = Get.find<NetworkService>();
+    if (!network.checkAndWarn()) {
+      AppLogger.logNetwork('Request blocked — no internet connection');
+      throw Exception('NO_NETWORK');
+    }
+  }
+
+  /// Wraps a GraphQL call with:
+  ///  - a "slow connection" toast after [_kSlowWarningDuration]
+  ///  - a hard timeout after [_kTimeoutDuration]
+  static Future<QueryResult> _withSlowNetworkGuard(
+    Future<QueryResult> Function() call,
+  ) async {
+    Timer? slowTimer;
+
+    try {
+      slowTimer = Timer(_kSlowWarningDuration, NetworkService.warnSlowNetwork);
+
+      return await call().timeout(
+        _kTimeoutDuration,
+        onTimeout: () {
+          NetworkService.warnTimeout();
+          AppLogger.logNetwork('Request timed out after ${_kTimeoutDuration.inSeconds}s');
+          throw Exception('TIMEOUT');
+        },
+      );
+    } finally {
+      slowTimer?.cancel();
+    }
   }
 
   static Future<void> _handleException(QueryResult result) async {
@@ -54,7 +108,6 @@ class GraphQLService {
           msg.contains('token expired') ||
           msg.contains('invalid token')) {
         await SessionManager.expireSession();
-        // Throw a specific error so the caller stops processing
         throw Exception('SESSION_EXPIRED');
       }
     }

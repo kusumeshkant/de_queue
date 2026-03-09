@@ -3,6 +3,7 @@ import 'package:dq_app/src/domain/entity/store_entity.dart';
 class StoreModel extends StoreEntity {
   const StoreModel({
     required super.id,
+    super.storeCode,
     required super.name,
     super.address,
     super.imageUrl,
@@ -13,6 +14,7 @@ class StoreModel extends StoreEntity {
 
   factory StoreModel.fromJson(Map<String, dynamic> json) => StoreModel(
         id: json['id'] as String,
+        storeCode: json['storeCode'] as String?,
         name: json['name'] as String,
         address: json['address'] as String?,
         imageUrl: json['imageUrl'] as String?,

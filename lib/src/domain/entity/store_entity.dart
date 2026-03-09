@@ -1,5 +1,6 @@
 class StoreEntity {
   final String id;
+  final String? storeCode;
   final String name;
   final String? address;
   final String? imageUrl;
@@ -9,6 +10,7 @@ class StoreEntity {
 
   const StoreEntity({
     required this.id,
+    this.storeCode,
     required this.name,
     this.address,
     this.imageUrl,

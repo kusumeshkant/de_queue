@@ -1,23 +1,17 @@
 import 'package:dq_app/src/constants/app_config.dart';
 import 'package:dq_app/src/domain/usecase/signup_usecase.dart';
-import 'package:dq_app/src/domain/usecase/update_profile_usecase.dart';
 import 'package:dq_app/src/service_core/networks/graphql_client_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
 class SignupController extends GetxController {
   final SignupUseCase signupUseCase;
-  final UpdateProfileUseCase updateProfileUseCase;
 
-  SignupController({
-    required this.signupUseCase,
-    required this.updateProfileUseCase,
-  });
+  SignupController({required this.signupUseCase});
 
-  final nameController  = TextEditingController();
-  final emailController = TextEditingController();
+  final nameController = TextEditingController();
   final phoneController = TextEditingController();
-  final otpController   = TextEditingController();
+  final otpController = TextEditingController();
 
   var isLoading = false.obs;
   var otpSent = false.obs;
@@ -101,14 +95,6 @@ class SignupController extends GetxController {
         token: auth.token,
       );
 
-      // Save name + email to backend
-      final name  = nameController.text.trim();
-      final email = emailController.text.trim();
-      await updateProfileUseCase.execute(
-        name: name.isNotEmpty ? name : null,
-        email: email.isNotEmpty ? email : null,
-      );
-
       isLoading.value = false;
       onSuccess();
     } catch (e) {
@@ -121,7 +107,6 @@ class SignupController extends GetxController {
   @override
   void onClose() {
     nameController.dispose();
-    emailController.dispose();
     phoneController.dispose();
     otpController.dispose();
     super.onClose();

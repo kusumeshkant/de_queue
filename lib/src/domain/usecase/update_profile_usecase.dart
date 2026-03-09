@@ -6,6 +6,6 @@ class UpdateProfileUseCase {
 
   UpdateProfileUseCase({required this.repository});
 
-  Future<UserEntity> execute({String? name, String? email}) =>
-      repository.updateProfile(name: name, email: email);
+  Future<UserEntity> execute({required String name}) =>
+      repository.updateProfile(name: name);
 }

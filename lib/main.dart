@@ -3,6 +3,7 @@ import 'package:dq_app/core/manager/hive_manager.dart';
 import 'package:dq_app/src/constants/app_config.dart';
 import 'package:dq_app/src/l10n/app_translations.dart';
 import 'package:dq_app/src/l10n/language_controller.dart';
+import 'package:dq_app/src/service_core/networks/network_service.dart';
 import 'package:dq_app/src/service_core/notifications/notification_service.dart';
 import 'package:dq_app/src/presentation/auth/login/login_page.dart';
 import 'package:dq_app/src/presentation/dashBoard/bottom_navigation.dart';
@@ -29,6 +30,7 @@ void main() async {
   // Register controllers globally before app starts
   final themeController = Get.put(ThemeController(), permanent: true);
   Get.put(LanguageController(), permanent: true);
+  Get.put(NetworkService(), permanent: true);
 
   // Load saved locale before building UI
   final savedLocale = await AppLocales.loadSaved();
