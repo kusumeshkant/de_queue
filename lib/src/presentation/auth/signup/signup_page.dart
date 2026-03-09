@@ -1,5 +1,6 @@
 import 'package:dq_app/src/presentation/auth/login/login_page.dart';
 import 'package:dq_app/src/presentation/auth/signup/signup_binding.dart';
+import 'package:dq_app/src/presentation/dashBoard/navigation_controller.dart';
 import 'package:dq_app/src/presentation/auth/signup/signup_controller.dart';
 import 'package:dq_app/src/presentation/dashBoard/bottom_navigation.dart';
 import 'package:dq_app/src/theme/theme_controller.dart';
@@ -169,8 +170,14 @@ class _SignUpPageState extends State<SignUpPage> {
                                         );
                                       } else {
                                         c.verifyOtp(
-                                          onSuccess: () => Get.offAll(
-                                              () => const Bottomnavigation()),
+                                          onSuccess: () {
+                                            try {
+                                              Get.find<NavigationController>()
+                                                  .goToHome();
+                                            } catch (_) {}
+                                            Get.offAll(
+                                                () => const Bottomnavigation());
+                                          },
                                           onError: (msg) => Get.snackbar(
                                             'Error', msg,
                                             backgroundColor: Colors.red,

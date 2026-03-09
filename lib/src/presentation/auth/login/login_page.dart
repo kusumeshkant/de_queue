@@ -3,6 +3,7 @@ import 'package:dq_app/src/presentation/auth/login/login_binding.dart';
 import 'package:dq_app/src/presentation/auth/login/login_controller.dart';
 import 'package:dq_app/src/presentation/auth/signup/signup_page.dart';
 import 'package:dq_app/src/presentation/dashBoard/bottom_navigation.dart';
+import 'package:dq_app/src/presentation/dashBoard/navigation_controller.dart';
 import 'package:dq_app/src/theme/theme_controller.dart';
 import 'package:dq_app/src/utils/appsystem_ui.dart';
 import 'package:flutter/material.dart';
@@ -167,8 +168,14 @@ class _LoginPageState extends State<LoginPage> {
                                         );
                                       } else {
                                         c.verifyOtp(
-                                          onSuccess: () => Get.offAll(
-                                              () => const Bottomnavigation()),
+                                          onSuccess: () {
+                                            try {
+                                              Get.find<NavigationController>()
+                                                  .goToHome();
+                                            } catch (_) {}
+                                            Get.offAll(
+                                                () => const Bottomnavigation());
+                                          },
                                           onError: (msg) => Get.snackbar(
                                             'Error', msg,
                                             backgroundColor: Colors.red,

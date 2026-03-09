@@ -1,5 +1,8 @@
+import 'package:dq_app/src/presentation/dashBoard/dashboard_view_model.dart';
+import 'package:dq_app/src/presentation/dashBoard/navigation_controller.dart';
 import 'package:dq_app/src/service_core/auth/session_manager.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:get/get.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
 import 'graphql_logging_link.dart';
 
@@ -45,6 +48,7 @@ class GraphQLClientProvider {
 
         final user = FirebaseAuth.instance.currentUser;
         if (user == null) {
+          _cleanUpSessionState();
           await SessionManager.expireSession();
           return;
         }
@@ -53,6 +57,7 @@ class GraphQLClientProvider {
           // Force a server-side token refresh
           await user.getIdToken(true);
         } catch (_) {
+          _cleanUpSessionState();
           await SessionManager.expireSession();
           return;
         }
@@ -65,6 +70,7 @@ class GraphQLClientProvider {
               false;
 
           if (retryFailed) {
+            _cleanUpSessionState();
             await SessionManager.expireSession();
             return;
           }
@@ -77,6 +83,13 @@ class GraphQLClientProvider {
       cache: GraphQLCache(store: InMemoryStore()),
       link: Link.from([LoggingLink(), errorLink, authLink, httpLink]),
     );
+  }
+
+  static void _cleanUpSessionState() {
+    try {
+      Get.find<NavigationController>().goToHome();
+    } catch (_) {}
+    Get.delete<DashboardController>(force: true);
   }
 
   static GraphQLClient get client {

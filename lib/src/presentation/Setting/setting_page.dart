@@ -5,6 +5,8 @@ import 'package:dq_app/src/constants/app_config.dart';
 import 'package:dq_app/src/l10n/language_controller.dart';
 import 'package:dq_app/src/l10n/translation_keys.dart';
 import 'package:dq_app/src/presentation/auth/login/login_page.dart';
+import 'package:dq_app/src/presentation/dashBoard/dashboard_view_model.dart';
+import 'package:dq_app/src/presentation/dashBoard/navigation_controller.dart';
 import 'package:dq_app/src/presentation/order/order_binding.dart';
 import 'package:dq_app/src/presentation/order/order_page.dart';
 import 'package:dq_app/src/presentation/profile/profile_binding.dart';
@@ -90,6 +92,13 @@ class SettingsPage extends StatelessWidget {
                       await GraphQLClientProvider.init(
                         baseUrl: AppConfig.graphqlEndpoint,
                       );
+                      // Reset nav to home so next login starts at Dashboard
+                      try {
+                        Get.find<NavigationController>().goToHome();
+                      } catch (_) {}
+                      // Delete so next login creates a fresh controller
+                      // (isStoreConfirmed = false → store confirmation shows)
+                      Get.delete<DashboardController>(force: true);
                       Get.offAll(() => const LoginPage());
                     },
                   ),

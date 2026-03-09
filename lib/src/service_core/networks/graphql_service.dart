@@ -1,5 +1,7 @@
 import 'dart:async';
 
+import 'package:dq_app/src/presentation/dashBoard/dashboard_view_model.dart';
+import 'package:dq_app/src/presentation/dashBoard/navigation_controller.dart';
 import 'package:dq_app/src/service_core/auth/session_manager.dart';
 import 'package:get/get.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
@@ -107,6 +109,7 @@ class GraphQLService {
           msg.contains('jwt expired') ||
           msg.contains('token expired') ||
           msg.contains('invalid token')) {
+        _cleanUpSessionState();
         await SessionManager.expireSession();
         throw Exception('SESSION_EXPIRED');
       }
@@ -115,11 +118,19 @@ class GraphQLService {
     // Check HTTP-level 401 (network link error)
     final linkEx = result.exception?.linkException;
     if (linkEx is HttpLinkServerException && linkEx.response.statusCode == 401) {
+      _cleanUpSessionState();
       await SessionManager.expireSession();
       throw Exception('SESSION_EXPIRED');
     }
 
     // Any other error — throw normally
     throw Exception(result.exception.toString());
+  }
+
+  static void _cleanUpSessionState() {
+    try {
+      Get.find<NavigationController>().goToHome();
+    } catch (_) {}
+    Get.delete<DashboardController>(force: true);
   }
 }
