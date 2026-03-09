@@ -35,18 +35,11 @@ class _LoginPageState extends State<LoginPage> {
     return Obx(() {
       final isDark = tc.isGreenTheme.value;
 
-      // ── Colours ───────────────────────────────────────────────────────────
-      final primary =
-          isDark ? const Color(0xFF00E676) : const Color(0xFF00C853);
-      final textPrimary =
-          isDark ? const Color(0xFFF2F2F7) : const Color(0xFF0D0D0D);
-      final textSecondary =
-          isDark ? const Color(0xFF8E8E93) : const Color(0xFF555555);
-
-      // Background gradient
-      final bgColors = isDark
-          ? [const Color(0xFF080612), const Color(0xFF0E0820)]
-          : [const Color(0xFFE8F5E9), const Color(0xFFF1F8E9)];
+      // ── Colours (from ThemeController — stays in sync with the rest of app) ─
+      final primary = tc.primary;
+      final textPrimary = tc.textPrimary;
+      final textSecondary = tc.textSecondary;
+      final bgColors = tc.bgGradient;
 
       return Container(
         decoration: BoxDecoration(

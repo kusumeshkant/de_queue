@@ -25,6 +25,7 @@ class SignupUseCase {
     return repository.verifyOtp(
       verificationId: verificationId,
       otp: otp,
+      isSignUp: true, // reject if account already exists
     );
   }
 }

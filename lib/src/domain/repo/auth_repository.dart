@@ -10,6 +10,7 @@ abstract class AuthRepository {
   Future<AuthEntity> verifyOtp({
     required String verificationId,
     required String otp,
+    bool isSignUp = false,
   });
 
   Future<void> logout();

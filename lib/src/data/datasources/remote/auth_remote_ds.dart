@@ -21,6 +21,7 @@ class AuthRemoteDataSource {
   Future<AuthEntity> verifyOtp({
     required String verificationId,
     required String otp,
+    bool isSignUp = false,
   }) async {
     try {
       final credential = PhoneAuthProvider.credential(
@@ -28,6 +29,15 @@ class AuthRemoteDataSource {
         smsCode: otp,
       );
       final result = await _auth.signInWithCredential(credential);
+
+      // During signup, reject if the account already exists
+      if (isSignUp && !(result.additionalUserInfo?.isNewUser ?? true)) {
+        await _auth.signOut();
+        throw Exception(
+          'An account already exists with this number. Please sign in instead.',
+        );
+      }
+
       final token = await result.user?.getIdToken();
       return AuthEntity(token: token ?? '', isLoggedIn: true);
     } on FirebaseAuthException catch (e) {
