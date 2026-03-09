@@ -139,6 +139,60 @@ class _SignUpPageState extends State<SignUpPage> {
                                 hintColor: textSecondary,
                                 isDark: isDark,
                               ),
+                              const SizedBox(height: 10),
+                              Row(
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceBetween,
+                                children: [
+                                  GestureDetector(
+                                    onTap: () => c.resetOtp(),
+                                    child: Row(
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: [
+                                        Icon(Icons.edit_outlined,
+                                            size: 13, color: primary),
+                                        const SizedBox(width: 4),
+                                        Text(
+                                          'Change number',
+                                          style: TextStyle(
+                                            color: primary,
+                                            fontSize: 13,
+                                            fontWeight: FontWeight.w500,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                  // Resend OTP
+                                  c.resendCountdown.value > 0
+                                      ? Text(
+                                          'Resend in ${c.resendCountdown.value}s',
+                                          style: TextStyle(
+                                            color: textSecondary,
+                                            fontSize: 13,
+                                          ),
+                                        )
+                                      : GestureDetector(
+                                          onTap: () => c.resendOtp(
+                                            onError: (msg) => Get.snackbar(
+                                              'Error', msg,
+                                              backgroundColor: Colors.red,
+                                              colorText: Colors.white,
+                                              snackPosition:
+                                                  SnackPosition.BOTTOM,
+                                            ),
+                                          ),
+                                          child: Text(
+                                            'Resend OTP',
+                                            style: TextStyle(
+                                              color: primary,
+                                              fontSize: 13,
+                                              fontWeight: FontWeight.w600,
+                                            ),
+                                          ),
+                                        ),
+                                ],
+                              ),
                             ],
 
                             const SizedBox(height: 24),

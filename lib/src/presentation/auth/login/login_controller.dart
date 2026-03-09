@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:dq_app/src/constants/app_config.dart';
 import 'package:dq_app/src/domain/usecase/login_usecase.dart';
 import 'package:dq_app/src/service_core/networks/graphql_client_provider.dart';
@@ -15,14 +17,29 @@ class LoginController extends GetxController {
   var isLoading = false.obs;
   var otpSent = false.obs;
   var error = RxnString();
+  var resendCountdown = 0.obs;
 
   String? _verificationId;
+  Timer? _countdownTimer;
 
   String? phoneValidator(String? value) {
     if (value == null || value.isEmpty) return 'Phone number is required';
     if (!RegExp(r'^\d+$').hasMatch(value)) return 'Only digits allowed';
     if (value.length != 10) return 'Enter a valid 10-digit phone number';
     return null;
+  }
+
+  void _startCountdown() {
+    _countdownTimer?.cancel();
+    resendCountdown.value = 30;
+    _countdownTimer = Timer.periodic(const Duration(seconds: 1), (t) {
+      if (resendCountdown.value <= 1) {
+        resendCountdown.value = 0;
+        t.cancel();
+      } else {
+        resendCountdown.value--;
+      }
+    });
   }
 
   Future<void> sendOtp({
@@ -35,7 +52,6 @@ class LoginController extends GetxController {
       return;
     }
 
-    // Auto-prepend country code for Firebase
     final phone = '+91$raw';
 
     isLoading.value = true;
@@ -55,6 +71,7 @@ class LoginController extends GetxController {
         _verificationId = verificationId;
         otpSent.value = true;
         isLoading.value = false;
+        _startCountdown();
       },
       onFailed: (message) {
         isLoading.value = false;
@@ -62,6 +79,23 @@ class LoginController extends GetxController {
         onError(message);
       },
     );
+  }
+
+  Future<void> resendOtp({
+    required void Function(String message) onError,
+  }) async {
+    if (resendCountdown.value > 0) return;
+    otpController.clear();
+    await sendOtp(onError: onError);
+  }
+
+  void resetOtp() {
+    _countdownTimer?.cancel();
+    resendCountdown.value = 0;
+    otpSent.value = false;
+    _verificationId = null;
+    otpController.clear();
+    error.value = null;
   }
 
   Future<void> verifyOtp({
@@ -88,7 +122,6 @@ class LoginController extends GetxController {
         otp: otp,
       );
 
-      // Re-init GraphQL with real Firebase token
       await GraphQLClientProvider.init(
         baseUrl: AppConfig.graphqlEndpoint,
         token: auth.token,
@@ -105,6 +138,7 @@ class LoginController extends GetxController {
 
   @override
   void onClose() {
+    _countdownTimer?.cancel();
     phoneController.dispose();
     otpController.dispose();
     super.onClose();
