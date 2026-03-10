@@ -132,37 +132,76 @@ class SettingsPage extends StatelessWidget {
   }
 
   void _showLanguageDialog(ThemeController tc, LanguageController lc) {
-    Get.dialog(
-      Obx(() => AlertDialog(
-            backgroundColor: tc.cardSurface.withValues(alpha: 0.95),
-            title: Text(
-              AppKeys.selectLanguage.tr,
-              style: TextStyle(color: tc.textPrimary),
-            ),
-            content: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: AppLocales.supported.map((entry) {
-                final isSelected = lc.isCurrentLocale(entry.locale);
-                return ListTile(
-                  onTap: () {
-                    lc.changeLocale(entry.locale);
-                    Get.back();
-                  },
-                  leading: Icon(
-                    isSelected ? Icons.radio_button_checked : Icons.radio_button_off,
-                    color: isSelected ? tc.primary : tc.textSecondary,
-                  ),
-                  title: Text(
-                    entry.nameKey.tr,
-                    style: TextStyle(
-                      color: tc.textPrimary,
-                      fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
+    Get.bottomSheet(
+      Obx(() => ClipRRect(
+            borderRadius: const BorderRadius.vertical(top: Radius.circular(28)),
+            child: BackdropFilter(
+              filter: ImageFilter.blur(sigmaX: 28, sigmaY: 28),
+              child: Container(
+                padding: const EdgeInsets.fromLTRB(24, 16, 24, 40),
+                decoration: BoxDecoration(
+                  color: tc.cardSurface,
+                  borderRadius:
+                      const BorderRadius.vertical(top: Radius.circular(28)),
+                  border: Border(
+                      top: BorderSide(color: tc.cardBorder, width: 1)),
+                ),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    // Handle bar
+                    Container(
+                      width: 40,
+                      height: 4,
+                      margin: const EdgeInsets.only(bottom: 20),
+                      decoration: BoxDecoration(
+                        color: tc.textSecondary.withValues(alpha: 0.3),
+                        borderRadius: BorderRadius.circular(2),
+                      ),
                     ),
-                  ),
-                );
-              }).toList(),
+                    // Title
+                    Text(
+                      AppKeys.selectLanguage.tr,
+                      style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                        color: tc.textPrimary,
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    // Language options
+                    ...AppLocales.supported.map((entry) {
+                      final isSelected = lc.isCurrentLocale(entry.locale);
+                      return ListTile(
+                        onTap: () {
+                          lc.changeLocale(entry.locale);
+                          Get.back();
+                        },
+                        contentPadding: EdgeInsets.zero,
+                        leading: Icon(
+                          isSelected
+                              ? Icons.radio_button_checked
+                              : Icons.radio_button_off,
+                          color: isSelected ? tc.primary : tc.textSecondary,
+                        ),
+                        title: Text(
+                          entry.nameKey.tr,
+                          style: TextStyle(
+                            color: tc.textPrimary,
+                            fontWeight: isSelected
+                                ? FontWeight.w600
+                                : FontWeight.normal,
+                          ),
+                        ),
+                      );
+                    }),
+                  ],
+                ),
+              ),
             ),
           )),
+      backgroundColor: Colors.transparent,
+      isScrollControlled: true,
     );
   }
 

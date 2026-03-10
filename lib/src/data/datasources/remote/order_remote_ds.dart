@@ -63,6 +63,8 @@ class OrderRemoteDataSource {
         ) {
           id
           status
+          total
+          tax
           grandTotal
           createdAt
           items { barcode name price quantity }

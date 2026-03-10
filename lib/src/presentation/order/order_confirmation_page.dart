@@ -1,7 +1,6 @@
 import 'package:dq_app/src/domain/entity/order_entity.dart';
 import 'package:dq_app/src/l10n/translation_keys.dart';
-import 'package:dq_app/src/presentation/order/order_binding.dart';
-import 'package:dq_app/src/presentation/order/order_page.dart';
+import 'package:dq_app/src/presentation/dashBoard/navigation_controller.dart';
 import 'package:dq_app/src/theme/theme_controller.dart';
 import 'package:dq_app/widgets/app_glass_card.dart';
 import 'package:dq_app/widgets/themed_background.dart';
@@ -213,7 +212,7 @@ class OrderConfirmationPage extends StatelessWidget {
 
                 const SizedBox(height: 24),
 
-                // Done button
+                // Go to Home button
                 SizedBox(
                   width: double.infinity,
                   height: 50,
@@ -224,22 +223,16 @@ class OrderConfirmationPage extends StatelessWidget {
                       shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(14)),
                     ),
-                    onPressed: () => Get.offAll(
-                      () => const OrderPage(),
-                      binding: OrderBinding(),
-                    ),
-                    child: Text(AppKeys.viewOrders.tr,
-                        style: const TextStyle(
+                    onPressed: () {
+                      Get.until((r) => r.isFirst);
+                      if (Get.isRegistered<NavigationController>()) {
+                        Get.find<NavigationController>().goToHome();
+                      }
+                    },
+                    child: const Text('Go to Home',
+                        style: TextStyle(
                             fontSize: 15, fontWeight: FontWeight.bold)),
                   ),
-                ),
-                const SizedBox(height: 12),
-
-                // Dismiss link
-                TextButton(
-                  onPressed: () => Get.until((r) => r.isFirst),
-                  child: Text(AppKeys.backToHome.tr,
-                      style: TextStyle(color: tc.textSecondary, fontSize: 13)),
                 ),
                 const SizedBox(height: 16),
               ],

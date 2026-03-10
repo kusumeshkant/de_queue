@@ -49,34 +49,20 @@ class CartController extends GetxController {
     super.onClose();
   }
 
-  void addItem(CartItemEntity newItem) {
+  /// Returns true if item was added/incremented, false if rejected (stock limit).
+  bool addItem(CartItemEntity newItem) {
     final index = items.indexWhere((i) => i.barcode == newItem.barcode);
     if (index != -1) {
       final item = items[index];
       if (item.stock > 0 && item.quantity >= item.stock) {
-        Get.snackbar(
-          'Stock Limit',
-          'Only ${item.stock} unit(s) of ${item.name} available.',
-          backgroundColor: Colors.orange,
-          colorText: Colors.white,
-          snackPosition: SnackPosition.BOTTOM,
-          duration: const Duration(seconds: 3),
-        );
-        return;
+        return false; // rejected — stock limit reached
       }
       item.quantity++;
       items.refresh();
-      Get.snackbar('Cart', '${newItem.name} quantity updated',
-          snackPosition: SnackPosition.BOTTOM,
-          duration: const Duration(seconds: 2));
     } else {
       items.add(newItem);
-      Get.snackbar('Cart', '${newItem.name} added to cart',
-          backgroundColor: Colors.green,
-          colorText: Colors.white,
-          snackPosition: SnackPosition.BOTTOM,
-          duration: const Duration(seconds: 2));
     }
+    return true;
   }
 
   void incrementQuantity(String barcode) {
@@ -135,7 +121,7 @@ class CartController extends GetxController {
     }
 
     final dashboard = Get.find<DashboardController>();
-    if (dashboard.stores.isEmpty) {
+    if (dashboard.selectedStoreId.value.isEmpty) {
       onError('No store selected. Please select a store first.');
       return;
     }
@@ -192,5 +178,6 @@ class CartController extends GetxController {
 
   void _handleExternalWallet(ExternalWalletResponse response) {
     isCheckingOut.value = false;
+    _onError?.call('External wallet payment is not supported. Please use a card or UPI.');
   }
 }
