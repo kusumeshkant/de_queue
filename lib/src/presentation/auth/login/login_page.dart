@@ -7,7 +7,6 @@ import 'package:dq_app/src/presentation/dashBoard/navigation_controller.dart';
 import 'package:dq_app/src/theme/theme_controller.dart';
 import 'package:dq_app/src/utils/appsystem_ui.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 
 class LoginPage extends StatefulWidget {
@@ -34,8 +33,6 @@ class _LoginPageState extends State<LoginPage> {
 
     return Obx(() {
       final isDark = tc.isGreenTheme.value;
-
-      // ── Colours (from ThemeController — stays in sync with the rest of app) ─
       final primary = tc.primary;
       final textPrimary = tc.textPrimary;
       final textSecondary = tc.textSecondary;
@@ -92,147 +89,158 @@ class _LoginPageState extends State<LoginPage> {
                                     fontSize: 22,
                                     fontWeight: FontWeight.bold)),
                             const SizedBox(height: 4),
-                            Text('Enter your mobile number to continue',
+                            Text('Welcome back! Sign in to continue',
                                 style: TextStyle(
                                     color: textSecondary, fontSize: 13)),
                             const SizedBox(height: 24),
 
+                            // ── Email field ───────────────────────────────
                             _LiquidInputField(
-                              label: 'Mobile Number',
-                              hint: '10-digit number',
-                              controller: c.phoneController,
-                              keyboardType: TextInputType.number,
-                              enabled: !c.otpSent.value,
-                              maxLength: 10,
-                              inputFormatters: [
-                                FilteringTextInputFormatter.digitsOnly,
-                                LengthLimitingTextInputFormatter(10),
-                              ],
-                              prefix: Text('+91',
-                                  style: TextStyle(
-                                      color: textPrimary,
-                                      fontWeight: FontWeight.w600,
-                                      fontSize: 14)),
+                              label: 'Email',
+                              hint: 'you@example.com',
+                              controller: c.emailController,
+                              keyboardType: TextInputType.emailAddress,
+                              prefix: Icon(Icons.email_outlined,
+                                  size: 18, color: textSecondary),
+                              textColor: textPrimary,
+                              hintColor: textSecondary,
+                              isDark: isDark,
+                            ),
+                            const SizedBox(height: 14),
+
+                            // ── Password field ────────────────────────────
+                            _LiquidInputField(
+                              label: 'Password',
+                              hint: 'Min. 8 characters',
+                              controller: c.passwordController,
+                              obscureText: c.obscurePassword.value,
+                              prefix: Icon(Icons.lock_outline,
+                                  size: 18, color: textSecondary),
+                              suffix: IconButton(
+                                icon: Icon(
+                                  c.obscurePassword.value
+                                      ? Icons.visibility_off_outlined
+                                      : Icons.visibility_outlined,
+                                  size: 18,
+                                  color: textSecondary,
+                                ),
+                                onPressed: () => c.obscurePassword.toggle(),
+                              ),
                               textColor: textPrimary,
                               hintColor: textSecondary,
                               isDark: isDark,
                             ),
 
-                            if (c.otpSent.value) ...[
-                              const SizedBox(height: 14),
-                              _LiquidInputField(
-                                label: 'OTP',
-                                hint: '6-digit OTP',
-                                controller: c.otpController,
-                                keyboardType: TextInputType.number,
-                                maxLength: 6,
-                                inputFormatters: [
-                                  FilteringTextInputFormatter.digitsOnly,
-                                  LengthLimitingTextInputFormatter(6),
-                                ],
-                                textColor: textPrimary,
-                                hintColor: textSecondary,
-                                isDark: isDark,
-                              ),
-                              const SizedBox(height: 10),
-                              Row(
-                                mainAxisAlignment:
-                                    MainAxisAlignment.spaceBetween,
-                                children: [
-                                  GestureDetector(
-                                    onTap: () => c.resetOtp(),
-                                    child: Row(
-                                      mainAxisSize: MainAxisSize.min,
-                                      children: [
-                                        Icon(Icons.edit_outlined,
-                                            size: 13, color: primary),
-                                        const SizedBox(width: 4),
-                                        Text(
-                                          'Change number',
-                                          style: TextStyle(
-                                            color: primary,
-                                            fontSize: 13,
-                                            fontWeight: FontWeight.w500,
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                                  // Resend OTP
-                                  c.resendCountdown.value > 0
-                                      ? Text(
-                                          'Resend in ${c.resendCountdown.value}s',
-                                          style: TextStyle(
-                                            color: textSecondary,
-                                            fontSize: 13,
-                                          ),
-                                        )
-                                      : GestureDetector(
-                                          onTap: () => c.resendOtp(
-                                            onError: (msg) => Get.snackbar(
-                                              'Error', msg,
-                                              backgroundColor: Colors.red,
-                                              colorText: Colors.white,
-                                              snackPosition:
-                                                  SnackPosition.BOTTOM,
-                                            ),
-                                          ),
-                                          child: Text(
-                                            'Resend OTP',
-                                            style: TextStyle(
-                                              color: primary,
-                                              fontSize: 13,
-                                              fontWeight: FontWeight.w600,
-                                            ),
-                                          ),
-                                        ),
-                                ],
-                              ),
-                            ],
-
                             const SizedBox(height: 24),
 
+                            // ── Sign In button ────────────────────────────
                             c.isLoading.value
                                 ? Center(
                                     child: CircularProgressIndicator(
                                         color: primary, strokeWidth: 2))
                                 : _LiquidButton(
-                                    text: c.otpSent.value
-                                        ? 'Verify OTP'
-                                        : 'Get OTP',
+                                    text: 'Sign In',
                                     color: primary,
                                     textColor: Colors.white,
                                     isDark: isDark,
-                                    onTap: () {
-                                      if (!c.otpSent.value) {
-                                        c.sendOtp(
-                                          onError: (msg) => Get.snackbar(
-                                            'Error', msg,
-                                            backgroundColor: Colors.red,
-                                            colorText: Colors.white,
-                                            snackPosition: SnackPosition.BOTTOM,
-                                          ),
-                                        );
-                                      } else {
-                                        c.verifyOtp(
-                                          onSuccess: () {
-                                            try {
-                                              Get.find<NavigationController>()
-                                                  .goToHome();
-                                            } catch (_) {}
-                                            Get.offAll(
-                                                () => const Bottomnavigation());
-                                          },
-                                          onError: (msg) => Get.snackbar(
-                                            'Error', msg,
-                                            backgroundColor: Colors.red,
-                                            colorText: Colors.white,
-                                            snackPosition: SnackPosition.BOTTOM,
-                                          ),
-                                        );
-                                      }
-                                    },
+                                    onTap: () => c.signIn(
+                                      onSuccess: () {
+                                        try {
+                                          Get.find<NavigationController>()
+                                              .goToHome();
+                                        } catch (_) {}
+                                        Get.offAll(
+                                            () => const Bottomnavigation());
+                                      },
+                                      onError: (msg) => Get.snackbar(
+                                        'Error', msg,
+                                        backgroundColor: Colors.red,
+                                        colorText: Colors.white,
+                                        snackPosition: SnackPosition.BOTTOM,
+                                      ),
+                                    ),
                                   ),
+
+                            const SizedBox(height: 20),
+
+                            // ── OR divider ────────────────────────────────
+                            Row(
+                              children: [
+                                Expanded(
+                                    child: Divider(
+                                        color: textSecondary.withValues(
+                                            alpha: 0.35),
+                                        thickness: 0.8)),
+                                Padding(
+                                  padding: const EdgeInsets.symmetric(
+                                      horizontal: 12),
+                                  child: Text('OR',
+                                      style: TextStyle(
+                                          color: textSecondary, fontSize: 12)),
+                                ),
+                                Expanded(
+                                    child: Divider(
+                                        color: textSecondary.withValues(
+                                            alpha: 0.35),
+                                        thickness: 0.8)),
+                              ],
+                            ),
+
+                            const SizedBox(height: 16),
+
+                            // ── Google button ─────────────────────────────
+                            GestureDetector(
+                              onTap: c.isLoading.value
+                                  ? null
+                                  : () => c.signInWithGoogle(
+                                        onSuccess: () {
+                                          try {
+                                            Get.find<NavigationController>()
+                                                .goToHome();
+                                          } catch (_) {}
+                                          Get.offAll(
+                                              () => const Bottomnavigation());
+                                        },
+                                        onError: (msg) => Get.snackbar(
+                                          'Error', msg,
+                                          backgroundColor: Colors.red,
+                                          colorText: Colors.white,
+                                          snackPosition: SnackPosition.BOTTOM,
+                                        ),
+                                      ),
+                              child: Container(
+                                width: double.infinity,
+                                height: 52,
+                                decoration: BoxDecoration(
+                                  borderRadius: BorderRadius.circular(50),
+                                  border: Border.all(
+                                    color: isDark
+                                        ? Colors.white.withValues(alpha: 0.22)
+                                        : Colors.black.withValues(alpha: 0.15),
+                                    width: 1.0,
+                                  ),
+                                  color: isDark
+                                      ? Colors.white.withValues(alpha: 0.06)
+                                      : Colors.white.withValues(alpha: 0.70),
+                                ),
+                                child: Row(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    Text('G',
+                                        style: TextStyle(
+                                            color: const Color(0xFF4285F4),
+                                            fontSize: 20,
+                                            fontWeight: FontWeight.w700)),
+                                    const SizedBox(width: 10),
+                                    Text('Continue with Google',
+                                        style: TextStyle(
+                                            color: textPrimary,
+                                            fontSize: 15,
+                                            fontWeight: FontWeight.w500)),
+                                  ],
+                                ),
+                              ),
+                            ),
                           ],
                         ),
                       ),
@@ -243,7 +251,7 @@ class _LoginPageState extends State<LoginPage> {
                       Row(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          Text("New here?  ",
+                          Text("Don't have an account?  ",
                               style: TextStyle(
                                   color: textSecondary, fontSize: 14)),
                           GestureDetector(
@@ -252,7 +260,7 @@ class _LoginPageState extends State<LoginPage> {
                               MaterialPageRoute(
                                   builder: (_) => const SignUpPage()),
                             ),
-                            child: Text('Create Account',
+                            child: Text('Sign Up',
                                 style: TextStyle(
                                     color: primary,
                                     fontSize: 14,
@@ -333,9 +341,9 @@ class _LiquidInputField extends StatelessWidget {
   final TextEditingController controller;
   final TextInputType keyboardType;
   final bool enabled;
-  final int? maxLength;
-  final List<TextInputFormatter>? inputFormatters;
+  final bool obscureText;
   final Widget? prefix;
+  final Widget? suffix;
   final Color textColor;
   final Color hintColor;
   final bool isDark;
@@ -346,9 +354,9 @@ class _LiquidInputField extends StatelessWidget {
     required this.controller,
     this.keyboardType = TextInputType.text,
     this.enabled = true,
-    this.maxLength,
-    this.inputFormatters,
+    this.obscureText = false,
     this.prefix,
+    this.suffix,
     required this.textColor,
     required this.hintColor,
     required this.isDark,
@@ -386,8 +394,7 @@ class _LiquidInputField extends StatelessWidget {
                   controller: controller,
                   keyboardType: keyboardType,
                   enabled: enabled,
-                  maxLength: maxLength,
-                  inputFormatters: inputFormatters,
+                  obscureText: obscureText,
                   style: TextStyle(color: textColor, fontSize: 15),
                   cursorColor: textColor,
                   decoration: InputDecoration(
@@ -399,6 +406,7 @@ class _LiquidInputField extends StatelessWidget {
                                 horizontal: 12, vertical: 13),
                             child: prefix)
                         : null,
+                    suffixIcon: suffix,
                     filled: true,
                     fillColor: fillColor,
                     counterText: '',
@@ -576,7 +584,7 @@ class _LiquidGlassIcon extends StatelessWidget {
               ),
             ),
           ),
-          // Top-left specular highlight — the glassy sphere "shine"
+          // Top-left specular highlight
           Positioned(
             top: 10,
             left: 14,

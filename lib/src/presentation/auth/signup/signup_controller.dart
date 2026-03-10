@@ -1,5 +1,3 @@
-import 'dart:async';
-
 import 'package:dq_app/src/constants/app_config.dart';
 import 'package:dq_app/src/domain/usecase/signup_usecase.dart';
 import 'package:dq_app/src/service_core/networks/graphql_client_provider.dart';
@@ -8,141 +6,97 @@ import 'package:get/get.dart';
 
 class SignupController extends GetxController {
   final SignupUseCase signupUseCase;
-
   SignupController({required this.signupUseCase});
 
   final nameController = TextEditingController();
-  final phoneController = TextEditingController();
-  final otpController = TextEditingController();
+  final emailController = TextEditingController();
+  final passwordController = TextEditingController();
 
   var isLoading = false.obs;
-  var otpSent = false.obs;
-  var error = RxnString();
-  var resendCountdown = 0.obs;
+  var obscurePassword = true.obs;
 
-  String? _verificationId;
-  Timer? _countdownTimer;
-
-  String? phoneValidator(String? value) {
-    if (value == null || value.isEmpty) return 'Phone number is required';
-    if (!RegExp(r'^\d+$').hasMatch(value)) return 'Only digits allowed';
-    if (value.length != 10) return 'Enter a valid 10-digit phone number';
+  String? nameValidator(String? value) {
+    if (value == null || value.trim().isEmpty) return 'Full name is required';
     return null;
   }
 
-  void _startCountdown() {
-    _countdownTimer?.cancel();
-    resendCountdown.value = 30;
-    _countdownTimer = Timer.periodic(const Duration(seconds: 1), (t) {
-      if (resendCountdown.value <= 1) {
-        resendCountdown.value = 0;
-        t.cancel();
-      } else {
-        resendCountdown.value--;
-      }
-    });
+  String? emailValidator(String? value) {
+    if (value == null || value.isEmpty) return 'Email is required';
+    if (!GetUtils.isEmail(value.trim())) return 'Enter a valid email';
+    return null;
   }
 
-  Future<void> sendOtp({
-    required void Function(String message) onError,
-  }) async {
-    final raw = phoneController.text.trim();
-    final validationError = phoneValidator(raw);
-    if (validationError != null) {
-      onError(validationError);
-      return;
-    }
-
-    final phone = '+91$raw';
-
-    isLoading.value = true;
-    error.value = null;
-
-    // Timeout in case Firebase never fires any callback
-    Future.delayed(const Duration(seconds: 30), () {
-      if (isLoading.value) {
-        isLoading.value = false;
-        onError('OTP request timed out. Please try again.');
-      }
-    });
-
-    await signupUseCase.sendOtp(
-      phoneNumber: phone,
-      onCodeSent: (verificationId) {
-        _verificationId = verificationId;
-        otpSent.value = true;
-        isLoading.value = false;
-        _startCountdown();
-      },
-      onFailed: (message) {
-        isLoading.value = false;
-        error.value = message;
-        onError(message);
-      },
-    );
+  String? passwordValidator(String? value) {
+    if (value == null || value.isEmpty) return 'Password is required';
+    if (value.length < 8) return 'Password must be at least 8 characters';
+    return null;
   }
 
-  Future<void> resendOtp({
-    required void Function(String message) onError,
-  }) async {
-    if (resendCountdown.value > 0) return;
-    otpController.clear();
-    await sendOtp(onError: onError);
-  }
-
-  void resetOtp() {
-    _countdownTimer?.cancel();
-    resendCountdown.value = 0;
-    otpSent.value = false;
-    _verificationId = null;
-    otpController.clear();
-    error.value = null;
-  }
-
-  Future<void> verifyOtp({
+  Future<void> signUp({
     required void Function() onSuccess,
     required void Function(String message) onError,
   }) async {
-    if (_verificationId == null) {
-      onError('Please request an OTP first');
-      return;
-    }
+    final nameError = nameValidator(nameController.text);
+    if (nameError != null) { onError(nameError); return; }
 
-    final otp = otpController.text.trim();
-    if (otp.isEmpty) {
-      onError('Please enter the OTP');
-      return;
-    }
+    final emailError = emailValidator(emailController.text.trim());
+    if (emailError != null) { onError(emailError); return; }
+
+    final passwordError = passwordValidator(passwordController.text);
+    if (passwordError != null) { onError(passwordError); return; }
 
     isLoading.value = true;
-    error.value = null;
-
     try {
-      final auth = await signupUseCase.verifyOtp(
-        verificationId: _verificationId!,
-        otp: otp,
+      final auth = await signupUseCase.signUpWithEmail(
+        name: nameController.text.trim(),
+        email: emailController.text.trim(),
+        password: passwordController.text,
       );
-
       await GraphQLClientProvider.init(
         baseUrl: AppConfig.graphqlEndpoint,
         token: auth.token,
       );
-
+      _clearFields();
       isLoading.value = false;
       onSuccess();
     } catch (e) {
       isLoading.value = false;
-      error.value = e.toString();
-      onError(e.toString());
+      onError(e.toString().replaceAll('Exception: ', ''));
     }
+  }
+
+  Future<void> signInWithGoogle({
+    required void Function() onSuccess,
+    required void Function(String message) onError,
+  }) async {
+    isLoading.value = true;
+    try {
+      final auth = await signupUseCase.signInWithGoogle();
+      await GraphQLClientProvider.init(
+        baseUrl: AppConfig.graphqlEndpoint,
+        token: auth.token,
+      );
+      _clearFields();
+      isLoading.value = false;
+      onSuccess();
+    } catch (e) {
+      isLoading.value = false;
+      onError(e.toString().replaceAll('Exception: ', ''));
+    }
+  }
+
+  void _clearFields() {
+    nameController.clear();
+    emailController.clear();
+    passwordController.clear();
+    obscurePassword.value = true;
   }
 
   @override
   void onClose() {
-    _countdownTimer?.cancel();
     nameController.dispose();
-    phoneController.dispose();
-    otpController.dispose();
+    emailController.dispose();
+    passwordController.dispose();
     super.onClose();
   }
 }

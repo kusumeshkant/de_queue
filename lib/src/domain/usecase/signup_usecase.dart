@@ -3,29 +3,17 @@ import 'package:dq_app/src/domain/repo/auth_repository.dart';
 
 class SignupUseCase {
   final AuthRepository repository;
-
   SignupUseCase({required this.repository});
 
-  Future<void> sendOtp({
-    required String phoneNumber,
-    required void Function(String verificationId) onCodeSent,
-    required void Function(String message) onFailed,
+  Future<AuthEntity> signUpWithEmail({
+    required String name,
+    required String email,
+    required String password,
   }) {
-    return repository.sendOtp(
-      phoneNumber: phoneNumber,
-      onCodeSent: onCodeSent,
-      onFailed: onFailed,
-    );
+    return repository.signUpWithEmail(name: name, email: email, password: password);
   }
 
-  Future<AuthEntity> verifyOtp({
-    required String verificationId,
-    required String otp,
-  }) {
-    return repository.verifyOtp(
-      verificationId: verificationId,
-      otp: otp,
-      isSignUp: true, // reject if account already exists
-    );
+  Future<AuthEntity> signInWithGoogle() {
+    return repository.signInWithGoogle();
   }
 }

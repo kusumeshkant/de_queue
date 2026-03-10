@@ -7,35 +7,32 @@ class AuthRepositoryImpl implements AuthRepository {
   final AuthLocalDataSource local;
   final AuthRemoteDataSource remote;
 
-  AuthRepositoryImpl({
-    required this.local,
-    required this.remote,
-  });
+  AuthRepositoryImpl({required this.local, required this.remote});
 
   @override
-  Future<void> sendOtp({
-    required String phoneNumber,
-    required void Function(String verificationId) onCodeSent,
-    required void Function(String message) onFailed,
-  }) {
-    return remote.sendOtp(
-      phoneNumber: phoneNumber,
-      onCodeSent: onCodeSent,
-      onFailed: onFailed,
-    );
+  Future<AuthEntity> signInWithEmail({
+    required String email,
+    required String password,
+  }) async {
+    final auth = await remote.signInWithEmail(email: email, password: password);
+    await local.save(auth);
+    return auth;
   }
 
   @override
-  Future<AuthEntity> verifyOtp({
-    required String verificationId,
-    required String otp,
-    bool isSignUp = false,
+  Future<AuthEntity> signUpWithEmail({
+    required String name,
+    required String email,
+    required String password,
   }) async {
-    final auth = await remote.verifyOtp(
-      verificationId: verificationId,
-      otp: otp,
-      isSignUp: isSignUp,
-    );
+    final auth = await remote.signUpWithEmail(name: name, email: email, password: password);
+    await local.save(auth);
+    return auth;
+  }
+
+  @override
+  Future<AuthEntity> signInWithGoogle() async {
+    final auth = await remote.signInWithGoogle();
     await local.save(auth);
     return auth;
   }
