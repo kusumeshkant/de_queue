@@ -63,6 +63,7 @@ class OrderRemoteDataSource {
         ) {
           id
           status
+          paymentStatus
           total
           tax
           grandTotal
@@ -109,6 +110,7 @@ class OrderRemoteDataSource {
           tax
           grandTotal
           status
+          paymentStatus
           createdAt
           items {
             barcode

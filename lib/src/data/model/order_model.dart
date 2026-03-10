@@ -24,6 +24,7 @@ class OrderModel extends OrderEntity {
     required super.tax,
     required super.grandTotal,
     required super.status,
+    super.paymentStatus = 'success',
     required super.createdAt,
     required super.items,
   });
@@ -35,6 +36,7 @@ class OrderModel extends OrderEntity {
         tax: (json['tax'] as num).toDouble(),
         grandTotal: (json['grandTotal'] as num).toDouble(),
         status: json['status'] as String,
+        paymentStatus: json['paymentStatus'] as String? ?? 'success',
         createdAt: json['createdAt'] as String,
         items: (json['items'] as List<dynamic>)
             .map((i) => OrderItemModel.fromJson(i))

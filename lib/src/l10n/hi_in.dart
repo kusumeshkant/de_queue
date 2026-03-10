@@ -79,7 +79,12 @@ const Map<String, String> hiIn = {
   AppKeys.statusPreparing: 'तैयारी हो रही है',
   AppKeys.statusReady: 'लेने के लिए तैयार',
   AppKeys.statusCompleted: 'पूर्ण',
+  AppKeys.statusConfirmed: 'पुष्टि हुई',
   AppKeys.statusCancelled: 'रद्द',
+  AppKeys.paymentStatus: 'भुगतान',
+  AppKeys.paymentSuccess: 'सफल',
+  AppKeys.payStatusPending: 'प्रतीक्षित',
+  AppKeys.payStatusFailed: 'विफल',
 
   // Orders
   AppKeys.noOrders:

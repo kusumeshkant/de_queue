@@ -91,9 +91,16 @@ class _OrderCard extends StatelessWidget {
             ],
           ),
           subtitle: Padding(
-            padding: const EdgeInsets.only(top: 4),
-            child: Text(order.formattedDate,
-                style: TextStyle(color: tc.textSecondary, fontSize: 12)),
+            padding: const EdgeInsets.only(top: 6),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(order.formattedDate,
+                    style: TextStyle(color: tc.textSecondary, fontSize: 12)),
+                const SizedBox(height: 5),
+                _PaymentBadge(paymentStatus: order.paymentStatus),
+              ],
+            ),
           ),
           trailing: Text(
             '₹${order.grandTotal.toStringAsFixed(0)}',
@@ -152,6 +159,32 @@ class _OrderCard extends StatelessWidget {
   }
 }
 
+class _PaymentBadge extends StatelessWidget {
+  final String paymentStatus;
+  const _PaymentBadge({required this.paymentStatus});
+
+  @override
+  Widget build(BuildContext context) {
+    final (color, icon, label) = switch (paymentStatus.toLowerCase()) {
+      'success' => (Colors.green.shade600,  Icons.verified_rounded,       AppKeys.paymentSuccess.tr),
+      'failed'  => (Colors.red.shade600,    Icons.error_outline_rounded,  AppKeys.payStatusFailed.tr),
+      _         => (Colors.grey.shade500,   Icons.schedule_rounded,       AppKeys.payStatusPending.tr),
+    };
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Icon(icon, color: color, size: 11),
+        const SizedBox(width: 4),
+        Text(
+          '${AppKeys.paymentStatus.tr}: $label',
+          style: TextStyle(
+              color: color, fontSize: 11, fontWeight: FontWeight.w600),
+        ),
+      ],
+    );
+  }
+}
+
 class _StatusBadge extends StatelessWidget {
   final String status;
   const _StatusBadge({required this.status});
@@ -159,12 +192,12 @@ class _StatusBadge extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final (color, icon, label) = switch (status.toLowerCase()) {
-      'pending'    => (Colors.grey.shade500,    Icons.hourglass_empty_rounded, AppKeys.statusPending.tr),
-      'preparing'  => (Colors.orange.shade600,  Icons.restaurant_rounded,      AppKeys.statusPreparing.tr),
-      'ready'      => (Colors.blue.shade500,    Icons.shopping_bag_rounded,    AppKeys.statusReady.tr),
-      'completed'  => (Colors.green.shade600,   Icons.check_circle_rounded,    AppKeys.statusCompleted.tr),
-      'cancelled'  => (Colors.red.shade600,     Icons.cancel_rounded,          AppKeys.statusCancelled.tr),
-      _            => (Colors.orange.shade400,  Icons.info_outline_rounded,    status),
+      'pending'    => (Colors.grey.shade500,    Icons.hourglass_empty_rounded,  AppKeys.statusPending.tr),
+      'preparing'  => (Colors.orange.shade600,  Icons.restaurant_rounded,       AppKeys.statusPreparing.tr),
+      'ready'      => (Colors.blue.shade500,    Icons.shopping_bag_rounded,     AppKeys.statusReady.tr),
+      'completed'  => (Colors.green.shade600,   Icons.check_circle_rounded,     AppKeys.statusConfirmed.tr),
+      'cancelled'  => (Colors.red.shade600,     Icons.cancel_rounded,           AppKeys.statusCancelled.tr),
+      _            => (Colors.orange.shade400,  Icons.info_outline_rounded,     status),
     };
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),

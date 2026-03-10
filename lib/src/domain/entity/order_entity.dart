@@ -19,6 +19,7 @@ class OrderEntity {
   final double tax;
   final double grandTotal;
   final String status;
+  final String paymentStatus;
   final String createdAt;
   final List<OrderItemEntity> items;
 
@@ -29,6 +30,7 @@ class OrderEntity {
     required this.tax,
     required this.grandTotal,
     required this.status,
+    this.paymentStatus = 'success',
     required this.createdAt,
     required this.items,
   });

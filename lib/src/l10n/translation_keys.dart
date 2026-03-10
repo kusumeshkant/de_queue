@@ -79,7 +79,12 @@ abstract class AppKeys {
   static const statusPreparing = 'Preparing';
   static const statusReady = 'Ready';
   static const statusCompleted = 'Completed';
+  static const statusConfirmed = 'Confirmed';
   static const statusCancelled = 'Cancelled';
+  static const paymentStatus = 'Payment';
+  static const paymentSuccess = 'Success';
+  static const payStatusPending = 'Pay Status Pending';
+  static const payStatusFailed = 'Pay Status Failed';
 
   static const noOrders =
       'No orders yet.\nScan products and checkout to place your first order.';

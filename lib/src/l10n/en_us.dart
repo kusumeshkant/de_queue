@@ -79,7 +79,12 @@ const Map<String, String> enUs = {
   AppKeys.statusPreparing: 'Preparing',
   AppKeys.statusReady: 'Ready for Pickup',
   AppKeys.statusCompleted: 'Completed',
+  AppKeys.statusConfirmed: 'Confirmed',
   AppKeys.statusCancelled: 'Cancelled',
+  AppKeys.paymentStatus: 'Payment',
+  AppKeys.paymentSuccess: 'Success',
+  AppKeys.payStatusPending: 'Pending',
+  AppKeys.payStatusFailed: 'Failed',
 
   // Orders
   AppKeys.noOrders:
