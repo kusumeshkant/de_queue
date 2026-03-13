@@ -4,6 +4,7 @@ import 'package:dq_app/src/presentation/cart/cart_controller.dart';
 import 'package:dq_app/src/presentation/dashBoard/navigation_controller.dart';
 import 'package:dq_app/src/presentation/order/order_confirmation_page.dart';
 import 'package:dq_app/src/theme/theme_controller.dart';
+import 'package:dq_app/src/utils/services/local_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'primary_button.dart';
@@ -166,10 +167,13 @@ class CartBottomBar extends StatelessWidget {
                         : PrimaryButton(
                             title: AppKeys.checkout.tr,
                             onTap: () => c.checkout(
-                              onSuccess: (order) => Get.to(
-                                () => OrderConfirmationPage(order: order),
-                                transition: Transition.fadeIn,
-                              ),
+                              onSuccess: (order) {
+                                LocalStorage.savePendingOrder(order);
+                                Get.to(
+                                  () => OrderConfirmationPage(order: order),
+                                  transition: Transition.fadeIn,
+                                );
+                              },
                               onError: (msg) =>
                                   _showPaymentFailedSheet(msg),
                             ),

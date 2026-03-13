@@ -4,6 +4,7 @@ import 'package:dq_app/src/domain/entity/store_entity.dart';
 import 'package:dq_app/src/l10n/translation_keys.dart';
 import 'package:dq_app/src/presentation/cart/cart_controller.dart';
 import 'package:dq_app/src/presentation/dashBoard/dashboard_view_model.dart';
+import 'package:dq_app/src/presentation/store/store_selection_page.dart';
 import 'package:dq_app/src/theme/theme_controller.dart';
 import 'package:dq_app/src/utils/dq_widgets/nearby_store_title_tile.dart';
 import 'package:dq_app/src/utils/dq_widgets/screen_brightness_overlay.dart';
@@ -111,6 +112,21 @@ class _DashboardPageState extends State<DashboardPage> {
         ],
       ),
       barrierDismissible: false,
+    );
+  }
+
+  // ── Open full store selection page ─────────────────────────────────────────
+
+  void _openStoreSelection() {
+    Get.to(
+      () => StoreSelectionPage(
+        stores: _c.stores,
+        onStoreSelected: (store) {
+          Get.back(); // close StoreSelectionPage
+          _trySelectStore(store);
+        },
+      ),
+      transition: Transition.rightToLeft,
     );
   }
 
@@ -230,7 +246,10 @@ class _DashboardPageState extends State<DashboardPage> {
                   SizedBox(
                     width: double.infinity,
                     child: OutlinedButton.icon(
-                      onPressed: () => Get.back(),
+                      onPressed: () {
+                        Get.back(); // close confirmation sheet
+                        _openStoreSelection();
+                      },
                       icon: Icon(Icons.swap_horiz_rounded,
                           color: tc.textSecondary, size: 20),
                       label: Text(
@@ -287,6 +306,11 @@ class _DashboardPageState extends State<DashboardPage> {
                   storeList: _c.storeNames,
                   storeName: _c.selectedStoreName.value,
                   storeAddress: _c.selectedStoreAddress.value,
+                  storeCode: _c.stores
+                      .where((s) => s.id == _c.selectedStoreId.value)
+                      .firstOrNull
+                      ?.storeCode,
+                  onChangeTapped: _openStoreSelection,
                   onSearchChanged: (value) {
                     debugPrint('Search typing: $value');
                   },

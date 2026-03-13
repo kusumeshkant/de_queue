@@ -1,9 +1,12 @@
 
+import 'dart:convert';
+import 'package:dq_app/src/domain/entity/order_entity.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class LocalStorage {
   static const _accessTokenKey = 'access_token';
   static const _refreshTokenKey = 'refresh_token';
+  static const _pendingOrderKey = 'pending_order';
 
   static Future<void> saveAccessToken(String token) async {
     final prefs = await SharedPreferences.getInstance();
@@ -28,5 +31,67 @@ class LocalStorage {
   static Future<void> clearAll() async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.clear();
+  }
+
+  // ── Pending Order Confirmation ─────────────────────────────────────────────
+
+  static Future<void> savePendingOrder(OrderEntity order) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString(
+      _pendingOrderKey,
+      jsonEncode({
+        'id': order.id,
+        'storeName': order.storeName,
+        'total': order.total,
+        'tax': order.tax,
+        'grandTotal': order.grandTotal,
+        'status': order.status,
+        'paymentStatus': order.paymentStatus,
+        'createdAt': order.createdAt,
+        'items': order.items
+            .map((i) => {
+                  'barcode': i.barcode,
+                  'name': i.name,
+                  'price': i.price,
+                  'quantity': i.quantity,
+                })
+            .toList(),
+      }),
+    );
+  }
+
+  static Future<OrderEntity?> loadPendingOrder() async {
+    final prefs = await SharedPreferences.getInstance();
+    final raw = prefs.getString(_pendingOrderKey);
+    if (raw == null) return null;
+    try {
+      final m = jsonDecode(raw) as Map<String, dynamic>;
+      return OrderEntity(
+        id: m['id'] as String,
+        storeName: m['storeName'] as String?,
+        total: (m['total'] as num).toDouble(),
+        tax: (m['tax'] as num).toDouble(),
+        grandTotal: (m['grandTotal'] as num).toDouble(),
+        status: m['status'] as String,
+        paymentStatus: m['paymentStatus'] as String? ?? 'success',
+        createdAt: m['createdAt'] as String,
+        items: (m['items'] as List)
+            .map((i) => OrderItemEntity(
+                  barcode: i['barcode'] as String,
+                  name: i['name'] as String,
+                  price: (i['price'] as num).toDouble(),
+                  quantity: i['quantity'] as int,
+                ))
+            .toList(),
+      );
+    } catch (_) {
+      await prefs.remove(_pendingOrderKey);
+      return null;
+    }
+  }
+
+  static Future<void> clearPendingOrder() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.remove(_pendingOrderKey);
   }
 }
