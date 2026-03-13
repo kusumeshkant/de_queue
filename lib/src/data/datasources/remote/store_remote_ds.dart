@@ -14,16 +14,9 @@ class StoreRemoteDataSource {
     return data.map((s) => StoreModel.fromJson(s)).toList();
   }
 
-  Future<List<StoreModel>> getNearbyStores(double lat, double lon) async {
-    final result = await GraphQLService.performQuery(
-      query: '''
-        query NearbyStores(\$lat: Float!, \$lon: Float!) {
-          nearbyStores(lat: \$lat, lon: \$lon) { $_storeFields }
-        }
-      ''',
-      variables: {'lat': lat, 'lon': lon},
-    );
-    final List<dynamic> data = result.data?['nearbyStores'] ?? [];
-    return data.map((s) => StoreModel.fromJson(s)).toList();
-  }
+  // TODO(production): Replace with real nearbyStores query using lat/lon + 2km
+  // radius filter. Currently returns all stores for demo — testers are not
+  // physically located near the seeded Bengaluru stores.
+  Future<List<StoreModel>> getNearbyStores(double lat, double lon) =>
+      getStores();
 }

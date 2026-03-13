@@ -1,6 +1,7 @@
 import 'package:dq_app/src/domain/entity/order_entity.dart';
 import 'package:dq_app/src/l10n/translation_keys.dart';
 import 'package:dq_app/src/presentation/order/order_controller.dart';
+import 'package:dq_app/src/presentation/order/order_detail_page.dart';
 import 'package:dq_app/src/theme/theme_controller.dart';
 import 'package:dq_app/widgets/app_glass_card.dart';
 import 'package:dq_app/widgets/themed_background.dart';
@@ -65,96 +66,83 @@ class _OrderCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final tc = Get.find<ThemeController>();
 
-    return AppGlassCard(
-      margin: const EdgeInsets.only(bottom: 14),
-      padding: EdgeInsets.zero,
-      child: Theme(
-        data: Theme.of(context).copyWith(dividerColor: Colors.transparent),
-        child: ExpansionTile(
-          tilePadding:
-              const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-          childrenPadding:
-              const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-          title: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Expanded(
-                child: Text(
-                  order.storeName ?? AppKeys.unknownStore.tr,
-                  style: TextStyle(
-                      fontWeight: FontWeight.w700,
-                      fontSize: 15,
-                      color: tc.textPrimary),
-                ),
-              ),
-              _StatusBadge(status: order.status),
-            ],
-          ),
-          subtitle: Padding(
-            padding: const EdgeInsets.only(top: 6),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(order.formattedDate,
-                    style: TextStyle(color: tc.textSecondary, fontSize: 12)),
-                const SizedBox(height: 5),
-                _PaymentBadge(paymentStatus: order.paymentStatus),
-              ],
-            ),
-          ),
-          trailing: Text(
-            '₹${order.grandTotal.toStringAsFixed(0)}',
-            style: TextStyle(
-                fontWeight: FontWeight.bold,
-                fontSize: 16,
-                color: tc.primary),
-          ),
+    return GestureDetector(
+      onTap: () => Get.to(
+        () => OrderDetailPage(order: order),
+        transition: Transition.rightToLeft,
+      ),
+      child: AppGlassCard(
+        margin: const EdgeInsets.only(bottom: 12),
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Divider(color: tc.cardBorder),
-            ...order.items.map((item) => Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 4),
-                  child: Row(
+            // Left — store icon
+            Container(
+              width: 42,
+              height: 42,
+              decoration: BoxDecoration(
+                color: tc.primary.withValues(alpha: 0.12),
+                shape: BoxShape.circle,
+              ),
+              child:
+                  Icon(Icons.receipt_long_rounded, color: tc.primary, size: 20),
+            ),
+            const SizedBox(width: 12),
+
+            // Middle — store name, date, payment badge
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    order.storeName ?? AppKeys.unknownStore.tr,
+                    style: TextStyle(
+                        fontWeight: FontWeight.w700,
+                        fontSize: 15,
+                        color: tc.textPrimary),
+                  ),
+                  const SizedBox(height: 3),
+                  Text(
+                    order.formattedDate,
+                    style: TextStyle(color: tc.textSecondary, fontSize: 12),
+                  ),
+                  const SizedBox(height: 6),
+                  Row(
                     children: [
-                      Expanded(
-                          child: Text(item.name,
-                              style: TextStyle(
-                                  fontSize: 13, color: tc.textPrimary))),
-                      Text(
-                        '${item.quantity} × ₹${item.price.toStringAsFixed(0)}',
-                        style:
-                            TextStyle(color: tc.textSecondary, fontSize: 13),
-                      ),
+                      _StatusBadge(status: order.status),
+                      const SizedBox(width: 6),
+                      _PaymentBadge(paymentStatus: order.paymentStatus),
                     ],
                   ),
-                )),
-            Divider(color: tc.cardBorder),
-            _summaryRow(tc, AppKeys.orderSubtotal.tr, '₹${order.total.toStringAsFixed(0)}'),
-            const SizedBox(height: 4),
-            _summaryRow(tc, AppKeys.tax.tr, '₹${order.tax.toStringAsFixed(0)}'),
-            const SizedBox(height: 6),
-            _summaryRow(tc, AppKeys.total.tr, '₹${order.grandTotal.toStringAsFixed(0)}',
-                bold: true),
-            const SizedBox(height: 8),
+                ],
+              ),
+            ),
+
+            // Right — total + chevron
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.end,
+              children: [
+                Text(
+                  '₹${order.grandTotal.toStringAsFixed(0)}',
+                  style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 16,
+                      color: tc.primary),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  '${order.items.length} item${order.items.length == 1 ? '' : 's'}',
+                  style: TextStyle(color: tc.textSecondary, fontSize: 11),
+                ),
+                const SizedBox(height: 6),
+                Icon(Icons.chevron_right_rounded,
+                    color: tc.textSecondary.withValues(alpha: 0.5), size: 18),
+              ],
+            ),
           ],
         ),
       ),
-    );
-  }
-
-  Widget _summaryRow(ThemeController tc, String label, String value,
-      {bool bold = false}) {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      children: [
-        Text(label,
-            style: TextStyle(
-                color: bold ? tc.textPrimary : tc.textSecondary,
-                fontWeight: bold ? FontWeight.bold : FontWeight.normal)),
-        Text(value,
-            style: TextStyle(
-                color: tc.textPrimary,
-                fontWeight: bold ? FontWeight.bold : FontWeight.normal)),
-      ],
     );
   }
 }

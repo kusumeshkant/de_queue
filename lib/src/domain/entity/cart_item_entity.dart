@@ -2,6 +2,7 @@ class CartItemEntity {
   final String barcode;
   final String name;
   final String subtitle;
+  final String? sku;
   final double price;
   final int stock;
   int quantity;
@@ -10,6 +11,7 @@ class CartItemEntity {
     required this.barcode,
     required this.name,
     required this.subtitle,
+    this.sku,
     required this.price,
     this.stock = 0,
     this.quantity = 1,

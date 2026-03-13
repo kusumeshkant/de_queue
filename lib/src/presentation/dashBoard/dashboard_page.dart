@@ -130,157 +130,23 @@ class _DashboardPageState extends State<DashboardPage> {
     );
   }
 
-  // ── Store confirmation bottom sheet ────────────────────────────────────────
+  // ── Store selection bottom sheet (shown on app open) ──────────────────────
 
   void _showStoreConfirmation() {
-    final tc = Get.find<ThemeController>();
-
     Get.bottomSheet(
-      isDismissible: false,
-      enableDrag: false,
+      isDismissible: true,
+      enableDrag: true,
       isScrollControlled: true,
-      ClipRRect(
-        borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
-        child: BackdropFilter(
-          filter: ImageFilter.blur(sigmaX: 16, sigmaY: 16),
-          child: Obx(() {
-            final isGreen = tc.isGreenTheme.value;
-            return Container(
-              padding: const EdgeInsets.fromLTRB(24, 20, 24, 36),
-              decoration: BoxDecoration(
-                color: isGreen
-                    ? Colors.black.withValues(alpha: 0.75)
-                    : Colors.white.withValues(alpha: 0.92),
-                borderRadius:
-                    const BorderRadius.vertical(top: Radius.circular(24)),
-                border: Border(
-                  top: BorderSide(
-                    color: tc.primary.withValues(alpha: 0.35),
-                    width: 1.2,
-                  ),
-                ),
-              ),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Container(
-                    width: 40,
-                    height: 4,
-                    decoration: BoxDecoration(
-                      color: tc.textSecondary.withValues(alpha: 0.4),
-                      borderRadius: BorderRadius.circular(2),
-                    ),
-                  ),
-                  const SizedBox(height: 20),
-                  Container(
-                    width: 56,
-                    height: 56,
-                    decoration: BoxDecoration(
-                      color: tc.primary.withValues(alpha: 0.15),
-                      shape: BoxShape.circle,
-                    ),
-                    child:
-                        Icon(Icons.store_rounded, color: tc.primary, size: 28),
-                  ),
-                  const SizedBox(height: 16),
-                  Text(
-                    AppKeys.confirmStore.tr,
-                    style: TextStyle(
-                      color: tc.textPrimary,
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  const SizedBox(height: 8),
-                  Text(
-                    AppKeys.youAppearNear.tr,
-                    style:
-                        TextStyle(color: tc.textSecondary, fontSize: 13),
-                  ),
-                  const SizedBox(height: 6),
-                  Text(
-                    _c.selectedStoreName.value,
-                    style: TextStyle(
-                      color: tc.primary,
-                      fontSize: 20,
-                      fontWeight: FontWeight.w700,
-                    ),
-                    textAlign: TextAlign.center,
-                  ),
-                  if (_c.selectedStoreAddress.value.isNotEmpty) ...[
-                    const SizedBox(height: 4),
-                    Text(
-                      _c.selectedStoreAddress.value,
-                      style:
-                          TextStyle(color: tc.textSecondary, fontSize: 12),
-                      textAlign: TextAlign.center,
-                    ),
-                  ],
-                  const SizedBox(height: 28),
-                  SizedBox(
-                    width: double.infinity,
-                    child: ElevatedButton.icon(
-                      onPressed: () {
-                        _c.confirmCurrentStore();
-                        Get.back();
-                      },
-                      icon: const Icon(Icons.check_circle_outline,
-                          color: Colors.white, size: 20),
-                      label: Text(
-                        AppKeys.yesImHere.tr,
-                        style: const TextStyle(
-                            color: Colors.white,
-                            fontSize: 15,
-                            fontWeight: FontWeight.w600),
-                      ),
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: tc.primary,
-                        padding: const EdgeInsets.symmetric(vertical: 14),
-                        shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(14)),
-                        elevation: 0,
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 12),
-                  SizedBox(
-                    width: double.infinity,
-                    child: OutlinedButton.icon(
-                      onPressed: () {
-                        Get.back(); // close confirmation sheet
-                        _openStoreSelection();
-                      },
-                      icon: Icon(Icons.swap_horiz_rounded,
-                          color: tc.textSecondary, size: 20),
-                      label: Text(
-                        AppKeys.changeStore.tr,
-                        style: TextStyle(
-                          color: tc.textSecondary,
-                          fontSize: 15,
-                          fontWeight: FontWeight.w500,
-                        ),
-                      ),
-                      style: OutlinedButton.styleFrom(
-                        padding: const EdgeInsets.symmetric(vertical: 14),
-                        side: BorderSide(
-                            color: tc.cardBorder.withValues(alpha: 0.6)),
-                        shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(14)),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 6),
-                  Text(
-                    AppKeys.selectFromList.tr,
-                    style:
-                        TextStyle(color: tc.textSecondary, fontSize: 11),
-                    textAlign: TextAlign.center,
-                  ),
-                ],
-              ),
-            );
-          }),
-        ),
+      _StoreSelectionSheet(
+        stores: _c.stores,
+        onStoreTapped: (store) {
+          Get.back();
+          _trySelectStore(store);
+        },
+        onClose: () {
+          _c.confirmCurrentStore();
+          Get.back();
+        },
       ),
     );
   }
@@ -402,5 +268,338 @@ class _DashboardPageState extends State<DashboardPage> {
         }),
       ),
     );
+  }
+}
+
+// ── Store selection bottom sheet widget ───────────────────────────────────────
+
+class _StoreSelectionSheet extends StatefulWidget {
+  final List stores;
+  final void Function(dynamic store) onStoreTapped;
+  final VoidCallback onClose;
+
+  const _StoreSelectionSheet({
+    required this.stores,
+    required this.onStoreTapped,
+    required this.onClose,
+  });
+
+  @override
+  State<_StoreSelectionSheet> createState() => _StoreSelectionSheetState();
+}
+
+class _StoreSelectionSheetState extends State<_StoreSelectionSheet> {
+  final TextEditingController _searchController = TextEditingController();
+  String _query = '';
+
+  @override
+  void dispose() {
+    _searchController.dispose();
+    super.dispose();
+  }
+
+  List get _filtered {
+    if (_query.isEmpty) return widget.stores;
+    final q = _query.toLowerCase();
+    return widget.stores.where((s) {
+      final nameMatch = (s.name as String).toLowerCase().contains(q);
+      final codeMatch =
+          ((s.storeCode as String?) ?? '').toLowerCase().contains(q);
+      return nameMatch || codeMatch;
+    }).toList();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final tc = Get.find<ThemeController>();
+
+    return Obx(() {
+      final isGreen = tc.isGreenTheme.value;
+      return ClipRRect(
+        borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+        child: BackdropFilter(
+          filter: ImageFilter.blur(sigmaX: 16, sigmaY: 16),
+          child: Container(
+            constraints: BoxConstraints(
+              maxHeight: MediaQuery.of(context).size.height * 0.80,
+            ),
+            decoration: BoxDecoration(
+              color: isGreen
+                  ? Colors.black.withValues(alpha: 0.82)
+                  : Colors.white.withValues(alpha: 0.95),
+              borderRadius:
+                  const BorderRadius.vertical(top: Radius.circular(24)),
+              border: Border(
+                top: BorderSide(
+                  color: tc.primary.withValues(alpha: 0.35),
+                  width: 1.2,
+                ),
+              ),
+            ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                // ── Header ──────────────────────────────────────────────
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(20, 16, 12, 0),
+                  child: Row(
+                    children: [
+                      Container(
+                        width: 36,
+                        height: 36,
+                        decoration: BoxDecoration(
+                          color: tc.primary.withValues(alpha: 0.12),
+                          shape: BoxShape.circle,
+                        ),
+                        child: Icon(Icons.store_rounded,
+                            color: tc.primary, size: 18),
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              'Select a Store',
+                              style: TextStyle(
+                                color: tc.textPrimary,
+                                fontSize: 17,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                            Text(
+                              'Choose where you are shopping today',
+                              style: TextStyle(
+                                  color: tc.textSecondary, fontSize: 12),
+                            ),
+                          ],
+                        ),
+                      ),
+                      IconButton(
+                        onPressed: widget.onClose,
+                        icon: Icon(Icons.close_rounded,
+                            color: tc.textSecondary, size: 22),
+                        tooltip: 'Explore without selecting',
+                      ),
+                    ],
+                  ),
+                ),
+
+                // ── Search box ───────────────────────────────────────────
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(16, 12, 16, 4),
+                  child: Container(
+                    decoration: BoxDecoration(
+                      color: tc.cardSurface,
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(color: tc.cardBorder),
+                    ),
+                    child: TextField(
+                      controller: _searchController,
+                      onChanged: (v) => setState(() => _query = v.trim()),
+                      style: TextStyle(color: tc.textPrimary, fontSize: 14),
+                      decoration: InputDecoration(
+                        hintText: 'Search by store name or code…',
+                        hintStyle:
+                            TextStyle(color: tc.textSecondary, fontSize: 13),
+                        prefixIcon: Icon(Icons.search_rounded,
+                            color: tc.textSecondary, size: 20),
+                        suffixIcon: _query.isNotEmpty
+                            ? IconButton(
+                                icon: Icon(Icons.clear_rounded,
+                                    color: tc.textSecondary, size: 18),
+                                onPressed: () {
+                                  _searchController.clear();
+                                  setState(() => _query = '');
+                                },
+                              )
+                            : null,
+                        border: InputBorder.none,
+                        contentPadding: const EdgeInsets.symmetric(
+                            vertical: 12, horizontal: 4),
+                      ),
+                    ),
+                  ),
+                ),
+
+                // ── Result count hint ────────────────────────────────────
+                Padding(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 18, vertical: 6),
+                  child: Row(
+                    children: [
+                      Icon(Icons.storefront_rounded,
+                          size: 13, color: tc.textSecondary),
+                      const SizedBox(width: 5),
+                      Text(
+                        _filtered.isEmpty
+                            ? 'No stores match your search'
+                            : '${_filtered.length} store${_filtered.length == 1 ? '' : 's'} available',
+                        style:
+                            TextStyle(color: tc.textSecondary, fontSize: 12),
+                      ),
+                    ],
+                  ),
+                ),
+
+                Divider(
+                    color: tc.cardBorder.withValues(alpha: 0.4), height: 1),
+
+                // ── Store list ───────────────────────────────────────────
+                Flexible(
+                  child: _filtered.isEmpty
+                      ? Padding(
+                          padding: const EdgeInsets.all(32),
+                          child: Column(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Icon(Icons.search_off_rounded,
+                                  size: 40,
+                                  color: tc.textSecondary
+                                      .withValues(alpha: 0.4)),
+                              const SizedBox(height: 10),
+                              Text(
+                                'Try a different name or store code',
+                                style: TextStyle(
+                                    color: tc.textSecondary, fontSize: 13),
+                              ),
+                            ],
+                          ),
+                        )
+                      : ListView.builder(
+                          shrinkWrap: true,
+                          padding: const EdgeInsets.fromLTRB(16, 8, 16, 28),
+                          itemCount: _filtered.length,
+                          itemBuilder: (context, index) {
+                            final store = _filtered[index];
+                            return Padding(
+                              padding: const EdgeInsets.only(bottom: 10),
+                              child: GestureDetector(
+                                onTap: () => widget.onStoreTapped(store),
+                                child: Container(
+                                  padding: const EdgeInsets.symmetric(
+                                      horizontal: 14, vertical: 12),
+                                  decoration: BoxDecoration(
+                                    color: tc.cardSurface,
+                                    borderRadius: BorderRadius.circular(14),
+                                    border:
+                                        Border.all(color: tc.cardBorder),
+                                  ),
+                                  child: Row(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      // Store icon
+                                      Container(
+                                        width: 40,
+                                        height: 40,
+                                        decoration: BoxDecoration(
+                                          color: tc.primary
+                                              .withValues(alpha: 0.10),
+                                          shape: BoxShape.circle,
+                                        ),
+                                        child: Icon(Icons.storefront_rounded,
+                                            color: tc.primary, size: 20),
+                                      ),
+                                      const SizedBox(width: 12),
+
+                                      // Store info
+                                      Expanded(
+                                        child: Column(
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.start,
+                                          children: [
+                                            // Name + code badge
+                                            Row(
+                                              children: [
+                                                Expanded(
+                                                  child: Text(
+                                                    store.name as String,
+                                                    style: TextStyle(
+                                                      color: tc.textPrimary,
+                                                      fontSize: 14,
+                                                      fontWeight:
+                                                          FontWeight.w600,
+                                                    ),
+                                                  ),
+                                                ),
+                                                if ((store.storeCode as String?) !=
+                                                    null) ...[
+                                                  const SizedBox(width: 6),
+                                                  Container(
+                                                    padding: const EdgeInsets
+                                                        .symmetric(
+                                                        horizontal: 6,
+                                                        vertical: 2),
+                                                    decoration: BoxDecoration(
+                                                      color: tc.primary
+                                                          .withValues(
+                                                              alpha: 0.10),
+                                                      borderRadius:
+                                                          BorderRadius.circular(
+                                                              5),
+                                                      border: Border.all(
+                                                          color: tc.primary
+                                                              .withValues(
+                                                                  alpha: 0.25)),
+                                                    ),
+                                                    child: Text(
+                                                      store.storeCode as String,
+                                                      style: TextStyle(
+                                                        color: tc.primary,
+                                                        fontSize: 10,
+                                                        fontWeight:
+                                                            FontWeight.w700,
+                                                        letterSpacing: 0.4,
+                                                      ),
+                                                    ),
+                                                  ),
+                                                ],
+                                              ],
+                                            ),
+
+                                            // Address — 2 lines
+                                            if (((store.address as String?) ??
+                                                    '')
+                                                .isNotEmpty) ...[
+                                              const SizedBox(height: 4),
+                                              Text(
+                                                store.address as String,
+                                                style: TextStyle(
+                                                    color: tc.textSecondary,
+                                                    fontSize: 12),
+                                                maxLines: 2,
+                                                overflow:
+                                                    TextOverflow.ellipsis,
+                                              ),
+                                            ],
+                                          ],
+                                        ),
+                                      ),
+
+                                      const SizedBox(width: 6),
+                                      Padding(
+                                        padding:
+                                            const EdgeInsets.only(top: 2),
+                                        child: Icon(
+                                            Icons.chevron_right_rounded,
+                                            color: tc.textSecondary
+                                                .withValues(alpha: 0.4),
+                                            size: 18),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ),
+                            );
+                          },
+                        ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      );
+    });
   }
 }

@@ -54,6 +54,8 @@ class LocalStorage {
                   'name': i.name,
                   'price': i.price,
                   'quantity': i.quantity,
+                  'sku': i.sku,
+                  'description': i.description,
                 })
             .toList(),
       }),
@@ -81,6 +83,8 @@ class LocalStorage {
                   name: i['name'] as String,
                   price: (i['price'] as num).toDouble(),
                   quantity: i['quantity'] as int,
+                  sku: i['sku'] as String?,
+                  description: i['description'] as String?,
                 ))
             .toList(),
       );

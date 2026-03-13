@@ -68,7 +68,7 @@ class OrderRemoteDataSource {
           tax
           grandTotal
           createdAt
-          items { barcode name price quantity }
+          items { barcode name price quantity sku description }
           storeName
         }
       }
@@ -84,6 +84,8 @@ class OrderRemoteDataSource {
                   'name': i.name,
                   'price': i.price,
                   'quantity': i.quantity,
+                  'sku': i.sku,
+                  'description': i.subtitle,
                 })
             .toList(),
         'total': total,
@@ -117,6 +119,8 @@ class OrderRemoteDataSource {
             name
             price
             quantity
+            sku
+            description
           }
         }
       }

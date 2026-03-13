@@ -6,6 +6,8 @@ class OrderItemModel extends OrderItemEntity {
     required super.name,
     required super.price,
     required super.quantity,
+    super.sku,
+    super.description,
   });
 
   factory OrderItemModel.fromJson(Map<String, dynamic> json) => OrderItemModel(
@@ -13,6 +15,8 @@ class OrderItemModel extends OrderItemEntity {
         name: json['name'] as String,
         price: (json['price'] as num).toDouble(),
         quantity: json['quantity'] as int,
+        sku: json['sku'] as String?,
+        description: json['description'] as String?,
       );
 }
 

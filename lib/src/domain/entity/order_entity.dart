@@ -3,12 +3,16 @@ class OrderItemEntity {
   final String name;
   final double price;
   final int quantity;
+  final String? sku;
+  final String? description;
 
   const OrderItemEntity({
     required this.barcode,
     required this.name,
     required this.price,
     required this.quantity,
+    this.sku,
+    this.description,
   });
 }
 

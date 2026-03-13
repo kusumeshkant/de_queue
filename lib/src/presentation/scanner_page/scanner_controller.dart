@@ -46,6 +46,7 @@ class ScannerController extends GetxController {
         barcode: product.barcode,
         name: product.name,
         subtitle: product.description ?? '',
+        sku: product.sku,
         price: product.price,
         stock: product.stock,
       );
