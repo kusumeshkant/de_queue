@@ -49,22 +49,17 @@ class ProfilePage extends StatelessWidget {
                     )),
               ),
               const SizedBox(height: 32),
-
-              // Phone number (read-only)
-              Obx(() => _SectionLabel(label: AppKeys.phoneNumberLabel.tr, tc: tc)),
               const SizedBox(height: 8),
               AppGlassCard(
                 padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
                 child: Row(
                   children: [
-                    Obx(() => Icon(Icons.phone, color: tc.textSecondary, size: 20)),
                     const SizedBox(width: 12),
-                    Obx(() => Text(
-                          user?.phone ?? AppKeys.notAvailable.tr,
-                          style: TextStyle(fontSize: 15, color: tc.textPrimary),
-                        )),
+                    Text(
+                      user?.phone ?? AppKeys.notAvailable.tr,
+                      style: TextStyle(fontSize: 15, color: tc.textPrimary),
+                    ),
                     const Spacer(),
-                    Obx(() => Icon(Icons.lock_outline, color: tc.textSecondary, size: 16)),
                   ],
                 ),
               ),
@@ -72,7 +67,7 @@ class ProfilePage extends StatelessWidget {
               const SizedBox(height: 24),
 
               // Name (editable)
-              Obx(() => _SectionLabel(label: AppKeys.displayName.tr, tc: tc)),
+              _SectionLabel(label: AppKeys.displayName.tr, tc: tc),
               const SizedBox(height: 8),
               AppGlassCard(
                 padding: EdgeInsets.zero,
@@ -94,54 +89,54 @@ class ProfilePage extends StatelessWidget {
               const SizedBox(height: 32),
 
               // Save button
-              Obx(() => SizedBox(
-                    width: double.infinity,
-                    height: 52,
-                    child: ElevatedButton(
-                      onPressed: c.isSaving.value
-                          ? null
-                          : () => c.saveProfile(
-                                onSuccess: () {
-                                  Get.snackbar(
-                                    AppKeys.saved.tr,
-                                    AppKeys.profileUpdated.tr,
-                                    backgroundColor: Colors.green,
-                                    colorText: Colors.white,
-                                    snackPosition: SnackPosition.BOTTOM,
-                                  );
-                                },
-                                onError: (msg) {
-                                  Get.snackbar(
-                                    AppKeys.error.tr,
-                                    msg,
-                                    backgroundColor: Colors.red,
-                                    colorText: Colors.white,
-                                    snackPosition: SnackPosition.BOTTOM,
-                                  );
-                                },
-                              ),
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: tc.primary,
-                        foregroundColor: Colors.white,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                      ),
-                      child: c.isSaving.value
-                          ? const SizedBox(
-                              height: 22,
-                              width: 22,
-                              child: CircularProgressIndicator(
-                                strokeWidth: 2,
-                                color: Colors.white,
-                              ),
-                            )
-                          : Text(
-                              AppKeys.saveChanges.tr,
-                              style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
-                            ),
+              SizedBox(
+                width: double.infinity,
+                height: 52,
+                child: ElevatedButton(
+                  onPressed: c.isSaving.value
+                      ? null
+                      : () => c.saveProfile(
+                    onSuccess: () {
+                      Get.snackbar(
+                        AppKeys.saved.tr,
+                        AppKeys.profileUpdated.tr,
+                        backgroundColor: Colors.green,
+                        colorText: Colors.white,
+                        snackPosition: SnackPosition.BOTTOM,
+                      );
+                    },
+                    onError: (msg) {
+                      Get.snackbar(
+                        AppKeys.error.tr,
+                        msg,
+                        backgroundColor: Colors.red,
+                        colorText: Colors.white,
+                        snackPosition: SnackPosition.BOTTOM,
+                      );
+                    },
+                  ),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: tc.primary,
+                    foregroundColor: Colors.white,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
                     ),
-                  )),
+                  ),
+                  child: c.isSaving.value
+                      ? const SizedBox(
+                    height: 22,
+                    width: 22,
+                    child: CircularProgressIndicator(
+                      strokeWidth: 2,
+                      color: Colors.white,
+                    ),
+                  )
+                      : Text(
+                    AppKeys.saveChanges.tr,
+                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+                  ),
+                ),
+              ),
             ],
           );
         }),
