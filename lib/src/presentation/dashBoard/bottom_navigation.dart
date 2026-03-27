@@ -140,15 +140,18 @@ class _BottomnavigationState extends State<Bottomnavigation> {
                 left: 0,
                 right: 0,
                 child: Center(
-                  child: FloatingActionButton(
-                    backgroundColor: tc.primary.withValues(alpha: 0.85),
-                    elevation: 12,
-                    onPressed: () => Get.to(
-                      () => const ScannerPage(),
-                      binding: ScannerBinding(),
+                  child: Semantics(
+                    identifier: 'scanner_fab',
+                    child: FloatingActionButton(
+                      backgroundColor: tc.primary.withValues(alpha: 0.85),
+                      elevation: 12,
+                      onPressed: () => Get.to(
+                        () => const ScannerPage(),
+                        binding: ScannerBinding(),
+                      ),
+                      child: const Icon(Icons.qr_code_scanner,
+                          size: 28, color: Colors.white),
                     ),
-                    child: const Icon(Icons.qr_code_scanner,
-                        size: 28, color: Colors.white),
                   ),
                 ),
               ),

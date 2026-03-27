@@ -102,6 +102,7 @@ class _SignUpPageState extends State<SignUpPage> {
                               textColor: textPrimary,
                               hintColor: textSecondary,
                               isDark: isDark,
+                              semanticsIdentifier: 'signup_name_field',
                             ),
                             const SizedBox(height: 14),
 
@@ -116,6 +117,7 @@ class _SignUpPageState extends State<SignUpPage> {
                               textColor: textPrimary,
                               hintColor: textSecondary,
                               isDark: isDark,
+                              semanticsIdentifier: 'signup_email_field',
                             ),
                             const SizedBox(height: 14),
 
@@ -125,6 +127,7 @@ class _SignUpPageState extends State<SignUpPage> {
                               hint: 'Min. 8 characters',
                               controller: c.passwordController,
                               obscureText: c.obscurePassword.value,
+                              semanticsIdentifier: 'signup_password_field',
                               prefix: Icon(Icons.lock_outline,
                                   size: 18, color: textSecondary),
                               suffix: IconButton(
@@ -355,6 +358,7 @@ class _LiquidInputField extends StatelessWidget {
   final Color textColor;
   final Color hintColor;
   final bool isDark;
+  final String? semanticsIdentifier;
 
   const _LiquidInputField({
     required this.label,
@@ -368,6 +372,7 @@ class _LiquidInputField extends StatelessWidget {
     required this.textColor,
     required this.hintColor,
     required this.isDark,
+    this.semanticsIdentifier,
   });
 
   @override
@@ -398,11 +403,15 @@ class _LiquidInputField extends StatelessWidget {
               borderRadius: BorderRadius.circular(16),
               child: BackdropFilter(
                 filter: ImageFilter.blur(sigmaX: 28, sigmaY: 28),
-                child: TextField(
+                child: Semantics(
+                  identifier: semanticsIdentifier,
+                  child: TextField(
                   controller: controller,
                   keyboardType: keyboardType,
                   enabled: enabled,
                   obscureText: obscureText,
+                  autocorrect: false,
+                  enableSuggestions: false,
                   style: TextStyle(color: textColor, fontSize: 15),
                   cursorColor: textColor,
                   decoration: InputDecoration(
@@ -436,6 +445,7 @@ class _LiquidInputField extends StatelessWidget {
                             color: borderColor.withValues(alpha: 0.3),
                             width: 0.8)),
                   ),
+                ),
                 ),
               ),
             ),

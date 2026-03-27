@@ -375,11 +375,14 @@ class _StoreSelectionSheetState extends State<_StoreSelectionSheet> {
                           ],
                         ),
                       ),
-                      IconButton(
-                        onPressed: widget.onClose,
-                        icon: Icon(Icons.close_rounded,
-                            color: tc.textSecondary, size: 22),
-                        tooltip: 'Explore without selecting',
+                      Semantics(
+                        identifier: 'close_button',
+                        child: IconButton(
+                          onPressed: widget.onClose,
+                          icon: Icon(Icons.close_rounded,
+                              color: tc.textSecondary, size: 22),
+                          tooltip: 'Explore without selecting',
+                        ),
                       ),
                     ],
                   ),
