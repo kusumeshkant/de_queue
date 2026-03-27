@@ -11,6 +11,7 @@ import 'package:dq_app/src/domain/repo/order_repository.dart';
 import 'package:dq_app/src/domain/repo/store_repository.dart';
 import 'package:dq_app/src/domain/usecase/create_order_usecase.dart';
 import 'package:dq_app/src/domain/usecase/create_razorpay_order_usecase.dart';
+import 'package:dq_app/src/domain/usecase/validate_cart_stock_usecase.dart';
 import 'package:dq_app/src/domain/usecase/get_nearby_stores_usecase.dart';
 import 'package:dq_app/src/domain/usecase/get_stores_usecase.dart';
 import 'package:dq_app/src/domain/usecase/update_fcm_token_usecase.dart';
@@ -83,11 +84,13 @@ class _BottomnavigationState extends State<Bottomnavigation> {
         OrderRepositoryImpl(remote: Get.find()), permanent: true);
     Get.put(CreateRazorpayOrderUseCase(repository: Get.find()), permanent: true);
     Get.put(CreateOrderUseCase(repository: Get.find()), permanent: true);
+    Get.put(ValidateCartStockUseCase(repository: Get.find()), permanent: true);
     Get.put(RazorpayService(), permanent: true);
     Get.put(
       CartController(
         createRazorpayOrderUseCase: Get.find(),
         createOrderUseCase: Get.find(),
+        validateCartStockUseCase: Get.find(),
         razorpayService: Get.find(),
       ),
       permanent: true,

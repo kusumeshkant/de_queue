@@ -36,4 +36,10 @@ class OrderRepositoryImpl implements OrderRepository {
 
   @override
   Future<List<OrderEntity>> getMyOrders() => remote.getMyOrders();
+
+  @override
+  Future<List<String>> validateCartStock({
+    required String storeId,
+    required List<CartItemEntity> items,
+  }) => remote.validateCartStock(storeId: storeId, items: items);
 }

@@ -102,6 +102,33 @@ class OrderRemoteDataSource {
     return OrderModel.fromJson(data);
   }
 
+  Future<List<String>> validateCartStock({
+    required String storeId,
+    required List<CartItemEntity> items,
+  }) async {
+    const query = r'''
+      query ValidateCartStock($storeId: ID!, $items: [OrderItemInput!]!) {
+        validateCartStock(storeId: $storeId, items: $items)
+      }
+    ''';
+
+    final result = await GraphQLService.performQuery(
+      query: query,
+      variables: {
+        'storeId': storeId,
+        'items': items.map((i) => {
+          'barcode': i.barcode,
+          'name': i.name,
+          'price': i.price,
+          'quantity': i.quantity,
+        }).toList(),
+      },
+    );
+
+    final List<dynamic> data = result.data?['validateCartStock'] ?? [];
+    return data.cast<String>();
+  }
+
   Future<List<OrderModel>> getMyOrders() async {
     const query = '''
       query {

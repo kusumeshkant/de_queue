@@ -2,6 +2,7 @@ import 'package:dq_app/src/domain/entity/cart_item_entity.dart';
 import 'package:dq_app/src/domain/entity/order_entity.dart';
 import 'package:dq_app/src/domain/usecase/create_order_usecase.dart';
 import 'package:dq_app/src/domain/usecase/create_razorpay_order_usecase.dart';
+import 'package:dq_app/src/domain/usecase/validate_cart_stock_usecase.dart';
 import 'package:dq_app/src/presentation/dashBoard/dashboard_view_model.dart';
 import 'package:dq_app/src/service_core/payment/razorpay_service.dart';
 import 'package:flutter/material.dart';
@@ -11,11 +12,13 @@ import 'package:razorpay_flutter/razorpay_flutter.dart';
 class CartController extends GetxController {
   final CreateRazorpayOrderUseCase createRazorpayOrderUseCase;
   final CreateOrderUseCase createOrderUseCase;
+  final ValidateCartStockUseCase validateCartStockUseCase;
   final RazorpayService razorpayService;
 
   CartController({
     required this.createRazorpayOrderUseCase,
     required this.createOrderUseCase,
+    required this.validateCartStockUseCase,
     required this.razorpayService,
   });
 
@@ -131,6 +134,18 @@ class CartController extends GetxController {
 
     isCheckingOut.value = true;
     try {
+      // Validate stock before opening payment sheet
+      final outOfStock = await validateCartStockUseCase.execute(
+        dashboard.selectedStoreId.value,
+        List.from(items),
+      );
+      if (outOfStock.isNotEmpty) {
+        isCheckingOut.value = false;
+        final names = outOfStock.join(', ');
+        onError('${outOfStock.length == 1 ? '$names is' : '$names are'} no longer available. Please remove from cart.');
+        return;
+      }
+
       final razorpayOrder =
           await createRazorpayOrderUseCase.execute(grandTotal);
 

@@ -16,4 +16,9 @@ abstract class OrderRepository {
   });
 
   Future<List<OrderEntity>> getMyOrders();
+
+  Future<List<String>> validateCartStock({
+    required String storeId,
+    required List<CartItemEntity> items,
+  });
 }
