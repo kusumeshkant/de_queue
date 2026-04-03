@@ -5,6 +5,7 @@ import 'package:dq_app/src/domain/usecase/create_razorpay_order_usecase.dart';
 import 'package:dq_app/src/domain/usecase/validate_cart_stock_usecase.dart';
 import 'package:dq_app/src/presentation/dashBoard/dashboard_view_model.dart';
 import 'package:dq_app/src/service_core/payment/razorpay_service.dart';
+import 'package:dq_app/src/utils/services/local_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:razorpay_flutter/razorpay_flutter.dart';
@@ -175,6 +176,10 @@ class CartController extends GetxController {
       );
 
       clearCart();
+      await LocalStorage.savePendingOrder(order);
+      if (Get.isRegistered<DashboardController>()) {
+        Get.find<DashboardController>().setActiveOrder(order);
+      }
       _onSuccess?.call(order);
     } catch (e) {
       _onError?.call('Payment succeeded but order failed: ${e.toString()}');

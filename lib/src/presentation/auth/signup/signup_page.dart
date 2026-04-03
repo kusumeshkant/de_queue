@@ -145,7 +145,21 @@ class _SignUpPageState extends State<SignUpPage> {
                               isDark: isDark,
                             ),
 
-                            const SizedBox(height: 24),
+                            const SizedBox(height: 12),
+
+                            // ── Inline validation error ───────────────────
+                            Obx(() => c.validationError.isNotEmpty
+                                ? Padding(
+                                    padding:
+                                        const EdgeInsets.only(bottom: 12),
+                                    child: Text(
+                                      c.validationError.value,
+                                      style: const TextStyle(
+                                          color: Colors.red,
+                                          fontSize: 13),
+                                    ),
+                                  )
+                                : const SizedBox.shrink()),
 
                             // ── Sign Up button ────────────────────────────
                             c.isLoading.value

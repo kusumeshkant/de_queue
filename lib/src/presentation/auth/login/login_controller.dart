@@ -13,6 +13,7 @@ class LoginController extends GetxController {
 
   var isLoading = false.obs;
   var obscurePassword = true.obs;
+  var validationError = ''.obs;
 
   String? emailValidator(String? value) {
     if (value == null || value.isEmpty) return 'Email is required';
@@ -30,11 +31,12 @@ class LoginController extends GetxController {
     required void Function() onSuccess,
     required void Function(String message) onError,
   }) async {
+    validationError.value = '';
     final emailError = emailValidator(emailController.text.trim());
-    if (emailError != null) { onError(emailError); return; }
+    if (emailError != null) { validationError.value = emailError; return; }
 
     final passwordError = passwordValidator(passwordController.text);
-    if (passwordError != null) { onError(passwordError); return; }
+    if (passwordError != null) { validationError.value = passwordError; return; }
 
     isLoading.value = true;
     try {
@@ -79,6 +81,7 @@ class LoginController extends GetxController {
     emailController.clear();
     passwordController.clear();
     obscurePassword.value = true;
+    validationError.value = '';
   }
 
   @override

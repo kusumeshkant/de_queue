@@ -129,6 +129,32 @@ class OrderRemoteDataSource {
     return data.cast<String>();
   }
 
+  Future<OrderModel> getOrderById(String orderId) async {
+    const query = '''
+      query GetOrderById(\$id: ID!) {
+        orderById(id: \$id) {
+          id
+          storeName
+          total
+          tax
+          grandTotal
+          status
+          paymentStatus
+          createdAt
+          items { barcode name price quantity sku description }
+        }
+      }
+    ''';
+
+    final result = await GraphQLService.performQuery(
+      query: query,
+      variables: {'id': orderId},
+    );
+    final data = result.data?['orderById'];
+    if (data == null) throw Exception('Order not found');
+    return OrderModel.fromJson(data);
+  }
+
   Future<List<OrderModel>> getMyOrders() async {
     const query = '''
       query {
