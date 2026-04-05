@@ -22,6 +22,7 @@ class DashboardController extends GetxController {
   });
 
   final RxList<StoreEntity> stores = <StoreEntity>[].obs;
+  final RxList<Map<String, String?>> recentStores = <Map<String, String?>>[].obs;
   final RxBool isLoading = false.obs;
   final RxBool isStoreConfirmed = false.obs;
   final RxString selectedStoreId = ''.obs;
@@ -39,6 +40,12 @@ class DashboardController extends GetxController {
     super.onInit();
     loadStores();
     _loadPendingOrder();
+    _loadRecentStores();
+  }
+
+  Future<void> _loadRecentStores() async {
+    final list = await LocalStorage.getRecentStores();
+    recentStores.value = list;
   }
 
   Future<void> _loadPendingOrder() async {
@@ -118,6 +125,12 @@ class DashboardController extends GetxController {
     selectedStoreName.value = store.name;
     selectedStoreAddress.value = store.address ?? '';
     isStoreConfirmed.value = true;
+    _saveRecentStore(store);
+  }
+
+  void _saveRecentStore(StoreEntity store) {
+    final entry = {'id': store.id, 'name': store.name, 'address': store.address};
+    LocalStorage.addRecentStore(entry).then((_) => _loadRecentStores());
   }
 
   void confirmCurrentStore() {

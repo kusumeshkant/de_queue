@@ -226,43 +226,43 @@ class _DashboardPageState extends State<DashboardPage> {
                         ),
                       ),
               ),
-              SliverToBoxAdapter(
-                child: Padding(
-                  padding: const EdgeInsets.only(left: 10, top: 20, right: 10),
-                  child: TitleSubheading(titleLabel: AppKeys.recentVisit.tr),
+              if (_c.recentStores.isNotEmpty) ...[
+                SliverToBoxAdapter(
+                  child: Padding(
+                    padding: const EdgeInsets.only(left: 10, top: 20, right: 10),
+                    child: TitleSubheading(titleLabel: AppKeys.recentVisit.tr),
+                  ),
                 ),
-              ),
-              SliverPadding(
-                padding: const EdgeInsets.all(10),
-                sliver: _c.stores.isEmpty
-                    ? SliverToBoxAdapter(
-                        child: Padding(
-                          padding: const EdgeInsets.all(16),
-                          child: Text(AppKeys.noStores.tr),
-                        ),
-                      )
-                    : SliverGrid(
-                        delegate: SliverChildBuilderDelegate(
-                          (context, index) {
-                            final store = _c.stores[index];
-                            return StoreCard(
-                              imageUrl: store.imageUrl ??
-                                  'https://picsum.photos/id/1011/500/500',
-                              storeName: store.name,
-                              onTap: () => _trySelectStore(store),
-                            );
+                SliverPadding(
+                  padding: const EdgeInsets.all(10),
+                  sliver: SliverGrid(
+                    delegate: SliverChildBuilderDelegate(
+                      (context, index) {
+                        final recent = _c.recentStores[index];
+                        final store = _c.stores.firstWhereOrNull(
+                          (s) => s.id == recent['id'],
+                        );
+                        return StoreCard(
+                          imageUrl: store?.imageUrl ??
+                              'https://picsum.photos/id/1011/500/500',
+                          storeName: recent['name'] ?? '',
+                          onTap: () {
+                            if (store != null) _trySelectStore(store);
                           },
-                          childCount: _c.stores.length,
-                        ),
-                        gridDelegate:
-                            const SliverGridDelegateWithFixedCrossAxisCount(
-                          crossAxisCount: 2,
-                          crossAxisSpacing: 12,
-                          mainAxisSpacing: 12,
-                          childAspectRatio: 0.75,
-                        ),
-                      ),
-              ),
+                        );
+                      },
+                      childCount: _c.recentStores.length,
+                    ),
+                    gridDelegate:
+                        const SliverGridDelegateWithFixedCrossAxisCount(
+                      crossAxisCount: 2,
+                      crossAxisSpacing: 12,
+                      mainAxisSpacing: 12,
+                      childAspectRatio: 0.75,
+                    ),
+                  ),
+                ),
+              ],
             ],
           );
         }),
