@@ -12,6 +12,7 @@ class ProductRemoteDataSource {
           sku
           name
           description
+          mrp
           price
           imageUrl
           stock

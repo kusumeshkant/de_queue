@@ -40,14 +40,11 @@ class LoginController extends GetxController {
 
     isLoading.value = true;
     try {
-      final auth = await loginUseCase.signInWithEmail(
+      await loginUseCase.signInWithEmail(
         email: emailController.text.trim(),
         password: passwordController.text,
       );
-      await GraphQLClientProvider.init(
-        baseUrl: AppConfig.graphqlEndpoint,
-        token: auth.token,
-      );
+      await GraphQLClientProvider.init(baseUrl: AppConfig.graphqlEndpoint);
       _clearFields();
       isLoading.value = false;
       onSuccess();
@@ -63,11 +60,8 @@ class LoginController extends GetxController {
   }) async {
     isLoading.value = true;
     try {
-      final auth = await loginUseCase.signInWithGoogle();
-      await GraphQLClientProvider.init(
-        baseUrl: AppConfig.graphqlEndpoint,
-        token: auth.token,
-      );
+      await loginUseCase.signInWithGoogle();
+      await GraphQLClientProvider.init(baseUrl: AppConfig.graphqlEndpoint);
       _clearFields();
       isLoading.value = false;
       onSuccess();

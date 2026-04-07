@@ -69,6 +69,35 @@ class CartController extends GetxController {
     return true;
   }
 
+  /// Adds [qty] units of [newItem]. Returns actual quantity added (0 if stock limit hit).
+  int addItemWithQuantity(CartItemEntity newItem, int qty) {
+    final index = items.indexWhere((i) => i.barcode == newItem.barcode);
+    if (index != -1) {
+      final item = items[index];
+      if (item.stock > 0 && item.quantity >= item.stock) return 0;
+      final canAdd = item.stock > 0 ? (item.stock - item.quantity) : qty;
+      final toAdd = qty.clamp(0, canAdd);
+      if (toAdd == 0) return 0;
+      item.quantity += toAdd;
+      items.refresh();
+      return toAdd;
+    } else {
+      final effectiveQty =
+          newItem.stock > 0 ? qty.clamp(1, newItem.stock) : qty;
+      items.add(CartItemEntity(
+        barcode: newItem.barcode,
+        name: newItem.name,
+        subtitle: newItem.subtitle,
+        sku: newItem.sku,
+        mrp: newItem.mrp,
+        price: newItem.price,
+        stock: newItem.stock,
+        quantity: effectiveQty,
+      ));
+      return effectiveQty;
+    }
+  }
+
   void incrementQuantity(String barcode) {
     final index = items.indexWhere((i) => i.barcode == barcode);
     if (index != -1) {

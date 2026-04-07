@@ -68,7 +68,7 @@ class OrderRemoteDataSource {
           tax
           grandTotal
           createdAt
-          items { barcode name price quantity sku description }
+          items { barcode name mrp price quantity sku description }
           storeName
         }
       }
@@ -82,6 +82,7 @@ class OrderRemoteDataSource {
             .map((i) => {
                   'barcode': i.barcode,
                   'name': i.name,
+                  'mrp': i.mrp,
                   'price': i.price,
                   'quantity': i.quantity,
                   'sku': i.sku,
@@ -141,7 +142,7 @@ class OrderRemoteDataSource {
           status
           paymentStatus
           createdAt
-          items { barcode name price quantity sku description }
+          items { barcode name mrp price quantity sku description }
         }
       }
     ''';

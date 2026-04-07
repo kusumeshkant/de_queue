@@ -2,6 +2,7 @@ import 'package:dq_app/src/domain/entity/order_entity.dart';
 import 'package:dq_app/src/l10n/translation_keys.dart';
 import 'package:dq_app/src/presentation/dashBoard/navigation_controller.dart';
 import 'package:dq_app/src/theme/theme_controller.dart';
+import 'package:dq_app/src/utils/services/local_storage.dart';
 import 'package:dq_app/widgets/app_glass_card.dart';
 import 'package:dq_app/widgets/themed_background.dart';
 import 'package:flutter/material.dart';
@@ -223,7 +224,8 @@ class OrderConfirmationPage extends StatelessWidget {
                       shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(14)),
                     ),
-                    onPressed: () {
+                    onPressed: () async {
+                      await LocalStorage.clearPendingOrder();
                       Get.until((r) => r.isFirst);
                       if (Get.isRegistered<NavigationController>()) {
                         Get.find<NavigationController>().goToHome();

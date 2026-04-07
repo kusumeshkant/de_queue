@@ -177,9 +177,7 @@ class _DashboardPageState extends State<DashboardPage> {
                       .firstOrNull
                       ?.storeCode,
                   onChangeTapped: _openStoreSelection,
-                  onSearchChanged: (value) {
-                    debugPrint('Search typing: $value');
-                  },
+                  onSearchChanged: (_) {},
                   onStoreSelected: (name) {
                     final store = _c.stores.firstWhere(
                       (s) => s.name == name,

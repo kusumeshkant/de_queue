@@ -3,6 +3,7 @@ class CartItemEntity {
   final String name;
   final String subtitle;
   final String? sku;
+  final double? mrp;
   final double price;
   final int stock;
   int quantity;
@@ -12,6 +13,7 @@ class CartItemEntity {
     required this.name,
     required this.subtitle,
     this.sku,
+    this.mrp,
     required this.price,
     this.stock = 0,
     this.quantity = 1,

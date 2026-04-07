@@ -8,6 +8,7 @@ class CartItemCard extends StatelessWidget {
   final String title;
   final String subtitle;
   final double price;
+  final double? mrp;
   final int quantity;
   final VoidCallback? onIncrement;
   final VoidCallback? onDecrement;
@@ -18,11 +19,16 @@ class CartItemCard extends StatelessWidget {
     required this.title,
     required this.subtitle,
     required this.price,
+    this.mrp,
     required this.quantity,
     this.onIncrement,
     this.onDecrement,
     this.onRemove,
   });
+
+  bool get _hasDiscount => mrp != null && mrp! > price;
+  double get _savedPerItem => _hasDiscount ? (mrp! - price) : 0;
+  double get _savedTotal => _savedPerItem * quantity;
 
   @override
   Widget build(BuildContext context) {
@@ -31,74 +37,155 @@ class CartItemCard extends StatelessWidget {
     return AppGlassCard(
       margin: const EdgeInsets.only(bottom: 14),
       padding: const EdgeInsets.all(12),
-      child: Row(
+      child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Obx(() => Container(
-                height: 60,
-                width: 60,
-                decoration: BoxDecoration(
-                  color: tc.primary.withValues(alpha: 0.15),
-                  borderRadius: BorderRadius.circular(10),
-                ),
-                child:
-                    Icon(Icons.shopping_bag_outlined, size: 28, color: tc.primary),
-              )),
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Product icon
+              Obx(() => Container(
+                    height: 60,
+                    width: 60,
+                    decoration: BoxDecoration(
+                      color: tc.primary.withValues(alpha: 0.12),
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    child: Icon(Icons.shopping_bag_outlined,
+                        size: 28, color: tc.primary),
+                  )),
 
-          const SizedBox(width: 12),
+              const SizedBox(width: 12),
 
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
+              // Name + subtitle + price
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Expanded(
-                      child: Obx(() => Text(
-                            title,
+                    Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Expanded(
+                          child: Obx(() => Text(
+                                title,
+                                maxLines: 2,
+                                overflow: TextOverflow.ellipsis,
+                                style: TextStyle(
+                                  fontWeight: FontWeight.w600,
+                                  fontSize: 14,
+                                  color: tc.textPrimary,
+                                  height: 1.3,
+                                ),
+                              )),
+                        ),
+                        if (onRemove != null)
+                          GestureDetector(
+                            onTap: onRemove,
+                            child: Padding(
+                              padding: const EdgeInsets.only(left: 8),
+                              child: Icon(Icons.close,
+                                  size: 18, color: tc.textSecondary),
+                            ),
+                          ),
+                      ],
+                    ),
+
+                    if (subtitle.isNotEmpty) ...[
+                      const SizedBox(height: 3),
+                      Obx(() => Text(
+                            subtitle,
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
                             style: TextStyle(
-                                fontWeight: FontWeight.w600,
-                                fontSize: 14,
-                                color: tc.textPrimary),
+                                color: tc.textSecondary, fontSize: 12),
                           )),
+                    ],
+
+                    const SizedBox(height: 8),
+
+                    // Price row: sale price + MRP strikethrough
+                    Row(
+                      crossAxisAlignment: CrossAxisAlignment.baseline,
+                      textBaseline: TextBaseline.alphabetic,
+                      children: [
+                        Obx(() => Text(
+                              '₹${price.toStringAsFixed(0)}',
+                              style: TextStyle(
+                                fontWeight: FontWeight.bold,
+                                fontSize: 15,
+                                color: tc.primary,
+                              ),
+                            )),
+                        if (_hasDiscount) ...[
+                          const SizedBox(width: 6),
+                          Text(
+                            '₹${mrp!.toStringAsFixed(0)}',
+                            style: TextStyle(
+                              fontSize: 12,
+                              color: Colors.grey,
+                              decoration: TextDecoration.lineThrough,
+                              decorationColor: Colors.grey,
+                            ),
+                          ),
+                        ],
+                      ],
                     ),
-                    if (onRemove != null)
-                      GestureDetector(
-                        onTap: onRemove,
-                        child: Icon(Icons.close,
-                            size: 18, color: tc.textSecondary),
-                      ),
                   ],
                 ),
-                const SizedBox(height: 4),
-                Obx(() => Text(subtitle,
-                    style: TextStyle(color: tc.textSecondary, fontSize: 12))),
-                const SizedBox(height: 6),
-                Obx(() => Text(
-                      '₹${price.toStringAsFixed(0)}',
-                      style: TextStyle(
-                          fontWeight: FontWeight.bold,
-                          fontSize: 14,
-                          color: tc.primary),
-                    )),
-              ],
-            ),
-          ),
-
-          Row(
-            children: [
-              QuantityButton(icon: Icons.remove, onTap: onDecrement ?? () {}),
-              Padding(
-                padding: const EdgeInsets.symmetric(vertical: 6, horizontal: 5),
-                child: Obx(() => Text(quantity.toString(),
-                    style: TextStyle(
-                        fontWeight: FontWeight.w600, color: tc.textPrimary))),
               ),
-              QuantityButton(icon: Icons.add, onTap: onIncrement ?? () {}),
+
+              // Quantity controls
+              Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  const SizedBox(height: 4),
+                  Row(
+                    children: [
+                      QuantityButton(
+                          icon: Icons.remove, onTap: onDecrement ?? () {}),
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 8),
+                        child: Obx(() => Text(
+                              quantity.toString(),
+                              style: TextStyle(
+                                fontWeight: FontWeight.w700,
+                                fontSize: 15,
+                                color: tc.textPrimary,
+                              ),
+                            )),
+                      ),
+                      QuantityButton(
+                          icon: Icons.add, onTap: onIncrement ?? () {}),
+                    ],
+                  ),
+                ],
+              ),
             ],
           ),
+
+          // Per-item savings badge — shown only when there's a discount
+          if (_hasDiscount) ...[
+            const SizedBox(height: 8),
+            Container(
+              padding:
+                  const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+              decoration: BoxDecoration(
+                color: const Color(0xFF00C853).withValues(alpha: 0.10),
+                borderRadius: BorderRadius.circular(6),
+                border: Border.all(
+                    color: const Color(0xFF00C853).withValues(alpha: 0.25)),
+              ),
+              child: Text(
+                'You save ₹${_savedTotal.toStringAsFixed(0)}'
+                '${quantity > 1 ? ' (₹${_savedPerItem.toStringAsFixed(0)} × $quantity)' : ''}',
+                style: const TextStyle(
+                  color: Color(0xFF00C853),
+                  fontSize: 11,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ),
+          ],
         ],
       ),
     );

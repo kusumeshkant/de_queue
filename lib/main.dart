@@ -38,13 +38,8 @@ void main() async {
   // Load saved locale before building UI
   final savedLocale = await AppLocales.loadSaved();
 
-  // Restore cached GraphQL token
   final cachedAuth = HiveManager.get(DbTable.auth, 'current');
-  final cachedToken = cachedAuth?['token'] as String?;
-  await GraphQLClientProvider.init(
-    baseUrl: AppConfig.graphqlEndpoint,
-    token: cachedToken,
-  );
+  await GraphQLClientProvider.init(baseUrl: AppConfig.graphqlEndpoint);
 
   // Check for an in-progress order confirmation (app killed mid-confirmation)
   final pendingOrder = cachedAuth?['isLoggedIn'] == true
@@ -89,7 +84,13 @@ class MyApp extends StatelessWidget {
     final auth = HiveManager.get(DbTable.auth, 'current');
     if (auth != null && auth['isLoggedIn'] == true) {
       if (pendingOrder != null) {
-        return OrderConfirmationPage(order: pendingOrder!);
+        // Always put Bottomnavigation first so "Go to Home" can pop back to it
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          Get.to(
+            () => OrderConfirmationPage(order: pendingOrder!),
+            transition: Transition.fadeIn,
+          );
+        });
       }
       return const Bottomnavigation();
     }

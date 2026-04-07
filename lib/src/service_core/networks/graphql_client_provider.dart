@@ -10,7 +10,7 @@ class GraphQLClientProvider {
   static GraphQLClient? _client;
   static String? _baseUrl;
 
-  static Future<void> init({required String baseUrl, String? token}) async {
+  static Future<void> init({required String baseUrl}) async {
     _baseUrl = baseUrl;
     _client = _buildClient(baseUrl);
   }

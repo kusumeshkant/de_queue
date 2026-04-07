@@ -112,8 +112,7 @@ class DashboardController extends GetxController {
         selectedStoreName.value = stores.first.name;
         selectedStoreAddress.value = stores.first.address ?? '';
       }
-    } catch (e) {
-      debugPrint('loadStores error: $e');
+    } catch (_) {
     } finally {
       isLoading.value = false;
     }
