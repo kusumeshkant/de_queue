@@ -1,5 +1,32 @@
-v1.0.2+18 — Security hardening: full RBAC on login and cold start
-- Login calls validateAppAccess("CUSTOMER") — admin/staff accounts blocked
-- Cold start validates customer role on every launch (fail closed on FORBIDDEN)
-- Network failure on cold start = no sign-out, shows login for retry
-- Removed ensureCustomerRole hack that was corrupting role data
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  DQ App  |  v1.0.2+19  |  TESTING BUILD
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+⚠️  This build is for internal testing only.
+    Do NOT share outside the test team.
+
+─────────────────────────────────────
+ WHAT TO TEST
+─────────────────────────────────────
+• Register as customer → browse nearby stores
+• Add items to cart → place order
+• Razorpay test card: 4111 1111 1111 1111
+  Expiry: any future date | CVV: any 3 digits
+• QR code shown on confirmation screen
+• Order status updates in real time
+• Kill & relaunch → pending order restores
+
+─────────────────────────────────────
+ SECURITY FIXES IN THIS BUILD
+─────────────────────────────────────
+• Admin/staff accounts blocked from using this app
+• Role validated on every app launch (fail closed)
+• Session preserved on network failure — no spurious logouts
+
+─────────────────────────────────────
+ KNOWN SCOPE
+─────────────────────────────────────
+• Android only
+• Backend: https://de-backend-iota.vercel.app/
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
