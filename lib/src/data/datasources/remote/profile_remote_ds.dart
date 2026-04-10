@@ -18,19 +18,7 @@ class ProfileRemoteDataSource {
     final data = result.data?['me'];
     if (data == null) throw Exception('Profile not found');
 
-    // Silently ensure customer role exists on backend (handles admin/staff using DQ App)
-    _ensureCustomerRole();
-
     return UserModel.fromJson(data);
-  }
-
-  void _ensureCustomerRole() {
-    const mutation = '''
-      mutation {
-        ensureCustomerRole
-      }
-    ''';
-    GraphQLService.performMutation(mutation: mutation, variables: {}).catchError((_) {});
   }
 
   Future<UserModel> updateProfile({required String name}) async {

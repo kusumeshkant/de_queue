@@ -1,8 +1,8 @@
 name: dq_app
-description: A new Flutter project.
+description: DQ App — customer ordering app for DQueue smart retail platform.
 publish_to: 'none'
 
-version: 1.0.1+9
+version: 1.0.2+18
 
 environment:
   sdk: ">=3.8.1 <4.0.0"

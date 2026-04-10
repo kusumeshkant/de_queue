@@ -1,0 +1,5 @@
+v1.0.2+18 — Security hardening: full RBAC on login and cold start
+- Login calls validateAppAccess("CUSTOMER") — admin/staff accounts blocked
+- Cold start validates customer role on every launch (fail closed on FORBIDDEN)
+- Network failure on cold start = no sign-out, shows login for retry
+- Removed ensureCustomerRole hack that was corrupting role data
