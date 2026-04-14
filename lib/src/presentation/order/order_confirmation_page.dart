@@ -224,8 +224,8 @@ class OrderConfirmationPage extends StatelessWidget {
                       shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(14)),
                     ),
-                    onPressed: () {
-                      LocalStorage.clearPendingOrder();
+                    onPressed: () async {
+                      await LocalStorage.clearPendingOrder();
                       Get.until((r) => r.isFirst);
                       if (Get.isRegistered<NavigationController>()) {
                         Get.find<NavigationController>().goToHome();

@@ -1,8 +1,8 @@
 name: dq_app
-description: A new Flutter project.
+description: DQ App — customer ordering app for DQueue smart retail platform.
 publish_to: 'none'
 
-version: 1.0.0+1
+version: 1.0.2+19
 
 environment:
   sdk: ">=3.8.1 <4.0.0"
@@ -11,7 +11,6 @@ dependencies:
   flutter:
     sdk: flutter
 
-  cupertino_icons: ^1.0.8
   mobile_scanner: ^7.1.4
   fluttertoast: ^9.0.0
   dio: ^5.9.0
@@ -47,7 +46,7 @@ dev_dependencies:
 flutter_launcher_icons:
   android: true
   ios: true
-  image_path: "assets/app_logo/DQ_logo_1.png"
+  image_path: "assets/app_logo/dq_icon.png"
   min_sdk_android: 21
   remove_alpha_ios: true
   web:

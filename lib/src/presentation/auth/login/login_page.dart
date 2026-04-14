@@ -133,7 +133,21 @@ class _LoginPageState extends State<LoginPage> {
                               isDark: isDark,
                             ),
 
-                            const SizedBox(height: 24),
+                            const SizedBox(height: 12),
+
+                            // ── Inline validation error ───────────────────
+                            Obx(() => c.validationError.isNotEmpty
+                                ? Padding(
+                                    padding:
+                                        const EdgeInsets.only(bottom: 12),
+                                    child: Text(
+                                      c.validationError.value,
+                                      style: const TextStyle(
+                                          color: Colors.red,
+                                          fontSize: 13),
+                                    ),
+                                  )
+                                : const SizedBox.shrink()),
 
                             // ── Sign In button ────────────────────────────
                             c.isLoading.value
@@ -342,7 +356,6 @@ class _LiquidInputField extends StatelessWidget {
   final String hint;
   final TextEditingController controller;
   final TextInputType keyboardType;
-  final bool enabled;
   final bool obscureText;
   final Widget? prefix;
   final Widget? suffix;
@@ -356,7 +369,6 @@ class _LiquidInputField extends StatelessWidget {
     required this.hint,
     required this.controller,
     this.keyboardType = TextInputType.text,
-    this.enabled = true,
     this.obscureText = false,
     this.prefix,
     this.suffix,
@@ -399,7 +411,6 @@ class _LiquidInputField extends StatelessWidget {
                   child: TextField(
                   controller: controller,
                   keyboardType: keyboardType,
-                  enabled: enabled,
                   obscureText: obscureText,
                   autocorrect: false,
                   enableSuggestions: false,

@@ -5,6 +5,7 @@ import 'package:dq_app/src/domain/usecase/create_razorpay_order_usecase.dart';
 import 'package:dq_app/src/domain/usecase/validate_cart_stock_usecase.dart';
 import 'package:dq_app/src/presentation/dashBoard/dashboard_view_model.dart';
 import 'package:dq_app/src/service_core/payment/razorpay_service.dart';
+import 'package:dq_app/src/utils/services/local_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:razorpay_flutter/razorpay_flutter.dart';
@@ -66,6 +67,35 @@ class CartController extends GetxController {
       items.add(newItem);
     }
     return true;
+  }
+
+  /// Adds [qty] units of [newItem]. Returns actual quantity added (0 if stock limit hit).
+  int addItemWithQuantity(CartItemEntity newItem, int qty) {
+    final index = items.indexWhere((i) => i.barcode == newItem.barcode);
+    if (index != -1) {
+      final item = items[index];
+      if (item.stock > 0 && item.quantity >= item.stock) return 0;
+      final canAdd = item.stock > 0 ? (item.stock - item.quantity) : qty;
+      final toAdd = qty.clamp(0, canAdd);
+      if (toAdd == 0) return 0;
+      item.quantity += toAdd;
+      items.refresh();
+      return toAdd;
+    } else {
+      final effectiveQty =
+          newItem.stock > 0 ? qty.clamp(1, newItem.stock) : qty;
+      items.add(CartItemEntity(
+        barcode: newItem.barcode,
+        name: newItem.name,
+        subtitle: newItem.subtitle,
+        sku: newItem.sku,
+        mrp: newItem.mrp,
+        price: newItem.price,
+        stock: newItem.stock,
+        quantity: effectiveQty,
+      ));
+      return effectiveQty;
+    }
   }
 
   void incrementQuantity(String barcode) {
@@ -175,6 +205,10 @@ class CartController extends GetxController {
       );
 
       clearCart();
+      await LocalStorage.savePendingOrder(order);
+      if (Get.isRegistered<DashboardController>()) {
+        Get.find<DashboardController>().setActiveOrder(order);
+      }
       _onSuccess?.call(order);
     } catch (e) {
       _onError?.call('Payment succeeded but order failed: ${e.toString()}');

@@ -5,12 +5,12 @@ import 'package:dq_app/src/presentation/cart/cart_page.dart';
 import 'package:dq_app/src/presentation/dashBoard/dashboard_view_model.dart';
 import 'package:dq_app/src/presentation/scanner_page/scanner_controller.dart';
 import 'package:dq_app/src/presentation/scanner_page/widgets/scanner_overlay.dart';
+import 'package:dq_app/widgets/themed_background.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
 
 const _kScanLineColor = Color(0xFF00E676);
-const _kSuccessColor = Color(0xFF00E676);
 const _kErrorColor = Color(0xFFFF5252);
 const _kBoxSize = 270.0;
 
@@ -292,12 +292,14 @@ class _ScannerPageState extends State<ScannerPage>
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                // Feedback card animates in above the button row
+                // Feedback card — loading | error | hidden
                 Obx(() {
                   final feedback = c.scanFeedback.value;
                   final isVisible = feedback.isNotEmpty;
-                  final isSuccess = feedback == 'success';
-                  final cartCount = _cartCount();
+                  final isLoading = feedback == 'loading';
+                  final borderColor = isLoading
+                      ? _kScanLineColor.withValues(alpha: 0.6)
+                      : _kErrorColor.withValues(alpha: 0.7);
 
                   return AnimatedSize(
                     duration: const Duration(milliseconds: 300),
@@ -320,93 +322,49 @@ class _ScannerPageState extends State<ScannerPage>
                                     top: Radius.circular(20)),
                                 border: Border(
                                   top: BorderSide(
-                                    color: (isSuccess
-                                            ? _kSuccessColor
-                                            : _kErrorColor)
-                                        .withValues(alpha: 0.7),
+                                    color: borderColor,
                                     width: 1.5,
                                   ),
                                 ),
                               ),
                               child: Row(
                                 children: [
-                                  Container(
+                                  // Icon / spinner
+                                  SizedBox(
                                     width: 42,
                                     height: 42,
-                                    decoration: BoxDecoration(
-                                      color: (isSuccess
-                                              ? _kSuccessColor
-                                              : _kErrorColor)
-                                          .withValues(alpha: 0.15),
-                                      shape: BoxShape.circle,
-                                    ),
-                                    child: Icon(
-                                      isSuccess
-                                          ? Icons.check_circle_rounded
-                                          : Icons.error_rounded,
-                                      color: isSuccess
-                                          ? _kSuccessColor
-                                          : _kErrorColor,
-                                      size: 26,
-                                    ),
+                                    child: isLoading
+                                        ? const Padding(
+                                            padding: EdgeInsets.all(9),
+                                            child: CircularProgressIndicator(
+                                              strokeWidth: 2.5,
+                                              color: _kScanLineColor,
+                                            ),
+                                          )
+                                        : Container(
+                                            decoration: BoxDecoration(
+                                              color: _kErrorColor
+                                                  .withValues(alpha: 0.15),
+                                              shape: BoxShape.circle,
+                                            ),
+                                            child: const Icon(
+                                              Icons.error_rounded,
+                                              color: _kErrorColor,
+                                              size: 26,
+                                            ),
+                                          ),
                                   ),
                                   const SizedBox(width: 12),
+                                  // Message
                                   Expanded(
-                                    child: isSuccess
-                                        ? Column(
-                                            crossAxisAlignment:
-                                                CrossAxisAlignment.start,
-                                            mainAxisSize: MainAxisSize.min,
-                                            children: [
-                                              Text(
-                                                c.scanFeedbackName.value,
-                                                style: const TextStyle(
-                                                  color: Colors.white,
-                                                  fontSize: 15,
-                                                  fontWeight: FontWeight.bold,
-                                                ),
-                                                maxLines: 1,
-                                                overflow: TextOverflow.ellipsis,
-                                              ),
-                                              const SizedBox(height: 3),
-                                              Row(
-                                                children: [
-                                                  Text(
-                                                    '₹${c.scanFeedbackPrice.value.toStringAsFixed(0)}',
-                                                    style: TextStyle(
-                                                      color: Colors.white
-                                                          .withValues(
-                                                              alpha: 0.65),
-                                                      fontSize: 13,
-                                                    ),
-                                                  ),
-                                                  const SizedBox(width: 10),
-                                                  Container(
-                                                    padding: const EdgeInsets
-                                                        .symmetric(
-                                                        horizontal: 8,
-                                                        vertical: 2),
-                                                    decoration: BoxDecoration(
-                                                      color: _kSuccessColor
-                                                          .withValues(
-                                                              alpha: 0.15),
-                                                      borderRadius:
-                                                          BorderRadius.circular(
-                                                              10),
-                                                    ),
-                                                    child: Text(
-                                                      '${_badgeLabel(cartCount)} in cart',
-                                                      style: const TextStyle(
-                                                        color: _kSuccessColor,
-                                                        fontSize: 11,
-                                                        fontWeight:
-                                                            FontWeight.w600,
-                                                      ),
-                                                    ),
-                                                  ),
-                                                ],
-                                              ),
-                                            ],
+                                    child: isLoading
+                                        ? const Text(
+                                            'Looking up product…',
+                                            style: TextStyle(
+                                              color: Colors.white,
+                                              fontSize: 15,
+                                              fontWeight: FontWeight.w600,
+                                            ),
                                           )
                                         : Column(
                                             crossAxisAlignment:
@@ -477,7 +435,7 @@ class _ScannerPageState extends State<ScannerPage>
                                 _GlassCircleButton(
                                   icon: Icons.shopping_cart_outlined,
                                   iconColor: Colors.white,
-                                  onPressed: () => Get.to(() => const CartPage()),
+                                  onPressed: () => Get.to(() => const ThemedBackground(child: CartPage())),
                                 ),
                                 if (count > 0)
                                   Positioned(

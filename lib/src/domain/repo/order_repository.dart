@@ -21,4 +21,6 @@ abstract class OrderRepository {
     required String storeId,
     required List<CartItemEntity> items,
   });
+
+  Future<OrderEntity> getOrderById(String orderId);
 }

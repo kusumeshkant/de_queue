@@ -14,6 +14,7 @@ class SignupController extends GetxController {
 
   var isLoading = false.obs;
   var obscurePassword = true.obs;
+  var validationError = ''.obs;
 
   String? nameValidator(String? value) {
     if (value == null || value.trim().isEmpty) return 'Full name is required';
@@ -36,26 +37,24 @@ class SignupController extends GetxController {
     required void Function() onSuccess,
     required void Function(String message) onError,
   }) async {
+    validationError.value = '';
     final nameError = nameValidator(nameController.text);
-    if (nameError != null) { onError(nameError); return; }
+    if (nameError != null) { validationError.value = nameError; return; }
 
     final emailError = emailValidator(emailController.text.trim());
-    if (emailError != null) { onError(emailError); return; }
+    if (emailError != null) { validationError.value = emailError; return; }
 
     final passwordError = passwordValidator(passwordController.text);
-    if (passwordError != null) { onError(passwordError); return; }
+    if (passwordError != null) { validationError.value = passwordError; return; }
 
     isLoading.value = true;
     try {
-      final auth = await signupUseCase.signUpWithEmail(
+      await signupUseCase.signUpWithEmail(
         name: nameController.text.trim(),
         email: emailController.text.trim(),
         password: passwordController.text,
       );
-      await GraphQLClientProvider.init(
-        baseUrl: AppConfig.graphqlEndpoint,
-        token: auth.token,
-      );
+      await GraphQLClientProvider.init(baseUrl: AppConfig.graphqlEndpoint);
       _clearFields();
       isLoading.value = false;
       onSuccess();
@@ -71,11 +70,8 @@ class SignupController extends GetxController {
   }) async {
     isLoading.value = true;
     try {
-      final auth = await signupUseCase.signInWithGoogle();
-      await GraphQLClientProvider.init(
-        baseUrl: AppConfig.graphqlEndpoint,
-        token: auth.token,
-      );
+      await signupUseCase.signInWithGoogle();
+      await GraphQLClientProvider.init(baseUrl: AppConfig.graphqlEndpoint);
       _clearFields();
       isLoading.value = false;
       onSuccess();
@@ -90,6 +86,7 @@ class SignupController extends GetxController {
     emailController.clear();
     passwordController.clear();
     obscurePassword.value = true;
+    validationError.value = '';
   }
 
   @override

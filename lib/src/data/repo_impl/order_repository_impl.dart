@@ -42,4 +42,8 @@ class OrderRepositoryImpl implements OrderRepository {
     required String storeId,
     required List<CartItemEntity> items,
   }) => remote.validateCartStock(storeId: storeId, items: items);
+
+  @override
+  Future<OrderEntity> getOrderById(String orderId) =>
+      remote.getOrderById(orderId);
 }

@@ -1,0 +1,36 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(flutter analyze --no-pub)",
+      "Bash(flutter build windows --debug)",
+      "Bash(flutter devices)",
+      "Bash(flutter run -d emulator-5554 --debug)",
+      "Bash(ipconfig)",
+      "Bash(flutter pub get)",
+      "Bash(mv \"lib/src/presentation/dashBoard/bottomNavigation.dart\" \"lib/src/presentation/dashBoard/bottom_navigation.dart\")",
+      "Bash(mv \"lib/src/presentation/dashBoard/dashboard_viewModel.dart\" \"lib/src/presentation/dashBoard/dashboard_view_model.dart\")",
+      "Bash(mv \"lib/src/utils/dq_widgets/Nearby_store_title_tile .dart\" \"lib/src/utils/dq_widgets/nearby_store_title_tile.dart\")",
+      "Bash(mv \"lib/src/utils/dq_widgets/title_subHeading.dart\" \"lib/src/utils/dq_widgets/title_sub_heading.dart\")",
+      "Bash(mv \"lib/widgets/dq_glassText .dart\" \"lib/widgets/dq_glass_text.dart\")",
+      "Bash(mv \"lib/widgets/dq_inputField.dart\" \"lib/widgets/dq_input_field.dart\")",
+      "Bash(flutter analyze)",
+      "Bash(flutter build apk --debug)",
+      "Bash(adb devices)",
+      "Bash(\"%LOCALAPPDATA%/Android/Sdk/platform-tools/adb.exe\" kill-server)",
+      "Bash(\"%LOCALAPPDATA%/Android/Sdk/platform-tools/adb.exe\" start-server)",
+      "Bash(\"/c/Users/user/AppData/Local/Android/Sdk/platform-tools/adb.exe\" kill-server)",
+      "Bash(\"/c/Users/user/AppData/Local/Android/Sdk/platform-tools/adb.exe\" start-server)",
+      "Bash(\"/c/Users/user/AppData/Local/Android/Sdk/platform-tools/adb.exe\" devices)",
+      "Bash(\"/c/Users/user/AppData/Local/Android/Sdk/platform-tools/adb.exe\" -s emulator-5554 install -r \"d:/D_Q_3rd_demo_app/dq_app/build/app/outputs/flutter-apk/app-debug.apk\")",
+      "Bash(\"/c/Users/user/AppData/Local/Android/Sdk/platform-tools/adb.exe\" -s emulator-5554 install --no-streaming \"d:/D_Q_3rd_demo_app/dq_app/build/app/outputs/flutter-apk/app-debug.apk\")",
+      "Bash(\"/c/Users/user/AppData/Local/Android/Sdk/platform-tools/adb.exe\" -s emulator-5554 reboot)",
+      "Bash(\"/c/Users/user/AppData/Local/Android/Sdk/platform-tools/adb.exe\" wait-for-device)",
+      "Bash(\"/c/Users/user/AppData/Local/Android/Sdk/platform-tools/adb.exe\" -s emulator-5554 shell getprop sys.boot_completed)",
+      "Bash(\"/c/Users/user/AppData/Local/Android/Sdk/platform-tools/adb.exe\" -s emulator-5554 push \"d:/D_Q_3rd_demo_app/dq_app/build/app/outputs/flutter-apk/app-debug.apk\" /data/local/tmp/app-debug.apk)",
+      "Bash(\"/c/Users/user/AppData/Local/Android/Sdk/platform-tools/adb.exe\" -s emulator-5554 shell pm install -r /data/local/tmp/app-debug.apk)",
+      "Bash(\"/c/Users/user/AppData/Local/Android/Sdk/platform-tools/adb.exe\" -s emulator-5554 push \"d:/D_Q_3rd_demo_app/dq_app/build/app/outputs/flutter-apk/app-debug.apk\" \"//data/local/tmp/app-debug.apk\")",
+      "Bash(\"/c/Users/user/AppData/Local/Android/Sdk/platform-tools/adb.exe\" -s emulator-5554 shell \"pm install -r /data/local/tmp/app-debug.apk\")",
+      "Bash(flutter run -d emulator-5554)"
+    ]
+  }
+}

@@ -13,12 +13,14 @@ import 'package:dq_app/src/domain/usecase/create_order_usecase.dart';
 import 'package:dq_app/src/domain/usecase/create_razorpay_order_usecase.dart';
 import 'package:dq_app/src/domain/usecase/validate_cart_stock_usecase.dart';
 import 'package:dq_app/src/domain/usecase/get_nearby_stores_usecase.dart';
+import 'package:dq_app/src/domain/usecase/get_order_by_id_usecase.dart';
 import 'package:dq_app/src/domain/usecase/get_stores_usecase.dart';
 import 'package:dq_app/src/domain/usecase/update_fcm_token_usecase.dart';
 import 'package:dq_app/src/presentation/Setting/setting_page.dart';
 import 'package:dq_app/src/presentation/cart/cart_controller.dart';
 import 'package:dq_app/src/presentation/cart/cart_page.dart';
 import 'package:dq_app/src/presentation/dashBoard/dashboard_page.dart';
+import 'package:dq_app/src/presentation/order/order_confirmation_page.dart';
 import 'package:dq_app/src/presentation/dashBoard/dashboard_view_model.dart';
 import 'package:dq_app/src/presentation/order/order_binding.dart';
 import 'package:dq_app/src/presentation/order/order_page.dart';
@@ -38,8 +40,11 @@ class Bottomnavigation extends StatefulWidget {
   State<Bottomnavigation> createState() => _BottomnavigationState();
 }
 
-class _BottomnavigationState extends State<Bottomnavigation> {
+class _BottomnavigationState extends State<Bottomnavigation>
+    with SingleTickerProviderStateMixin {
   late final NavigationController _navController;
+  late final AnimationController _pulseController;
+  late final Animation<double> _pulseAnimation;
 
   @override
   void initState() {
@@ -47,6 +52,20 @@ class _BottomnavigationState extends State<Bottomnavigation> {
     _navController = Get.put(NavigationController(), permanent: true);
     _registerDependencies();
     _setupNotificationHandlers();
+
+    _pulseController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 900),
+    )..repeat(reverse: true);
+    _pulseAnimation = Tween<double>(begin: 0.35, end: 1.0).animate(
+      CurvedAnimation(parent: _pulseController, curve: Curves.easeInOut),
+    );
+  }
+
+  @override
+  void dispose() {
+    _pulseController.dispose();
+    super.dispose();
   }
 
   void _setupNotificationHandlers() {
@@ -74,17 +93,19 @@ class _BottomnavigationState extends State<Bottomnavigation> {
     Get.put<StoreRepository>(StoreRepositoryImpl(remote: Get.find()));
     Get.put(GetStoresUseCase(repository: Get.find()));
     Get.put(GetNearbyStoresUseCase(repository: Get.find()));
-    Get.put(DashboardController(
-      getStoresUseCase: Get.find(),
-      getNearbyStoresUseCase: Get.find(),
-    ));
-
     Get.put(OrderRemoteDataSource(), permanent: true);
     Get.put<OrderRepository>(
         OrderRepositoryImpl(remote: Get.find()), permanent: true);
     Get.put(CreateRazorpayOrderUseCase(repository: Get.find()), permanent: true);
     Get.put(CreateOrderUseCase(repository: Get.find()), permanent: true);
     Get.put(ValidateCartStockUseCase(repository: Get.find()), permanent: true);
+    Get.put(GetOrderByIdUseCase(repository: Get.find()), permanent: true);
+
+    Get.put(DashboardController(
+      getStoresUseCase: Get.find(),
+      getNearbyStoresUseCase: Get.find(),
+      getOrderByIdUseCase: Get.find(),
+    ));
     Get.put(RazorpayService(), permanent: true);
     Get.put(
       CartController(
@@ -158,6 +179,80 @@ class _BottomnavigationState extends State<Bottomnavigation> {
                   ),
                 ),
               ),
+
+            // ── Active Order FAB ──────────────────────────────────────────
+            if (_navController.selectedIndex.value == 0)
+              Obx(() {
+                final dc = Get.find<DashboardController>();
+                if (!dc.hasActiveOrder) return const SizedBox.shrink();
+                return Positioned(
+                  bottom: 85,
+                  right: 16,
+                  child: GestureDetector(
+                    onTap: () {
+                      final order = dc.activeOrder.value;
+                      if (order != null) {
+                        Get.to(
+                          () => OrderConfirmationPage(order: order),
+                          transition: Transition.upToDown,
+                        );
+                      }
+                    },
+                    child: AnimatedBuilder(
+                      animation: _pulseAnimation,
+                      builder: (context, child) {
+                        return Container(
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 14, vertical: 10),
+                          decoration: BoxDecoration(
+                            color: tc.isGreenTheme.value
+                                ? Colors.black.withValues(alpha: 0.82)
+                                : Colors.white.withValues(alpha: 0.97),
+                            borderRadius: BorderRadius.circular(30),
+                            border: Border.all(
+                              color: Colors.orange.withValues(alpha: 0.6),
+                              width: 1.2,
+                            ),
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.orange.withValues(
+                                    alpha: 0.25 * _pulseAnimation.value),
+                                blurRadius: 14,
+                                spreadRadius: 2,
+                              ),
+                            ],
+                          ),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Container(
+                                width: 10,
+                                height: 10,
+                                decoration: BoxDecoration(
+                                  shape: BoxShape.circle,
+                                  color: Colors.orange.withValues(
+                                      alpha: _pulseAnimation.value),
+                                ),
+                              ),
+                              const SizedBox(width: 8),
+                              Text(
+                                'Awaiting Confirmation',
+                                style: TextStyle(
+                                  fontSize: 13,
+                                  fontWeight: FontWeight.w600,
+                                  color: tc.isGreenTheme.value
+                                      ? Colors.orange.shade300
+                                      : Colors.orange.shade700,
+                                ),
+                              ),
+                            ],
+                          ),
+                        );
+                      },
+                    ),
+                  ),
+                );
+              }),
           ],
         )),
         bottomNavigationBar: Obx(() => Container(

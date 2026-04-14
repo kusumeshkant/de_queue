@@ -1,6 +1,7 @@
 import 'dart:ui';
 import 'package:dq_app/src/l10n/translation_keys.dart';
 import 'package:dq_app/src/presentation/cart/cart_controller.dart';
+import 'package:dq_app/src/presentation/dashBoard/dashboard_view_model.dart';
 import 'package:dq_app/src/presentation/dashBoard/navigation_controller.dart';
 import 'package:dq_app/src/presentation/order/order_confirmation_page.dart';
 import 'package:dq_app/src/theme/theme_controller.dart';
@@ -32,7 +33,6 @@ class CartBottomBar extends StatelessWidget {
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                // Handle bar
                 Container(
                   width: 40,
                   height: 4,
@@ -42,8 +42,6 @@ class CartBottomBar extends StatelessWidget {
                     borderRadius: BorderRadius.circular(2),
                   ),
                 ),
-
-                // Icon
                 Container(
                   width: 60,
                   height: 60,
@@ -57,8 +55,6 @@ class CartBottomBar extends StatelessWidget {
                       color: Colors.red, size: 30),
                 ),
                 const SizedBox(height: 16),
-
-                // Title
                 Text(
                   'Payment Failed',
                   style: TextStyle(
@@ -68,17 +64,13 @@ class CartBottomBar extends StatelessWidget {
                   ),
                 ),
                 const SizedBox(height: 8),
-
-                // Description
                 Text(
                   message.replaceAll('Exception: ', ''),
                   textAlign: TextAlign.center,
-                  style:
-                      TextStyle(fontSize: 14, color: tc.textSecondary, height: 1.4),
+                  style: TextStyle(
+                      fontSize: 14, color: tc.textSecondary, height: 1.4),
                 ),
                 const SizedBox(height: 28),
-
-                // Back to Dashboard button
                 SizedBox(
                   width: double.infinity,
                   height: 48,
@@ -90,7 +82,7 @@ class CartBottomBar extends StatelessWidget {
                           borderRadius: BorderRadius.circular(14)),
                     ),
                     onPressed: () {
-                      Get.back(); // close sheet
+                      Get.back();
                       Get.until((r) => r.isFirst);
                       if (Get.isRegistered<NavigationController>()) {
                         Get.find<NavigationController>().goToHome();
@@ -102,8 +94,6 @@ class CartBottomBar extends StatelessWidget {
                   ),
                 ),
                 const SizedBox(height: 10),
-
-                // Close — stay on cart to retry
                 SizedBox(
                   width: double.infinity,
                   height: 44,
@@ -115,8 +105,7 @@ class CartBottomBar extends StatelessWidget {
                           borderRadius: BorderRadius.circular(14)),
                     ),
                     onPressed: () => Get.back(),
-                    child: const Text('Close',
-                        style: TextStyle(fontSize: 15)),
+                    child: const Text('Close', style: TextStyle(fontSize: 15)),
                   ),
                 ),
               ],
@@ -134,73 +123,163 @@ class CartBottomBar extends StatelessWidget {
     final c = Get.find<CartController>();
     final tc = Get.find<ThemeController>();
 
-    return Obx(() => ClipRRect(
-          borderRadius: const BorderRadius.vertical(top: Radius.circular(22)),
-          child: BackdropFilter(
-            filter: ImageFilter.blur(sigmaX: 32, sigmaY: 32),
-            child: Container(
-              padding: const EdgeInsets.fromLTRB(16, 14, 16, 20),
-              decoration: BoxDecoration(
-                color: tc.cardSurface,
-                borderRadius:
-                    const BorderRadius.vertical(top: Radius.circular(22)),
-                border: Border(top: BorderSide(color: tc.cardBorder)),
-              ),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  _row(tc, AppKeys.subtotal.tr,
-                      '₹${c.subtotal.toStringAsFixed(0)}'),
-                  _row(tc, AppKeys.tax.tr, '₹${c.tax.toStringAsFixed(0)}'),
-                  _row(tc, AppKeys.total.tr,
-                      '₹${c.grandTotal.toStringAsFixed(0)}',
-                      bold: true, accent: tc.primary),
-                  const SizedBox(height: 12),
+    return Obx(() {
+      // ── Savings calculation ──────────────────────────────────────────────
+      double totalSaved = 0;
+      for (final item in c.items) {
+        if (item.mrp != null && item.mrp! > item.price) {
+          totalSaved += (item.mrp! - item.price) * item.quantity;
+        }
+      }
+      final hasSavings = totalSaved > 0;
 
-                  SizedBox(
-                    width: double.infinity,
-                    height: 48,
-                    child: c.isCheckingOut.value
-                        ? Center(
-                            child: CircularProgressIndicator(color: tc.primary))
-                        : PrimaryButton(
-                            title: AppKeys.checkout.tr,
-                            onTap: () => c.checkout(
-                              onSuccess: (order) {
-                                LocalStorage.savePendingOrder(order);
-                                Get.to(
-                                  () => OrderConfirmationPage(order: order),
-                                  transition: Transition.fadeIn,
-                                );
-                              },
-                              onError: (msg) =>
-                                  _showPaymentFailedSheet(msg),
-                            ),
-                          ),
+      // ── Store name ───────────────────────────────────────────────────────
+      final storeName = Get.isRegistered<DashboardController>()
+          ? Get.find<DashboardController>().selectedStoreName.value
+          : '';
+
+      return ClipRRect(
+        borderRadius: const BorderRadius.vertical(top: Radius.circular(22)),
+        child: BackdropFilter(
+          filter: ImageFilter.blur(sigmaX: 32, sigmaY: 32),
+          child: Container(
+            padding: const EdgeInsets.fromLTRB(16, 14, 16, 20),
+            decoration: BoxDecoration(
+              color: tc.cardSurface,
+              borderRadius:
+                  const BorderRadius.vertical(top: Radius.circular(22)),
+              border: Border(top: BorderSide(color: tc.cardBorder)),
+            ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // ── Paying at store ────────────────────────────────────────
+                if (storeName.isNotEmpty) ...[
+                  Row(
+                    children: [
+                      Icon(Icons.store_rounded,
+                          size: 13,
+                          color: tc.textSecondary.withValues(alpha: 0.7)),
+                      const SizedBox(width: 5),
+                      Text(
+                        'Paying at $storeName',
+                        style: TextStyle(
+                          fontSize: 12,
+                          color: tc.textSecondary.withValues(alpha: 0.8),
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 10),
+                  Divider(height: 1, color: tc.cardBorder),
+                  const SizedBox(height: 10),
+                ],
+
+                // ── Price breakdown ────────────────────────────────────────
+                _row(tc, AppKeys.subtotal.tr,
+                    '₹${c.subtotal.toStringAsFixed(0)}'),
+                const SizedBox(height: 4),
+                _row(tc, 'GST (18%)', '₹${c.tax.toStringAsFixed(0)}'),
+
+                // Savings row
+                if (hasSavings) ...[
+                  const SizedBox(height: 4),
+                  _row(
+                    tc,
+                    'You save',
+                    '−₹${totalSaved.toStringAsFixed(0)}',
+                    valueColor: const Color(0xFF00C853),
                   ),
                 ],
-              ),
+
+                const SizedBox(height: 8),
+                Divider(height: 1, color: tc.cardBorder),
+                const SizedBox(height: 8),
+
+                _row(tc, AppKeys.total.tr,
+                    '₹${c.grandTotal.toStringAsFixed(0)}',
+                    bold: true, valueColor: tc.primary),
+
+                const SizedBox(height: 14),
+
+                // ── Checkout button ────────────────────────────────────────
+                SizedBox(
+                  width: double.infinity,
+                  height: 50,
+                  child: c.isCheckingOut.value
+                      ? Center(
+                          child:
+                              CircularProgressIndicator(color: tc.primary))
+                      : PrimaryButton(
+                          title: AppKeys.checkout.tr,
+                          onTap: () => c.checkout(
+                            onSuccess: (order) {
+                              LocalStorage.savePendingOrder(order);
+                              Get.to(
+                                () => OrderConfirmationPage(order: order),
+                                transition: Transition.fadeIn,
+                              );
+                            },
+                            onError: (msg) => _showPaymentFailedSheet(msg),
+                          ),
+                        ),
+                ),
+
+                const SizedBox(height: 10),
+
+                // ── Security badge ─────────────────────────────────────────
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Icon(Icons.lock_rounded,
+                        size: 12,
+                        color: tc.textSecondary.withValues(alpha: 0.55)),
+                    const SizedBox(width: 4),
+                    Text(
+                      'Payments secured by Razorpay',
+                      style: TextStyle(
+                        fontSize: 11,
+                        color: tc.textSecondary.withValues(alpha: 0.55),
+                      ),
+                    ),
+                  ],
+                ),
+              ],
             ),
           ),
-        ));
+        ),
+      );
+    });
   }
 
-  Widget _row(ThemeController tc, String label, String value,
-      {bool bold = false, Color? accent}) {
+  Widget _row(
+    ThemeController tc,
+    String label,
+    String value, {
+    bool bold = false,
+    Color? valueColor,
+  }) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        Text(label,
-            style: TextStyle(
-                fontSize: 15,
-                color: tc.textSecondary,
-                fontWeight: bold ? FontWeight.bold : FontWeight.normal)),
-        Text(value,
-            style: TextStyle(
-                fontSize: bold ? 16 : 15,
-                fontWeight: FontWeight.bold,
-                color: accent ?? tc.textPrimary)),
+        Text(
+          label,
+          style: TextStyle(
+            fontSize: 14,
+            color: tc.textSecondary,
+            fontWeight: bold ? FontWeight.bold : FontWeight.normal,
+          ),
+        ),
+        Text(
+          value,
+          style: TextStyle(
+            fontSize: bold ? 16 : 14,
+            fontWeight: FontWeight.bold,
+            color: valueColor ?? tc.textPrimary,
+          ),
+        ),
       ],
     );
   }

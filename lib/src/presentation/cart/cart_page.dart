@@ -6,6 +6,8 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'widgets/cart_item_card.dart';
 import 'widgets/cart_bottom_bar.dart';
+import 'widgets/cart_savings_banner.dart';
+import 'widgets/cart_trust_strip.dart';
 
 class CartPage extends StatelessWidget {
   const CartPage({super.key});
@@ -85,15 +87,32 @@ class CartPage extends StatelessWidget {
             child: Obx(() {
               if (c.items.isEmpty) {
                 return Center(
-                  child: Text(
-                    AppKeys.cartEmpty.tr,
-                    textAlign: TextAlign.center,
-                    style: TextStyle(color: tc.textSecondary, fontSize: 15),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(Icons.shopping_cart_outlined,
+                          size: 72,
+                          color: tc.textSecondary.withValues(alpha: 0.35)),
+                      const SizedBox(height: 16),
+                      Text(
+                        AppKeys.cartEmpty.tr,
+                        style: TextStyle(
+                            fontSize: 17,
+                            fontWeight: FontWeight.w600,
+                            color: tc.textPrimary),
+                      ),
+                      const SizedBox(height: 8),
+                      Text(
+                        'Scan a product barcode to add items',
+                        style: TextStyle(
+                            fontSize: 13, color: tc.textSecondary),
+                      ),
+                    ],
                   ),
                 );
               }
               return ListView.builder(
-                padding: const EdgeInsets.all(16),
+                padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
                 itemCount: c.items.length,
                 itemBuilder: (context, index) {
                   final item = c.items[index];
@@ -101,6 +120,7 @@ class CartPage extends StatelessWidget {
                     title: item.name,
                     subtitle: item.subtitle,
                     price: item.price,
+                    mrp: item.mrp,
                     quantity: item.quantity,
                     onIncrement: () => c.incrementQuantity(item.barcode),
                     onDecrement: () => c.decrementQuantity(item.barcode),
@@ -110,6 +130,12 @@ class CartPage extends StatelessWidget {
               );
             }),
           ),
+          Obx(() => c.items.isNotEmpty
+              ? const CartSavingsBanner()
+              : const SizedBox.shrink()),
+          Obx(() => c.items.isNotEmpty
+              ? const CartTrustStrip()
+              : const SizedBox.shrink()),
           Obx(() => c.items.isNotEmpty
               ? const CartBottomBar()
               : const SizedBox.shrink()),
