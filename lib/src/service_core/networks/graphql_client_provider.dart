@@ -8,10 +8,8 @@ import 'graphql_logging_link.dart';
 
 class GraphQLClientProvider {
   static GraphQLClient? _client;
-  static String? _baseUrl;
 
   static Future<void> init({required String baseUrl}) async {
-    _baseUrl = baseUrl;
     _client = _buildClient(baseUrl);
   }
 

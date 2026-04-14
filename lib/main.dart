@@ -4,7 +4,6 @@ import 'package:dq_app/src/constants/app_config.dart';
 import 'package:dq_app/src/domain/entity/order_entity.dart';
 import 'package:dq_app/src/l10n/app_translations.dart';
 import 'package:dq_app/src/l10n/language_controller.dart';
-import 'package:dq_app/src/presentation/auth/login/login_binding.dart';
 import 'package:dq_app/src/presentation/order/order_confirmation_page.dart';
 import 'package:dq_app/src/service_core/networks/graphql_service.dart';
 import 'package:dq_app/src/service_core/networks/network_service.dart';

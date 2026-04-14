@@ -365,7 +365,6 @@ class _LiquidInputField extends StatelessWidget {
   final String hint;
   final TextEditingController controller;
   final TextInputType keyboardType;
-  final bool enabled;
   final bool obscureText;
   final Widget? prefix;
   final Widget? suffix;
@@ -379,7 +378,6 @@ class _LiquidInputField extends StatelessWidget {
     required this.hint,
     required this.controller,
     this.keyboardType = TextInputType.text,
-    this.enabled = true,
     this.obscureText = false,
     this.prefix,
     this.suffix,
@@ -422,7 +420,6 @@ class _LiquidInputField extends StatelessWidget {
                   child: TextField(
                   controller: controller,
                   keyboardType: keyboardType,
-                  enabled: enabled,
                   obscureText: obscureText,
                   autocorrect: false,
                   enableSuggestions: false,
