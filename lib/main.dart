@@ -12,6 +12,7 @@ import 'package:dq_app/src/service_core/notifications/notification_service.dart'
 import 'package:dq_app/src/presentation/auth/login/login_page.dart';
 import 'package:dq_app/src/presentation/dashBoard/bottom_navigation.dart';
 import 'package:dq_app/src/service_core/networks/graphql_client_provider.dart';
+import 'package:dq_app/src/service_core/subscription/subscription_manager.dart';
 import 'package:dq_app/src/theme/app_theme.dart';
 import 'package:dq_app/src/theme/theme_controller.dart';
 import 'package:dq_app/src/utils/services/local_storage.dart';
@@ -37,6 +38,7 @@ void main() async {
   final themeController = Get.put(ThemeController(), permanent: true);
   Get.put(LanguageController(), permanent: true);
   Get.put(NetworkService(), permanent: true);
+  Get.put(SubscriptionManager(), permanent: true);
 
   // Load saved locale before building UI
   final savedLocale = await AppLocales.loadSaved();
