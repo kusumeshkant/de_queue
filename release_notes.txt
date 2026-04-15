@@ -1,27 +1,33 @@
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-  DQ App  |  v1.0.2+19  |  TESTING BUILD
+  DQ App  |  v1.0.2+20  |  TESTING BUILD
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 ⚠️  This build is for internal testing only.
     Do NOT share outside the test team.
 
 ─────────────────────────────────────
- WHAT TO TEST
+ WHAT'S NEW IN THIS BUILD
 ─────────────────────────────────────
-• Register as customer → browse nearby stores
-• Add items to cart → place order
-• Razorpay test card: 4111 1111 1111 1111
-  Expiry: any future date | CVV: any 3 digits
-• QR code shown on confirmation screen
-• Order status updates in real time
-• Kill & relaunch → pending order restores
+• Staff/admin accounts can now add a customer profile via
+  the Sign Up screen → "Continue with Google" — no extra steps
+• Staff-only and admin-only accounts are blocked from logging in
+  directly; they are redirected to Sign Up with a clear message
+• Dual-role accounts (customer + staff) work correctly
+• Role constants unified across backend and Flutter —
+  no magic strings in logic code
 
 ─────────────────────────────────────
- SECURITY FIXES IN THIS BUILD
+ WHAT TO TEST
 ─────────────────────────────────────
-• Admin/staff accounts blocked from using this app
-• Role validated on every app launch (fail closed)
-• Session preserved on network failure — no spurious logouts
+• New customer signup (email + Google)
+• Staff Google account on LOGIN page → should show "Staff Account
+  Detected" dialog with "Go to Sign Up" button
+• Staff Google account on SIGN UP page → should silently add
+  customer role and land on home screen
+• Existing customer Google login → should work normally
+• Kill & relaunch → should restore session correctly (cold start)
+• Razorpay test card: 4111 1111 1111 1111
+  Expiry: any future date | CVV: any 3 digits
 
 ─────────────────────────────────────
  KNOWN SCOPE
