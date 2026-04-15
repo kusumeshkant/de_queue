@@ -1,9 +1,7 @@
 import 'package:dq_app/src/constants/app_config.dart';
 import 'package:dq_app/src/domain/usecase/login_usecase.dart';
+import 'package:dq_app/src/service_core/auth/customer_auth_service.dart';
 import 'package:dq_app/src/service_core/networks/graphql_client_provider.dart';
-import 'package:dq_app/src/service_core/networks/graphql_service.dart';
-import 'package:firebase_auth/firebase_auth.dart';
-import 'package:graphql_flutter/graphql_flutter.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
@@ -30,8 +28,14 @@ class LoginController extends GetxController {
     return null;
   }
 
+  /// Email + password login.
+  ///
+  /// [onAccessDenied] fires when the backend returns FORBIDDEN — the UI should
+  /// show a role-specific dialog, not a generic snackbar.
+  /// [onError] fires for Firebase auth failures and network errors.
   Future<void> signIn({
     required void Function() onSuccess,
+    required void Function(AccessDeniedException error) onAccessDenied,
     required void Function(String message) onError,
   }) async {
     validationError.value = '';
@@ -48,56 +52,43 @@ class LoginController extends GetxController {
         password: passwordController.text,
       );
       await GraphQLClientProvider.init(baseUrl: AppConfig.graphqlEndpoint);
-      await _assertCustomerRole();
+      await CustomerAuthService.validateCustomerAccess();
       _clearFields();
       isLoading.value = false;
       onSuccess();
+    } on AccessDeniedException catch (e) {
+      isLoading.value = false;
+      onAccessDenied(e);
     } catch (e) {
       isLoading.value = false;
       onError(e.toString().replaceAll('Exception: ', ''));
     }
   }
 
+  /// Google login.
+  ///
+  /// [onAccessDenied] fires when the account exists as staff/admin only.
+  /// The UI should offer a "Go to Sign Up" action — the signup page's Google
+  /// button will automatically add the customer role to their account.
   Future<void> signInWithGoogle({
     required void Function() onSuccess,
+    required void Function(AccessDeniedException error) onAccessDenied,
     required void Function(String message) onError,
   }) async {
     isLoading.value = true;
     try {
       await loginUseCase.signInWithGoogle();
       await GraphQLClientProvider.init(baseUrl: AppConfig.graphqlEndpoint);
-      await _assertCustomerRole();
+      await CustomerAuthService.validateCustomerAccess();
       _clearFields();
       isLoading.value = false;
       onSuccess();
+    } on AccessDeniedException catch (e) {
+      isLoading.value = false;
+      onAccessDenied(e);
     } catch (e) {
       isLoading.value = false;
       onError(e.toString().replaceAll('Exception: ', ''));
-    }
-  }
-
-  /// Calls the backend validateAppAccess(CUSTOMER) gate.
-  ///
-  /// The backend is the authoritative check — it reads roles from MongoDB and
-  /// rejects admin/staff accounts with a structured FORBIDDEN error.
-  /// On rejection: Firebase session is signed out before throwing.
-  /// On network failure: fail CLOSED — cannot let an unverified user through.
-  Future<void> _assertCustomerRole() async {
-    const query = 'query ValidateCustomerAccess { validateAppAccess(appId: "CUSTOMER") { id roles } }';
-
-    final QueryResult result;
-    try {
-      result = await GraphQLService.performQuery(query: query);
-    } catch (e) {
-      await FirebaseAuth.instance.signOut();
-      throw Exception('Unable to verify your account. Please check your connection and try again.');
-    }
-
-    if (result.hasException) {
-      await FirebaseAuth.instance.signOut();
-      final msg = result.exception?.graphqlErrors.firstOrNull?.message
-          ?? 'Access denied. This account cannot be used in the customer app.';
-      throw Exception(msg);
     }
   }
 

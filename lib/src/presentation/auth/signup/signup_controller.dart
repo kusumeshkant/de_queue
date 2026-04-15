@@ -1,5 +1,6 @@
 import 'package:dq_app/src/constants/app_config.dart';
 import 'package:dq_app/src/domain/usecase/signup_usecase.dart';
+import 'package:dq_app/src/service_core/auth/customer_auth_service.dart';
 import 'package:dq_app/src/service_core/networks/graphql_client_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -33,6 +34,11 @@ class SignupController extends GetxController {
     return null;
   }
 
+  /// Email + password signup.
+  ///
+  /// After Firebase account creation, calls [CustomerAuthService.validateCustomerAccess]
+  /// to confirm the user document is created in MongoDB. For a brand-new Firebase
+  /// account this always succeeds (backend auto-creates as customer).
   Future<void> signUp({
     required void Function() onSuccess,
     required void Function(String message) onError,
@@ -55,15 +61,32 @@ class SignupController extends GetxController {
         password: passwordController.text,
       );
       await GraphQLClientProvider.init(baseUrl: AppConfig.graphqlEndpoint);
+      // Confirm backend session — creates the MongoDB user doc as customer.
+      await CustomerAuthService.validateCustomerAccess();
       _clearFields();
       isLoading.value = false;
       onSuccess();
+    } on AccessDeniedException catch (e) {
+      // A brand-new Firebase account should never hit FORBIDDEN, but handle
+      // it defensively. The service already signed out Firebase.
+      isLoading.value = false;
+      onError(e.userMessage);
     } catch (e) {
       isLoading.value = false;
       onError(e.toString().replaceAll('Exception: ', ''));
     }
   }
 
+  /// Google sign-up / sign-in — handles all three account states automatically:
+  ///
+  /// 1. **New account** → backend auto-creates as customer → home
+  /// 2. **Existing customer account** → validated → home
+  /// 3. **Staff or admin account** → [registerAsCustomer] adds customer role → home
+  ///
+  /// Case 3 is the key fix: a staff member who taps "Continue with Google" on
+  /// the signup page gets their customer role added silently, with no extra
+  /// steps. They can now use both the DQ Staff app and the DQ customer app
+  /// with the same Google account.
   Future<void> signInWithGoogle({
     required void Function() onSuccess,
     required void Function(String message) onError,
@@ -72,9 +95,29 @@ class SignupController extends GetxController {
     try {
       await signupUseCase.signInWithGoogle();
       await GraphQLClientProvider.init(baseUrl: AppConfig.graphqlEndpoint);
+
+      try {
+        await CustomerAuthService.validateCustomerAccess();
+      } on AccessDeniedException catch (e) {
+        if (e.hint == AuthAccessHint.staffNoCustomer ||
+            e.hint == AuthAccessHint.adminNoCustomer) {
+          // Account exists but has no customer role yet — add it.
+          // Firebase is still signed in at this point (signOut not called for
+          // FORBIDDEN on validateCustomerAccess before registerAsCustomer).
+          await CustomerAuthService.registerAsCustomer();
+          // Fall through to onSuccess below
+        } else {
+          // Network error or truly unknown denial — propagate as plain error
+          rethrow;
+        }
+      }
+
       _clearFields();
       isLoading.value = false;
       onSuccess();
+    } on AccessDeniedException catch (e) {
+      isLoading.value = false;
+      onError(e.userMessage);
     } catch (e) {
       isLoading.value = false;
       onError(e.toString().replaceAll('Exception: ', ''));
