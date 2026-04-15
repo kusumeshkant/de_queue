@@ -73,7 +73,8 @@ class CustomerAuthService {
   /// Behaviour by account state:
   /// - New account (UID not in DB) → auto-created as customer → success
   /// - Existing customer            → validated → success
-  /// - Staff-only / admin-only      → signs out Firebase, throws [AccessDeniedException]
+  /// - Staff-only / admin-only      → throws [AccessDeniedException] (Firebase session
+  ///                                  preserved so signup flow can call registerAsCustomer)
   /// - Network failure / timeout    → signs out Firebase, throws [AccessDeniedException]
   ///
   /// The caller must NOT catch [AccessDeniedException] broadly — let it
@@ -82,12 +83,21 @@ class CustomerAuthService {
     final result = await _executeQuery(_validateQuery);
 
     if (result.hasException) {
-      await _signOut();
       final gqlError = result.exception?.graphqlErrors.firstOrNull;
       final rawHint = gqlError?.extensions?['hint'] as String?;
+      final hint = _parseHint(rawHint);
       final msg = gqlError?.message
           ?? 'Access denied. Please sign up on the DQ App to continue.';
-      throw AccessDeniedException(msg, _parseHint(rawHint));
+
+      // Only sign out for terminal denials. For STAFF_NO_CUSTOMER and
+      // ADMIN_NO_CUSTOMER the Firebase session must stay alive so the signup
+      // flow can call registerAsCustomer() with a valid auth token.
+      if (hint != AuthAccessHint.staffNoCustomer &&
+          hint != AuthAccessHint.adminNoCustomer) {
+        await _signOut();
+      }
+
+      throw AccessDeniedException(msg, hint);
     }
   }
 
