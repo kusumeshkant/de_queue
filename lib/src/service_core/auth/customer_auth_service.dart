@@ -1,5 +1,6 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
+import 'package:dq_app/src/constants/app_roles.dart';
 import 'package:dq_app/src/service_core/networks/graphql_client_provider.dart';
 
 // ── Typed error ───────────────────────────────────────────────────────────────
@@ -52,9 +53,9 @@ class CustomerAuthService {
 
   // ─── GraphQL documents ────────────────────────────────────────────────────
 
-  static const _validateQuery = r'''
+  static final _validateQuery = '''
     query ValidateCustomerAccess {
-      validateAppAccess(appId: "CUSTOMER") { id roles }
+      validateAppAccess(appId: "${AppId.customer}") { id roles }
     }
   ''';
 
@@ -158,8 +159,8 @@ class CustomerAuthService {
   }
 
   static AuthAccessHint _parseHint(String? raw) => switch (raw) {
-        'STAFF_NO_CUSTOMER' => AuthAccessHint.staffNoCustomer,
-        'ADMIN_NO_CUSTOMER' => AuthAccessHint.adminNoCustomer,
+        RoleHint.staffNoCustomer => AuthAccessHint.staffNoCustomer,
+        RoleHint.adminNoCustomer => AuthAccessHint.adminNoCustomer,
         _ => AuthAccessHint.unknown,
       };
 

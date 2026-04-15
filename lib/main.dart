@@ -1,6 +1,7 @@
 import 'package:dq_app/core/enums/db_tables_enums.dart';
 import 'package:dq_app/core/manager/hive_manager.dart';
 import 'package:dq_app/src/constants/app_config.dart';
+import 'package:dq_app/src/constants/app_roles.dart';
 import 'package:dq_app/src/domain/entity/order_entity.dart';
 import 'package:dq_app/src/l10n/app_translations.dart';
 import 'package:dq_app/src/l10n/language_controller.dart';
@@ -68,7 +69,7 @@ Future<bool> _validateColdStart() async {
   final firebaseUser = FirebaseAuth.instance.currentUser;
   if (firebaseUser == null) return false; // not logged in — show login
 
-  const query = 'query ValidateCustomerAccess { validateAppAccess(appId: "CUSTOMER") { id } }';
+  final query = 'query ValidateCustomerAccess { validateAppAccess(appId: "${AppId.customer}") { id } }';
   try {
     final result = await GraphQLService.performQuery(query: query);
     if (result.hasException) {
