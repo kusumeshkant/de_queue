@@ -1,38 +1,12 @@
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-  DQ App  |  v1.0.2+20  |  TESTING BUILD
+  DQ App  |  v1.0.2+21  |  TESTING BUILD
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 ⚠️  This build is for internal testing only.
-    Do NOT share outside the test team.
 
-─────────────────────────────────────
- WHAT'S NEW IN THIS BUILD
-─────────────────────────────────────
-• Staff/admin accounts can now add a customer profile via
-  the Sign Up screen → "Continue with Google" — no extra steps
-• Staff-only and admin-only accounts are blocked from logging in
-  directly; they are redirected to Sign Up with a clear message
-• Dual-role accounts (customer + staff) work correctly
-• Role constants unified across backend and Flutter —
-  no magic strings in logic code
+🔧 Infrastructure
+  • Backend migrated from Vercel → Azure Container Apps
+  • Faster cold starts, better reliability
+  • No feature changes — all flows unchanged
 
-─────────────────────────────────────
- WHAT TO TEST
-─────────────────────────────────────
-• New customer signup (email + Google)
-• Staff Google account on LOGIN page → should show "Staff Account
-  Detected" dialog with "Go to Sign Up" button
-• Staff Google account on SIGN UP page → should silently add
-  customer role and land on home screen
-• Existing customer Google login → should work normally
-• Kill & relaunch → should restore session correctly (cold start)
-• Razorpay test card: 4111 1111 1111 1111
-  Expiry: any future date | CVV: any 3 digits
-
-─────────────────────────────────────
- KNOWN SCOPE
-─────────────────────────────────────
-• Android only
-• Backend: https://de-backend-iota.vercel.app/
-
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Please test login, queue join, and order flow as normal.
