@@ -1,12 +1,36 @@
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-  DQ App  |  v1.0.2+21  |  TESTING BUILD
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  DQ App  |  v1.0.2+24  |  PHASE 2A TESTING BUILD
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 ⚠️  This build is for internal testing only.
+    DO NOT share outside the team.
 
-🔧 Infrastructure
-  • Backend migrated from Vercel → Azure Container Apps
-  • Faster cold starts, better reliability
-  • No feature changes — all flows unchanged
+━━━ WHAT'S NEW IN THIS BUILD ━━━
 
-Please test login, queue join, and order flow as normal.
+Phase 2A — Subscription Engine (Backend Only, No UI Change)
+
+  • SubscriptionManager service wired at app startup (loads subscription
+    state silently in the background — no visible change to customers)
+  • Backend: auto-assigns 14-day trial to every new store on creation
+  • Backend: subscription kill switch in place (SUBSCRIPTION_ENABLED env var)
+
+━━━ WHAT TO TEST ━━━
+
+  Phase 2A:
+  □ App startup completes without errors or delays
+  □ No subscription-related crash or error dialog on cold start
+  □ Logout and re-login — app resumes correctly
+  □ Store discovery (nearby stores list) works correctly
+
+  Phase 1 regression (must still work):
+  □ Login / sign-up flow
+  □ Nearby store discovery
+  □ Browse products in a store
+  □ Add to cart and checkout
+  □ Order history
+  □ Customer profile
+
+━━━ KNOWN SCOPE ━━━
+
+  - No subscription UI in dq_app — all changes are internal service wiring
+  - No features are gated or blocked in this build
