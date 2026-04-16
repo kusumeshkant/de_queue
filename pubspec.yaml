@@ -2,7 +2,7 @@ name: dq_app
 description: DQ App — customer ordering app for DQueue smart retail platform.
 publish_to: 'none'
 
-version: 1.0.2+24
+version: 1.0.2+25
 
 environment:
   sdk: ">=3.8.1 <4.0.0"
