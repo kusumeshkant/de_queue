@@ -22,6 +22,7 @@ class OrderRepositoryImpl implements OrderRepository {
     required String razorpayOrderId,
     required String razorpayPaymentId,
     required String razorpaySignature,
+    String? discountCode,
   }) =>
       remote.createOrder(
         storeId: storeId,
@@ -32,6 +33,7 @@ class OrderRepositoryImpl implements OrderRepository {
         razorpayOrderId: razorpayOrderId,
         razorpayPaymentId: razorpayPaymentId,
         razorpaySignature: razorpaySignature,
+        discountCode: discountCode,
       );
 
   @override

@@ -203,6 +203,19 @@ class OrderConfirmationPage extends StatelessWidget {
                       const SizedBox(height: 4),
                       _summaryRow(
                           tc, AppKeys.tax.tr, '₹${order.tax.toStringAsFixed(0)}'),
+                      // Discount row — shown only when a code was applied
+                      Builder(builder: (_) {
+                        final saved = (order.total + order.tax) - order.grandTotal;
+                        if (saved < 0.5) return const SizedBox.shrink();
+                        return Column(children: [
+                          const SizedBox(height: 4),
+                          _summaryRow(
+                            tc, 'Discount applied',
+                            '−₹${saved.toStringAsFixed(0)}',
+                            valueColor: const Color(0xFF00C853),
+                          ),
+                        ]);
+                      }),
                       const SizedBox(height: 6),
                       _summaryRow(
                           tc, AppKeys.total.tr, '₹${order.grandTotal.toStringAsFixed(0)}',
@@ -246,7 +259,7 @@ class OrderConfirmationPage extends StatelessWidget {
   }
 
   Widget _summaryRow(ThemeController tc, String label, String value,
-      {bool bold = false}) {
+      {bool bold = false, Color? valueColor}) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
@@ -256,7 +269,7 @@ class OrderConfirmationPage extends StatelessWidget {
                 fontWeight: bold ? FontWeight.bold : FontWeight.normal)),
         Text(value,
             style: TextStyle(
-                color: tc.textPrimary,
+                color: valueColor ?? tc.textPrimary,
                 fontWeight: bold ? FontWeight.bold : FontWeight.normal)),
       ],
     );

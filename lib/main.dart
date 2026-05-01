@@ -24,9 +24,7 @@ import 'firebase_options.dart';
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  await Firebase.initializeApp(
-    options: DefaultFirebaseOptions.currentPlatform,
-  );
+  await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
 
   await HiveManager.init();
 
@@ -55,12 +53,14 @@ void main() async {
   // Fail CLOSED: on network failure or FORBIDDEN, sign out and show login.
   final bool coldStartValid = await _validateColdStart();
 
-  runApp(MyApp(
-    initialThemeController: themeController,
-    initialLocale: savedLocale,
-    pendingOrder: pendingOrder,
-    coldStartValid: coldStartValid,
-  ));
+  runApp(
+    MyApp(
+      initialThemeController: themeController,
+      initialLocale: savedLocale,
+      pendingOrder: pendingOrder,
+      coldStartValid: coldStartValid,
+    ),
+  );
 }
 
 /// Returns true if the cold-start session is valid for the customer app.
@@ -69,7 +69,8 @@ Future<bool> _validateColdStart() async {
   final firebaseUser = FirebaseAuth.instance.currentUser;
   if (firebaseUser == null) return false; // not logged in — show login
 
-  final query = 'query ValidateCustomerAccess { validateAppAccess(appId: "${AppId.customer}") { id } }';
+  final query =
+      'query ValidateCustomerAccess { validateAppAccess(appId: "${AppId.customer}") { id } }';
   try {
     final result = await GraphQLService.performQuery(query: query);
     if (result.hasException) {
@@ -104,17 +105,19 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Obx(() => GetMaterialApp(
-          debugShowCheckedModeBanner: false,
-          title: 'DQ',
-          translations: AppTranslations(),
-          locale: Get.find<LanguageController>().currentLocale.value,
-          fallbackLocale: AppLocales.english,
-          theme: initialThemeController.isGreenTheme.value
-              ? AppTheme.green
-              : AppTheme.light,
-          home: _getInitialPage(),
-        ));
+    return Obx(
+      () => GetMaterialApp(
+        debugShowCheckedModeBanner: false,
+        title: 'DQ',
+        translations: AppTranslations(),
+        locale: Get.find<LanguageController>().currentLocale.value,
+        fallbackLocale: AppLocales.english,
+        theme: initialThemeController.isGreenTheme.value
+            ? AppTheme.green
+            : AppTheme.light,
+        home: _getInitialPage(),
+      ),
+    );
   }
 
   Widget _getInitialPage() {

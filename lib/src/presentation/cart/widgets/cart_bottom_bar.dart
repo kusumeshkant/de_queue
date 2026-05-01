@@ -177,13 +177,137 @@ class CartBottomBar extends StatelessWidget {
                   const SizedBox(height: 10),
                 ],
 
+                // ── Discount code input ────────────────────────────────────
+                Obx(() {
+                  if (c.discountResult.value != null) {
+                    // Code applied — show summary with remove button
+                    final result = c.discountResult.value!;
+                    return Column(
+                      children: [
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 12, vertical: 8),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFF00C853).withValues(alpha: 0.1),
+                            borderRadius: BorderRadius.circular(10),
+                            border: Border.all(
+                                color: const Color(0xFF00C853)
+                                    .withValues(alpha: 0.4)),
+                          ),
+                          child: Row(
+                            children: [
+                              const Icon(Icons.check_circle_rounded,
+                                  color: Color(0xFF00C853), size: 16),
+                              const SizedBox(width: 8),
+                              Expanded(
+                                child: Text(
+                                  'Code applied — '
+                                  '${(result['discountPercent'] as num).toStringAsFixed(0)}% off'
+                                  ' by ${result['generatedByName'] ?? 'staff'}',
+                                  style: const TextStyle(
+                                      color: Color(0xFF00C853),
+                                      fontSize: 12,
+                                      fontWeight: FontWeight.w500),
+                                ),
+                              ),
+                              GestureDetector(
+                                onTap: c.removeDiscount,
+                                child: const Icon(Icons.close_rounded,
+                                    color: Color(0xFF00C853), size: 16),
+                              ),
+                            ],
+                          ),
+                        ),
+                        const SizedBox(height: 8),
+                      ],
+                    );
+                  }
+                  // No code applied — show input field
+                  return Column(
+                    children: [
+                      Row(
+                        children: [
+                          Expanded(
+                            child: TextField(
+                              controller: c.discountCodeCtrl,
+                              textCapitalization: TextCapitalization.characters,
+                              style: TextStyle(
+                                  color: tc.textPrimary,
+                                  letterSpacing: 2,
+                                  fontWeight: FontWeight.w600),
+                              decoration: InputDecoration(
+                                hintText: 'Discount code (from staff)',
+                                hintStyle: TextStyle(
+                                    color: tc.textSecondary,
+                                    letterSpacing: 0,
+                                    fontWeight: FontWeight.normal,
+                                    fontSize: 13),
+                                prefixIcon: Icon(Icons.percent_rounded,
+                                    color: tc.textSecondary, size: 18),
+                                contentPadding: const EdgeInsets.symmetric(
+                                    horizontal: 12, vertical: 10),
+                                isDense: true,
+                                border: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(10),
+                                  borderSide:
+                                      BorderSide(color: tc.cardBorder),
+                                ),
+                                enabledBorder: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(10),
+                                  borderSide:
+                                      BorderSide(color: tc.cardBorder),
+                                ),
+                                focusedBorder: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(10),
+                                  borderSide: BorderSide(
+                                      color: tc.primary, width: 1.5),
+                                ),
+                              ),
+                            ),
+                          ),
+                          const SizedBox(width: 8),
+                          Obx(() => SizedBox(
+                                height: 44,
+                                child: ElevatedButton(
+                                  style: ElevatedButton.styleFrom(
+                                    backgroundColor: tc.primary,
+                                    foregroundColor: Colors.white,
+                                    shape: RoundedRectangleBorder(
+                                        borderRadius:
+                                            BorderRadius.circular(10)),
+                                    padding: const EdgeInsets.symmetric(
+                                        horizontal: 14),
+                                  ),
+                                  onPressed: c.isValidatingCode.value
+                                      ? null
+                                      : c.validateAndApplyDiscount,
+                                  child: c.isValidatingCode.value
+                                      ? const SizedBox(
+                                          width: 16,
+                                          height: 16,
+                                          child: CircularProgressIndicator(
+                                              strokeWidth: 2,
+                                              color: Colors.white))
+                                      : const Text('Apply',
+                                          style: TextStyle(
+                                              fontWeight: FontWeight.bold,
+                                              fontSize: 13)),
+                                ),
+                              )),
+                        ],
+                      ),
+                      const SizedBox(height: 8),
+                    ],
+                  );
+                }),
+
                 // ── Price breakdown ────────────────────────────────────────
                 _row(tc, AppKeys.subtotal.tr,
                     '₹${c.subtotal.toStringAsFixed(0)}'),
                 const SizedBox(height: 4),
                 _row(tc, 'GST (18%)', '₹${c.tax.toStringAsFixed(0)}'),
 
-                // Savings row
+                // MRP savings row
                 if (hasSavings) ...[
                   const SizedBox(height: 4),
                   _row(
@@ -194,12 +318,25 @@ class CartBottomBar extends StatelessWidget {
                   ),
                 ],
 
+                // Discount code savings row
+                Obx(() => c.discountResult.value != null
+                    ? Padding(
+                        padding: const EdgeInsets.only(top: 4),
+                        child: _row(
+                          tc,
+                          'Discount (${(c.discountResult.value!['discountPercent'] as num).toStringAsFixed(0)}%)',
+                          '−₹${c.discountAmount.toStringAsFixed(0)}',
+                          valueColor: const Color(0xFF00C853),
+                        ),
+                      )
+                    : const SizedBox.shrink()),
+
                 const SizedBox(height: 8),
                 Divider(height: 1, color: tc.cardBorder),
                 const SizedBox(height: 8),
 
                 _row(tc, AppKeys.total.tr,
-                    '₹${c.grandTotal.toStringAsFixed(0)}',
+                    '₹${c.effectiveGrandTotal.toStringAsFixed(0)}',
                     bold: true, valueColor: tc.primary),
 
                 const SizedBox(height: 14),

@@ -21,14 +21,14 @@
       "Bash(\"/c/Users/user/AppData/Local/Android/Sdk/platform-tools/adb.exe\" kill-server)",
       "Bash(\"/c/Users/user/AppData/Local/Android/Sdk/platform-tools/adb.exe\" start-server)",
       "Bash(\"/c/Users/user/AppData/Local/Android/Sdk/platform-tools/adb.exe\" devices)",
-      "Bash(\"/c/Users/user/AppData/Local/Android/Sdk/platform-tools/adb.exe\" -s emulator-5554 install -r \"d:/D_Q_3rd_demo_app/dq_app/build/app/outputs/flutter-apk/app-debug.apk\")",
-      "Bash(\"/c/Users/user/AppData/Local/Android/Sdk/platform-tools/adb.exe\" -s emulator-5554 install --no-streaming \"d:/D_Q_3rd_demo_app/dq_app/build/app/outputs/flutter-apk/app-debug.apk\")",
+      "Bash(\"/c/Users/user/AppData/Local/Android/Sdk/platform-tools/adb.exe\" -s emulator-5554 install -r \"d:/projects/DQ_Platform/dq_app/build/app/outputs/flutter-apk/app-debug.apk\")",
+      "Bash(\"/c/Users/user/AppData/Local/Android/Sdk/platform-tools/adb.exe\" -s emulator-5554 install --no-streaming \"d:/projects/DQ_Platform/dq_app/build/app/outputs/flutter-apk/app-debug.apk\")",
       "Bash(\"/c/Users/user/AppData/Local/Android/Sdk/platform-tools/adb.exe\" -s emulator-5554 reboot)",
       "Bash(\"/c/Users/user/AppData/Local/Android/Sdk/platform-tools/adb.exe\" wait-for-device)",
       "Bash(\"/c/Users/user/AppData/Local/Android/Sdk/platform-tools/adb.exe\" -s emulator-5554 shell getprop sys.boot_completed)",
-      "Bash(\"/c/Users/user/AppData/Local/Android/Sdk/platform-tools/adb.exe\" -s emulator-5554 push \"d:/D_Q_3rd_demo_app/dq_app/build/app/outputs/flutter-apk/app-debug.apk\" /data/local/tmp/app-debug.apk)",
+      "Bash(\"/c/Users/user/AppData/Local/Android/Sdk/platform-tools/adb.exe\" -s emulator-5554 push \"d:/projects/DQ_Platform/dq_app/build/app/outputs/flutter-apk/app-debug.apk\" /data/local/tmp/app-debug.apk)",
       "Bash(\"/c/Users/user/AppData/Local/Android/Sdk/platform-tools/adb.exe\" -s emulator-5554 shell pm install -r /data/local/tmp/app-debug.apk)",
-      "Bash(\"/c/Users/user/AppData/Local/Android/Sdk/platform-tools/adb.exe\" -s emulator-5554 push \"d:/D_Q_3rd_demo_app/dq_app/build/app/outputs/flutter-apk/app-debug.apk\" \"//data/local/tmp/app-debug.apk\")",
+      "Bash(\"/c/Users/user/AppData/Local/Android/Sdk/platform-tools/adb.exe\" -s emulator-5554 push \"d:/projects/DQ_Platform/dq_app/build/app/outputs/flutter-apk/app-debug.apk\" \"//data/local/tmp/app-debug.apk\")",
       "Bash(\"/c/Users/user/AppData/Local/Android/Sdk/platform-tools/adb.exe\" -s emulator-5554 shell \"pm install -r /data/local/tmp/app-debug.apk\")",
       "Bash(flutter run -d emulator-5554)"
     ]
