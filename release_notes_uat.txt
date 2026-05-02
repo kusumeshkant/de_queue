@@ -1,0 +1,34 @@
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  DQ App  |  v1.0.2+26  |  UAT BUILD
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+🧪  UAT BUILD — For testers only.
+
+🔧 Environment
+  • Backend: UAT server (Azure Container Apps)
+  • Flavor: uat  |  App ID: com.example.dq_app.uat
+  • Razorpay: TEST mode (no real charges)
+  • Installs alongside Dev and Prod apps
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+🆕  What's New — Phase 2 Subscription
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  • New subscription screen — browse all available plans
+  • Monthly / Annual billing toggle
+  • Razorpay payment sheet integration for plan upgrades
+  • Plan activation confirmed server-side after payment
+  • Grace period and trial logic active in backend
+
+📋 What to Test
+  • Open the subscription screen and verify all plans load
+  • Toggle between Monthly and Annual — prices should update
+  • Tap Subscribe on any paid plan
+  • Use Razorpay TEST card to complete payment:
+      Card:  4111 1111 1111 1111
+      Expiry: any future date
+      CVV:   any 3 digits
+  • Verify success snackbar shows correct plan name
+  • Verify payment failure is handled gracefully
+
+⚠️  Razorpay is in TEST mode — no real money is charged.
+⚠️  Report issues to kushumeshkant2013@gmail.com before prod sign-off.

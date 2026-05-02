@@ -1,3 +1,4 @@
+import 'package:dq_app/src/data/datasources/remote/order_remote_ds.dart';
 import 'package:dq_app/src/domain/entity/cart_item_entity.dart';
 import 'package:dq_app/src/domain/entity/order_entity.dart';
 import 'package:dq_app/src/domain/usecase/create_order_usecase.dart';
@@ -5,6 +6,7 @@ import 'package:dq_app/src/domain/usecase/create_razorpay_order_usecase.dart';
 import 'package:dq_app/src/domain/usecase/validate_cart_stock_usecase.dart';
 import 'package:dq_app/src/presentation/dashBoard/dashboard_view_model.dart';
 import 'package:dq_app/src/service_core/payment/razorpay_service.dart';
+import 'package:dq_app/src/utils/services/local_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:razorpay_flutter/razorpay_flutter.dart';
@@ -14,18 +16,41 @@ class CartController extends GetxController {
   final CreateOrderUseCase createOrderUseCase;
   final ValidateCartStockUseCase validateCartStockUseCase;
   final RazorpayService razorpayService;
+  final OrderRemoteDataSource _orderDs;
 
   CartController({
     required this.createRazorpayOrderUseCase,
     required this.createOrderUseCase,
     required this.validateCartStockUseCase,
     required this.razorpayService,
-  });
+    OrderRemoteDataSource? orderDs,
+  }) : _orderDs = orderDs ?? OrderRemoteDataSource();
 
   final RxList<CartItemEntity> items = <CartItemEntity>[].obs;
   final RxBool isCheckingOut = false.obs;
   final RxBool hasPaymentFailed = false.obs;
   final RxString failureMessage = ''.obs;
+
+  // ── Discount code state ───────────────────────────────────────────────────────
+  final discountCodeCtrl    = TextEditingController();
+  final isValidatingCode    = false.obs;
+  final discountResult      = Rx<Map<String, dynamic>?>(null);
+  String? _appliedCode;
+
+  /// The grand total after discount (falls back to grandTotal if no discount applied).
+  double get effectiveGrandTotal {
+    final result = discountResult.value;
+    if (result == null) return grandTotal;
+    return (result['finalAmount'] as num).toDouble();
+  }
+
+  double get discountAmount {
+    final result = discountResult.value;
+    if (result == null) return 0;
+    return (result['discountAmount'] as num).toDouble();
+  }
+
+  String? get appliedDiscountCode => discountResult.value != null ? _appliedCode : null;
 
   void Function(OrderEntity order)? _onSuccess;
   void Function(String message)? _onError;
@@ -48,6 +73,7 @@ class CartController extends GetxController {
 
   @override
   void onClose() {
+    discountCodeCtrl.dispose();
     razorpayService.dispose();
     super.onClose();
   }
@@ -66,6 +92,35 @@ class CartController extends GetxController {
       items.add(newItem);
     }
     return true;
+  }
+
+  /// Adds [qty] units of [newItem]. Returns actual quantity added (0 if stock limit hit).
+  int addItemWithQuantity(CartItemEntity newItem, int qty) {
+    final index = items.indexWhere((i) => i.barcode == newItem.barcode);
+    if (index != -1) {
+      final item = items[index];
+      if (item.stock > 0 && item.quantity >= item.stock) return 0;
+      final canAdd = item.stock > 0 ? (item.stock - item.quantity) : qty;
+      final toAdd = qty.clamp(0, canAdd);
+      if (toAdd == 0) return 0;
+      item.quantity += toAdd;
+      items.refresh();
+      return toAdd;
+    } else {
+      final effectiveQty =
+          newItem.stock > 0 ? qty.clamp(1, newItem.stock) : qty;
+      items.add(CartItemEntity(
+        barcode: newItem.barcode,
+        name: newItem.name,
+        subtitle: newItem.subtitle,
+        sku: newItem.sku,
+        mrp: newItem.mrp,
+        price: newItem.price,
+        stock: newItem.stock,
+        quantity: effectiveQty,
+      ));
+      return effectiveQty;
+    }
   }
 
   void incrementQuantity(String barcode) {
@@ -108,6 +163,73 @@ class CartController extends GetxController {
     items.clear();
     hasPaymentFailed.value = false;
     failureMessage.value = '';
+    discountResult.value = null;
+    _appliedCode = null;
+    discountCodeCtrl.clear();
+  }
+
+  // ── Discount code ─────────────────────────────────────────────────────────────
+
+  Future<void> validateAndApplyDiscount() async {
+    final code = discountCodeCtrl.text.trim().toUpperCase();
+    if (code.isEmpty) {
+      Get.snackbar('Missing', 'Enter a discount code.',
+          backgroundColor: Colors.orange,
+          colorText: Colors.white,
+          snackPosition: SnackPosition.BOTTOM);
+      return;
+    }
+    if (items.isEmpty) {
+      Get.snackbar('Empty Cart', 'Add items to cart before applying a discount.',
+          backgroundColor: Colors.orange,
+          colorText: Colors.white,
+          snackPosition: SnackPosition.BOTTOM);
+      return;
+    }
+
+    final dashboard = Get.find<DashboardController>();
+    final storeId = dashboard.selectedStoreId.value;
+    if (storeId.isEmpty) {
+      Get.snackbar('No Store', 'Select a store first.',
+          backgroundColor: Colors.orange,
+          colorText: Colors.white,
+          snackPosition: SnackPosition.BOTTOM);
+      return;
+    }
+
+    isValidatingCode.value = true;
+    try {
+      final result = await _orderDs.validateDiscountCode(
+        code: code,
+        storeId: storeId,
+        subtotal: grandTotal,
+      );
+      _appliedCode = code;
+      discountResult.value = result;
+      Get.snackbar(
+        'Discount Applied!',
+        '${(result['discountPercent'] as num).toStringAsFixed(0)}% off — '
+            'saving ₹${(result['discountAmount'] as num).toStringAsFixed(0)}',
+        backgroundColor: Colors.green.shade700,
+        colorText: Colors.white,
+        snackPosition: SnackPosition.BOTTOM,
+        duration: const Duration(seconds: 3),
+      );
+    } catch (e) {
+      Get.snackbar('Invalid Code',
+          e.toString().replaceAll('Exception: ', ''),
+          backgroundColor: Colors.red,
+          colorText: Colors.white,
+          snackPosition: SnackPosition.BOTTOM);
+    } finally {
+      isValidatingCode.value = false;
+    }
+  }
+
+  void removeDiscount() {
+    discountResult.value = null;
+    _appliedCode = null;
+    discountCodeCtrl.clear();
   }
 
   Future<void> checkout({
@@ -147,7 +269,7 @@ class CartController extends GetxController {
       }
 
       final razorpayOrder =
-          await createRazorpayOrderUseCase.execute(grandTotal);
+          await createRazorpayOrderUseCase.execute(effectiveGrandTotal);
 
       razorpayService.openPaymentSheet(
         razorpayOrderId: razorpayOrder.id,
@@ -168,13 +290,18 @@ class CartController extends GetxController {
         items: List.from(items),
         total: subtotal,
         tax: tax,
-        grandTotal: grandTotal,
+        grandTotal: effectiveGrandTotal,
         razorpayOrderId: response.orderId ?? '',
         razorpayPaymentId: response.paymentId ?? '',
         razorpaySignature: response.signature ?? '',
+        discountCode: appliedDiscountCode,
       );
 
       clearCart();
+      await LocalStorage.savePendingOrder(order);
+      if (Get.isRegistered<DashboardController>()) {
+        Get.find<DashboardController>().setActiveOrder(order);
+      }
       _onSuccess?.call(order);
     } catch (e) {
       _onError?.call('Payment succeeded but order failed: ${e.toString()}');

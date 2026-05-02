@@ -4,6 +4,7 @@ import 'package:dq_app/src/presentation/auth/login/login_controller.dart';
 import 'package:dq_app/src/presentation/auth/signup/signup_page.dart';
 import 'package:dq_app/src/presentation/dashBoard/bottom_navigation.dart';
 import 'package:dq_app/src/presentation/dashBoard/navigation_controller.dart';
+import 'package:dq_app/src/service_core/auth/customer_auth_service.dart';
 import 'package:dq_app/src/theme/theme_controller.dart';
 import 'package:dq_app/src/utils/appsystem_ui.dart';
 import 'package:flutter/material.dart';
@@ -24,6 +25,56 @@ class _LoginPageState extends State<LoginPage> {
     if (!Get.isRegistered<LoginController>()) {
       LoginBinding().dependencies();
     }
+  }
+
+  /// Shows a role-specific dialog when the backend denies access.
+  ///
+  /// For staff/admin accounts without customer role, offers a "Go to Sign Up"
+  /// button — the signup page's Google flow will silently add the customer
+  /// role, so the user lands on home without extra steps.
+  void _showAccessDeniedDialog(AccessDeniedException error) {
+    final isStaff = error.hint == AuthAccessHint.staffNoCustomer;
+    final title = isStaff ? 'Staff Account Detected' : 'Admin Account Detected';
+    final role = isStaff ? 'store staff member' : 'store admin';
+
+    showDialog(
+      context: context,
+      builder: (_) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        title: Text(title, style: const TextStyle(fontWeight: FontWeight.bold)),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'This Google account is registered as a $role.',
+              style: const TextStyle(fontSize: 14),
+            ),
+            const SizedBox(height: 12),
+            const Text(
+              'To shop on DQ as a customer, tap "Go to Sign Up" and use Continue with Google — it will add a customer profile to your existing account in seconds.',
+              style: TextStyle(fontSize: 13, height: 1.5),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Cancel'),
+          ),
+          FilledButton(
+            onPressed: () {
+              Navigator.pop(context);
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (_) => const SignUpPage()),
+              );
+            },
+            child: const Text('Go to Sign Up'),
+          ),
+        ],
+      ),
+    );
   }
 
   @override
@@ -133,7 +184,21 @@ class _LoginPageState extends State<LoginPage> {
                               isDark: isDark,
                             ),
 
-                            const SizedBox(height: 24),
+                            const SizedBox(height: 12),
+
+                            // ── Inline validation error ───────────────────
+                            Obx(() => c.validationError.isNotEmpty
+                                ? Padding(
+                                    padding:
+                                        const EdgeInsets.only(bottom: 12),
+                                    child: Text(
+                                      c.validationError.value,
+                                      style: const TextStyle(
+                                          color: Colors.red,
+                                          fontSize: 13),
+                                    ),
+                                  )
+                                : const SizedBox.shrink()),
 
                             // ── Sign In button ────────────────────────────
                             c.isLoading.value
@@ -154,8 +219,9 @@ class _LoginPageState extends State<LoginPage> {
                                         Get.offAll(
                                             () => const Bottomnavigation());
                                       },
+                                      onAccessDenied: _showAccessDeniedDialog,
                                       onError: (msg) => Get.snackbar(
-                                        'Error', msg,
+                                        'Sign In Failed', msg,
                                         backgroundColor: Colors.red,
                                         colorText: Colors.white,
                                         snackPosition: SnackPosition.BOTTOM,
@@ -203,8 +269,9 @@ class _LoginPageState extends State<LoginPage> {
                                           Get.offAll(
                                               () => const Bottomnavigation());
                                         },
+                                        onAccessDenied: _showAccessDeniedDialog,
                                         onError: (msg) => Get.snackbar(
-                                          'Error', msg,
+                                          'Sign In Failed', msg,
                                           backgroundColor: Colors.red,
                                           colorText: Colors.white,
                                           snackPosition: SnackPosition.BOTTOM,
@@ -342,7 +409,6 @@ class _LiquidInputField extends StatelessWidget {
   final String hint;
   final TextEditingController controller;
   final TextInputType keyboardType;
-  final bool enabled;
   final bool obscureText;
   final Widget? prefix;
   final Widget? suffix;
@@ -356,7 +422,6 @@ class _LiquidInputField extends StatelessWidget {
     required this.hint,
     required this.controller,
     this.keyboardType = TextInputType.text,
-    this.enabled = true,
     this.obscureText = false,
     this.prefix,
     this.suffix,
@@ -399,7 +464,6 @@ class _LiquidInputField extends StatelessWidget {
                   child: TextField(
                   controller: controller,
                   keyboardType: keyboardType,
-                  enabled: enabled,
                   obscureText: obscureText,
                   autocorrect: false,
                   enableSuggestions: false,

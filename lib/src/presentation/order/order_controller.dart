@@ -22,8 +22,7 @@ class OrderController extends GetxController {
     try {
       final result = await getMyOrdersUseCase.execute();
       orders.value = result;
-    } catch (e) {
-      debugPrint('loadOrders error: $e');
+    } catch (_) {
       Get.snackbar(
         'Error',
         'Could not load orders. Please try again.',

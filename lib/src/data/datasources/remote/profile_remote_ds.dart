@@ -17,6 +17,7 @@ class ProfileRemoteDataSource {
     final result = await GraphQLService.performQuery(query: query);
     final data = result.data?['me'];
     if (data == null) throw Exception('Profile not found');
+
     return UserModel.fromJson(data);
   }
 

@@ -39,6 +39,7 @@ class OrderRemoteDataSource {
     required String razorpayOrderId,
     required String razorpayPaymentId,
     required String razorpaySignature,
+    String? discountCode,
   }) async {
     const mutation = '''
       mutation CreateOrder(
@@ -50,6 +51,7 @@ class OrderRemoteDataSource {
         \$razorpayOrderId: String!
         \$razorpayPaymentId: String!
         \$razorpaySignature: String!
+        \$discountCode: String
       ) {
         createOrder(
           storeId: \$storeId
@@ -60,6 +62,7 @@ class OrderRemoteDataSource {
           razorpayOrderId: \$razorpayOrderId
           razorpayPaymentId: \$razorpayPaymentId
           razorpaySignature: \$razorpaySignature
+          discountCode: \$discountCode
         ) {
           id
           status
@@ -68,7 +71,7 @@ class OrderRemoteDataSource {
           tax
           grandTotal
           createdAt
-          items { barcode name price quantity sku description }
+          items { barcode name mrp price quantity sku description }
           storeName
         }
       }
@@ -82,6 +85,7 @@ class OrderRemoteDataSource {
             .map((i) => {
                   'barcode': i.barcode,
                   'name': i.name,
+                  'mrp': i.mrp,
                   'price': i.price,
                   'quantity': i.quantity,
                   'sku': i.sku,
@@ -94,12 +98,36 @@ class OrderRemoteDataSource {
         'razorpayOrderId': razorpayOrderId,
         'razorpayPaymentId': razorpayPaymentId,
         'razorpaySignature': razorpaySignature,
+        if (discountCode != null) 'discountCode': discountCode,
       },
     );
 
     final data = result.data?['createOrder'];
     if (data == null) throw Exception('Failed to create order');
     return OrderModel.fromJson(data);
+  }
+
+  Future<Map<String, dynamic>> validateDiscountCode({
+    required String code,
+    required String storeId,
+    required double subtotal,
+  }) async {
+    const mutation = r'''
+      mutation ValidateDiscountCode($code: String!, $storeId: ID!, $subtotal: Float!) {
+        validateDiscountCode(code: $code, storeId: $storeId, subtotal: $subtotal) {
+          valid discountPercent discountAmount finalAmount generatedByName expiresAt
+        }
+      }
+    ''';
+
+    final result = await GraphQLService.performMutation(
+      mutation: mutation,
+      variables: {'code': code, 'storeId': storeId, 'subtotal': subtotal},
+    );
+
+    final data = result.data?['validateDiscountCode'];
+    if (data == null) throw Exception('Failed to validate code');
+    return data as Map<String, dynamic>;
   }
 
   Future<List<String>> validateCartStock({
@@ -127,6 +155,32 @@ class OrderRemoteDataSource {
 
     final List<dynamic> data = result.data?['validateCartStock'] ?? [];
     return data.cast<String>();
+  }
+
+  Future<OrderModel> getOrderById(String orderId) async {
+    const query = '''
+      query GetOrderById(\$id: ID!) {
+        orderById(id: \$id) {
+          id
+          storeName
+          total
+          tax
+          grandTotal
+          status
+          paymentStatus
+          createdAt
+          items { barcode name mrp price quantity sku description }
+        }
+      }
+    ''';
+
+    final result = await GraphQLService.performQuery(
+      query: query,
+      variables: {'id': orderId},
+    );
+    final data = result.data?['orderById'];
+    if (data == null) throw Exception('Order not found');
+    return OrderModel.fromJson(data);
   }
 
   Future<List<OrderModel>> getMyOrders() async {

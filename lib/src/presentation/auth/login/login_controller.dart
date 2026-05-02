@@ -1,5 +1,6 @@
 import 'package:dq_app/src/constants/app_config.dart';
 import 'package:dq_app/src/domain/usecase/login_usecase.dart';
+import 'package:dq_app/src/service_core/auth/customer_auth_service.dart';
 import 'package:dq_app/src/service_core/networks/graphql_client_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -13,6 +14,7 @@ class LoginController extends GetxController {
 
   var isLoading = false.obs;
   var obscurePassword = true.obs;
+  var validationError = ''.obs;
 
   String? emailValidator(String? value) {
     if (value == null || value.isEmpty) return 'Email is required';
@@ -26,49 +28,64 @@ class LoginController extends GetxController {
     return null;
   }
 
+  /// Email + password login.
+  ///
+  /// [onAccessDenied] fires when the backend returns FORBIDDEN — the UI should
+  /// show a role-specific dialog, not a generic snackbar.
+  /// [onError] fires for Firebase auth failures and network errors.
   Future<void> signIn({
     required void Function() onSuccess,
+    required void Function(AccessDeniedException error) onAccessDenied,
     required void Function(String message) onError,
   }) async {
+    validationError.value = '';
     final emailError = emailValidator(emailController.text.trim());
-    if (emailError != null) { onError(emailError); return; }
+    if (emailError != null) { validationError.value = emailError; return; }
 
     final passwordError = passwordValidator(passwordController.text);
-    if (passwordError != null) { onError(passwordError); return; }
+    if (passwordError != null) { validationError.value = passwordError; return; }
 
     isLoading.value = true;
     try {
-      final auth = await loginUseCase.signInWithEmail(
+      await loginUseCase.signInWithEmail(
         email: emailController.text.trim(),
         password: passwordController.text,
       );
-      await GraphQLClientProvider.init(
-        baseUrl: AppConfig.graphqlEndpoint,
-        token: auth.token,
-      );
+      await GraphQLClientProvider.init(baseUrl: AppConfig.graphqlEndpoint);
+      await CustomerAuthService.validateCustomerAccess();
       _clearFields();
       isLoading.value = false;
       onSuccess();
+    } on AccessDeniedException catch (e) {
+      isLoading.value = false;
+      onAccessDenied(e);
     } catch (e) {
       isLoading.value = false;
       onError(e.toString().replaceAll('Exception: ', ''));
     }
   }
 
+  /// Google login.
+  ///
+  /// [onAccessDenied] fires when the account exists as staff/admin only.
+  /// The UI should offer a "Go to Sign Up" action — the signup page's Google
+  /// button will automatically add the customer role to their account.
   Future<void> signInWithGoogle({
     required void Function() onSuccess,
+    required void Function(AccessDeniedException error) onAccessDenied,
     required void Function(String message) onError,
   }) async {
     isLoading.value = true;
     try {
-      final auth = await loginUseCase.signInWithGoogle();
-      await GraphQLClientProvider.init(
-        baseUrl: AppConfig.graphqlEndpoint,
-        token: auth.token,
-      );
+      await loginUseCase.signInWithGoogle();
+      await GraphQLClientProvider.init(baseUrl: AppConfig.graphqlEndpoint);
+      await CustomerAuthService.validateCustomerAccess();
       _clearFields();
       isLoading.value = false;
       onSuccess();
+    } on AccessDeniedException catch (e) {
+      isLoading.value = false;
+      onAccessDenied(e);
     } catch (e) {
       isLoading.value = false;
       onError(e.toString().replaceAll('Exception: ', ''));
@@ -79,6 +96,7 @@ class LoginController extends GetxController {
     emailController.clear();
     passwordController.clear();
     obscurePassword.value = true;
+    validationError.value = '';
   }
 
   @override

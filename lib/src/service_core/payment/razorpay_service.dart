@@ -18,13 +18,14 @@ class RazorpayService {
     required String razorpayOrderId,
     required int amountInPaise,
     String contact = '',
+    String description = 'Cart Checkout',
   }) {
     final options = {
       'key': AppConfig.razorpayKeyId,
       'amount': amountInPaise,
       'order_id': razorpayOrderId,
       'name': 'DQ App',
-      'description': 'Cart Checkout',
+      'description': description,
       'prefill': {'contact': contact, 'email': ''},
       'theme': {'color': '#6C63FF'},
     };

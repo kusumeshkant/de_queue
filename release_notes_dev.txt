@@ -1,0 +1,19 @@
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  DQ App  |  v1.0.2+26  |  PHASE 2A — DEV BUILD
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+⚠️  This build is for internal testing only.
+    DO NOT share outside the team.
+
+🔗 Backend: DEV (https://de-backend-iota.vercel.app/graphql)
+
+━━━ WHAT'S NEW IN THIS BUILD ━━━
+
+  • Internal cleanup: removed unused subscription code
+  • No visible changes for customers
+
+━━━ WHAT TO TEST ━━━
+
+  □ Login and store selection works normally
+  □ Scan, cart, and payment flow unchanged
+  □ Order history loads correctly

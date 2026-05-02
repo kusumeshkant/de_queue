@@ -16,6 +16,7 @@ class CreateOrderUseCase {
     required String razorpayOrderId,
     required String razorpayPaymentId,
     required String razorpaySignature,
+    String? discountCode,
   }) =>
       repository.createOrder(
         storeId: storeId,
@@ -26,5 +27,6 @@ class CreateOrderUseCase {
         razorpayOrderId: razorpayOrderId,
         razorpayPaymentId: razorpayPaymentId,
         razorpaySignature: razorpaySignature,
+        discountCode: discountCode,
       );
 }

@@ -33,6 +33,31 @@ class LocalStorage {
     await prefs.clear();
   }
 
+  // ── Recently Visited Stores ────────────────────────────────────────────────
+
+  static const _recentStoresKey = 'recent_stores';
+  static const _maxRecentStores = 6;
+
+  /// Saves a visited store (id, name, address) to the recent list.
+  static Future<void> addRecentStore(Map<String, String?> store) async {
+    final prefs = await SharedPreferences.getInstance();
+    final raw = prefs.getString(_recentStoresKey);
+    final List<dynamic> list = raw != null ? jsonDecode(raw) as List : [];
+    // Remove if already present, then insert at front
+    list.removeWhere((e) => e['id'] == store['id']);
+    list.insert(0, store);
+    if (list.length > _maxRecentStores) list.removeLast();
+    await prefs.setString(_recentStoresKey, jsonEncode(list));
+  }
+
+  static Future<List<Map<String, String?>>> getRecentStores() async {
+    final prefs = await SharedPreferences.getInstance();
+    final raw = prefs.getString(_recentStoresKey);
+    if (raw == null) return [];
+    final list = jsonDecode(raw) as List;
+    return list.map((e) => Map<String, String?>.from(e as Map)).toList();
+  }
+
   // ── Pending Order Confirmation ─────────────────────────────────────────────
 
   static Future<void> savePendingOrder(OrderEntity order) async {

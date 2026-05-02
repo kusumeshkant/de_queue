@@ -13,6 +13,7 @@ abstract class OrderRepository {
     required String razorpayOrderId,
     required String razorpayPaymentId,
     required String razorpaySignature,
+    String? discountCode,
   });
 
   Future<List<OrderEntity>> getMyOrders();
@@ -21,4 +22,6 @@ abstract class OrderRepository {
     required String storeId,
     required List<CartItemEntity> items,
   });
+
+  Future<OrderEntity> getOrderById(String orderId);
 }
