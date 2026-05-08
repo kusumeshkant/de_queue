@@ -1,17 +1,28 @@
-import 'package:dq_app/src/presentation/dashBoard/dashboard_view_model.dart';
-import 'package:dq_app/src/presentation/dashBoard/navigation_controller.dart';
+import 'package:dq_app/src/constants/app_config.dart';
 import 'package:dq_app/src/service_core/auth/session_manager.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:get/get.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
 import 'graphql_logging_link.dart';
 
 class GraphQLClientProvider {
   static GraphQLClient? _client;
 
+  // Legacy entry-point kept for main.dart cold-start init.
+  // Prefer reinitWithToken() after login/logout.
   static Future<void> init({required String baseUrl}) async {
     _client = _buildClient(baseUrl);
   }
+
+  // Rebuilds the client (clears in-memory cache) and re-reads the current
+  // Firebase ID token via AuthLink on the very next request.
+  // Call this immediately after Firebase login or whenever the token changes.
+  static Future<void> reinitWithToken() async {
+    _client = _buildClient(AppConfig.graphqlEndpoint);
+  }
+
+  // Drops the client entirely. Call this on logout so that any in-flight
+  // requests after signOut cannot piggy-back on a stale client instance.
+  static void reset() => _client = null;
 
   static GraphQLClient _buildClient(String baseUrl) {
     final HttpLink httpLink = HttpLink(baseUrl);
@@ -46,16 +57,13 @@ class GraphQLClientProvider {
 
         final user = FirebaseAuth.instance.currentUser;
         if (user == null) {
-          _cleanUpSessionState();
           await SessionManager.expireSession();
           return;
         }
 
         try {
-          // Force a server-side token refresh
-          await user.getIdToken(true);
+          await user.getIdToken(true); // force server-side refresh
         } catch (_) {
-          _cleanUpSessionState();
           await SessionManager.expireSession();
           return;
         }
@@ -68,7 +76,6 @@ class GraphQLClientProvider {
               false;
 
           if (retryFailed) {
-            _cleanUpSessionState();
             await SessionManager.expireSession();
             return;
           }
@@ -81,13 +88,6 @@ class GraphQLClientProvider {
       cache: GraphQLCache(store: InMemoryStore()),
       link: Link.from([LoggingLink(), errorLink, authLink, httpLink]),
     );
-  }
-
-  static void _cleanUpSessionState() {
-    try {
-      Get.find<NavigationController>().goToHome();
-    } catch (_) {}
-    Get.delete<DashboardController>(force: true);
   }
 
   static GraphQLClient get client {

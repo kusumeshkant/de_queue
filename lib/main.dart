@@ -6,8 +6,8 @@ import 'package:dq_app/src/domain/entity/order_entity.dart';
 import 'package:dq_app/src/l10n/app_translations.dart';
 import 'package:dq_app/src/l10n/language_controller.dart';
 import 'package:dq_app/src/presentation/order/order_confirmation_page.dart';
-import 'package:dq_app/src/service_core/networks/graphql_service.dart';
 import 'package:dq_app/src/service_core/networks/network_service.dart';
+import 'package:graphql_flutter/graphql_flutter.dart';
 import 'package:dq_app/src/service_core/notifications/notification_service.dart';
 import 'package:dq_app/src/presentation/auth/login/login_page.dart';
 import 'package:dq_app/src/presentation/dashBoard/bottom_navigation.dart';
@@ -39,18 +39,18 @@ void main() async {
   // Load saved locale before building UI
   final savedLocale = await AppLocales.loadSaved();
 
-  final cachedAuth = HiveManager.get(DbTable.auth, 'current');
   await GraphQLClientProvider.init(baseUrl: AppConfig.graphqlEndpoint);
 
-  // Check for an in-progress order confirmation (app killed mid-confirmation)
-  final pendingOrder = cachedAuth?['isLoggedIn'] == true
+  // Check for an in-progress order confirmation (app killed mid-confirmation).
+  // Use Firebase state instead of the Hive cache to decide — it is the source
+  // of truth and is already in memory at this point.
+  final pendingOrder = FirebaseAuth.instance.currentUser != null
       ? await LocalStorage.loadPendingOrder()
       : null;
 
   // Cold-start role validation.
   // If Firebase says the user is logged in, verify they still have customer-
   // only access via the backend before showing the home screen.
-  // Fail CLOSED: on network failure or FORBIDDEN, sign out and show login.
   final bool coldStartValid = await _validateColdStart();
 
   runApp(
@@ -64,27 +64,44 @@ void main() async {
 }
 
 /// Returns true if the cold-start session is valid for the customer app.
-/// Signs out Firebase and clears Hive cache if validation fails.
+///
+/// Distinguishes two failure modes:
+///   FORBIDDEN (wrong account type / role) → sign out Firebase, clear cache.
+///   Network failure / timeout             → preserve Firebase session so the
+///       user can tap "Sign In" and retry without re-entering credentials.
 Future<bool> _validateColdStart() async {
   final firebaseUser = FirebaseAuth.instance.currentUser;
-  if (firebaseUser == null) return false; // not logged in — show login
+  if (firebaseUser == null) return false;
 
-  final query =
-      'query ValidateCustomerAccess { validateAppAccess(appId: "${AppId.customer}") { id } }';
+  const query = '''
+    query ValidateCustomerAccess {
+      validateAppAccess(appId: "${AppId.customer}") { id }
+    }
+  ''';
+
   try {
-    final result = await GraphQLService.performQuery(query: query);
+    final result = await GraphQLClientProvider.client.query(
+      QueryOptions(document: gql(query), fetchPolicy: FetchPolicy.networkOnly),
+    );
+
     if (result.hasException) {
-      // FORBIDDEN or other backend rejection — sign out and return false
-      await firebaseUser.reload().catchError((_) {});
-      await FirebaseAuth.instance.signOut();
-      await HiveManager.delete(DbTable.auth, 'current');
+      final isForbidden = result.exception?.graphqlErrors
+              .any((e) => e.extensions?['code'] == 'FORBIDDEN') ??
+          false;
+
+      if (isForbidden) {
+        // Account does not have customer access — sign out definitively.
+        await FirebaseAuth.instance.signOut();
+        await HiveManager.delete(DbTable.auth, 'current');
+      }
+      // Non-FORBIDDEN (server error) — show login without signing out so
+      // Firebase session is preserved for the next attempt.
       return false;
     }
     return true;
   } catch (_) {
-    // Network failure on cold start — fail CLOSED.
-    await FirebaseAuth.instance.signOut();
-    await HiveManager.delete(DbTable.auth, 'current');
+    // Network / timeout — do NOT sign out. Firebase session is valid.
+    // User will see LoginPage and can tap Sign In to retry once online.
     return false;
   }
 }

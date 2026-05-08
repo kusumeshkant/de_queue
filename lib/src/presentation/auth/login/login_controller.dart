@@ -1,4 +1,3 @@
-import 'package:dq_app/src/constants/app_config.dart';
 import 'package:dq_app/src/domain/usecase/login_usecase.dart';
 import 'package:dq_app/src/service_core/auth/customer_auth_service.dart';
 import 'package:dq_app/src/service_core/networks/graphql_client_provider.dart';
@@ -51,7 +50,7 @@ class LoginController extends GetxController {
         email: emailController.text.trim(),
         password: passwordController.text,
       );
-      await GraphQLClientProvider.init(baseUrl: AppConfig.graphqlEndpoint);
+      await GraphQLClientProvider.reinitWithToken();
       await CustomerAuthService.validateCustomerAccess();
       _clearFields();
       isLoading.value = false;
@@ -78,7 +77,7 @@ class LoginController extends GetxController {
     isLoading.value = true;
     try {
       await loginUseCase.signInWithGoogle();
-      await GraphQLClientProvider.init(baseUrl: AppConfig.graphqlEndpoint);
+      await GraphQLClientProvider.reinitWithToken();
       await CustomerAuthService.validateCustomerAccess();
       _clearFields();
       isLoading.value = false;

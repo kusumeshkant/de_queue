@@ -7,10 +7,10 @@ class AuthLocalDataSource {
     await HiveManager.put(
       DbTable.auth,
       'current',
-      {
-        'token': auth.token,
-        'isLoggedIn': auth.isLoggedIn,
-      },
+      // Do NOT persist the Firebase ID token — it expires in 1 hour and is
+      // fetched dynamically by AuthLink on every GraphQL request. Storing it
+      // here would leave a stale token in Hive that is never read for auth.
+      {'isLoggedIn': auth.isLoggedIn},
     );
   }
 

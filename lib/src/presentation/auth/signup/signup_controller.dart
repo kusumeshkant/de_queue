@@ -1,4 +1,3 @@
-import 'package:dq_app/src/constants/app_config.dart';
 import 'package:dq_app/src/domain/usecase/signup_usecase.dart';
 import 'package:dq_app/src/service_core/auth/customer_auth_service.dart';
 import 'package:dq_app/src/service_core/networks/graphql_client_provider.dart';
@@ -60,7 +59,7 @@ class SignupController extends GetxController {
         email: emailController.text.trim(),
         password: passwordController.text,
       );
-      await GraphQLClientProvider.init(baseUrl: AppConfig.graphqlEndpoint);
+      await GraphQLClientProvider.reinitWithToken();
       // Confirm backend session — creates the MongoDB user doc as customer.
       await CustomerAuthService.validateCustomerAccess();
       _clearFields();
@@ -94,7 +93,7 @@ class SignupController extends GetxController {
     isLoading.value = true;
     try {
       await signupUseCase.signInWithGoogle();
-      await GraphQLClientProvider.init(baseUrl: AppConfig.graphqlEndpoint);
+      await GraphQLClientProvider.reinitWithToken();
 
       try {
         await CustomerAuthService.validateCustomerAccess();

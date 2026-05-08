@@ -1,7 +1,5 @@
 import 'dart:async';
 
-import 'package:dq_app/src/presentation/dashBoard/dashboard_view_model.dart';
-import 'package:dq_app/src/presentation/dashBoard/navigation_controller.dart';
 import 'package:dq_app/src/service_core/auth/session_manager.dart';
 import 'package:get/get.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
@@ -98,39 +96,19 @@ class GraphQLService {
   static Future<void> _handleException(QueryResult result) async {
     if (!result.hasException) return;
 
-    // Check GraphQL-level auth errors (UNAUTHENTICATED from server)
-    final graphqlErrors = result.exception?.graphqlErrors ?? [];
-    for (final error in graphqlErrors) {
-      final code = error.extensions?['code'] as String?;
-      final msg = error.message.toLowerCase();
-      if (code == 'UNAUTHENTICATED' ||
-          msg.contains('unauthenticated') ||
-          msg.contains('unauthorized') ||
-          msg.contains('jwt expired') ||
-          msg.contains('token expired') ||
-          msg.contains('invalid token')) {
-        _cleanUpSessionState();
-        await SessionManager.expireSession();
-        throw Exception('SESSION_EXPIRED');
-      }
-    }
-
-    // Check HTTP-level 401 (network link error)
+    // UNAUTHENTICATED GraphQL errors are handled by ErrorLink inside
+    // GraphQLClientProvider (force-refresh → retry → expireSession).
+    // By the time a result reaches here, ErrorLink has already resolved any
+    // token expiry. We only need to handle the HTTP-level 401 path that
+    // ErrorLink cannot intercept (a raw 401 is a linkException, not a
+    // GraphQL error, so onGraphQLError never fires for it).
     final linkEx = result.exception?.linkException;
     if (linkEx is HttpLinkServerException && linkEx.response.statusCode == 401) {
-      _cleanUpSessionState();
       await SessionManager.expireSession();
       throw Exception('SESSION_EXPIRED');
     }
 
-    // Any other error — throw normally
+    // Any other error — throw normally so callers can handle it.
     throw Exception(result.exception.toString());
-  }
-
-  static void _cleanUpSessionState() {
-    try {
-      Get.find<NavigationController>().goToHome();
-    } catch (_) {}
-    Get.delete<DashboardController>(force: true);
   }
 }
