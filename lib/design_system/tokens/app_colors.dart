@@ -35,6 +35,11 @@ abstract class AppColors {
   // ── Google ────────────────────────────────────────────────
   static const Color googleBlue = Color(0xFF4285F4);
 
+  // ── Scanner / Camera overlay surfaces (always dark) ──────
+  static const Color scannerSheetSurface = Color(0xFF212121); // grey[900]
+  static const Color scannerSnackSurface = Color(0xFF303030); // grey[850]
+  static const Color scannerDisabled = Color(0xFF424242);     // grey[800]
+
   // ── Order / Payment status convenience ────────────────────
   static Color statusColor(String status) => switch (status.toLowerCase()) {
         'pending' => neutral,

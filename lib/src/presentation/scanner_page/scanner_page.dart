@@ -1,4 +1,5 @@
 import 'dart:ui';
+import 'package:dq_app/design_system/design_system.dart';
 import 'package:dq_app/src/domain/entity/store_entity.dart';
 import 'package:dq_app/src/presentation/cart/cart_controller.dart';
 import 'package:dq_app/src/presentation/cart/cart_page.dart';
@@ -447,7 +448,7 @@ class _ScannerPageState extends State<ScannerPage>
                                       padding: const EdgeInsets.symmetric(
                                           horizontal: 4, vertical: 2),
                                       decoration: const BoxDecoration(
-                                        color: Colors.red,
+                                        color: AppColors.error,
                                         shape: BoxShape.circle,
                                       ),
                                       child: Text(

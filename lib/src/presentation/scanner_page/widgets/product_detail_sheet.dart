@@ -1,3 +1,4 @@
+import 'package:dq_app/design_system/design_system.dart';
 import 'package:dq_app/src/domain/entity/product_entity.dart';
 import 'package:dq_app/src/presentation/scanner_page/product_detail_controller.dart';
 import 'package:flutter/material.dart';
@@ -72,7 +73,7 @@ class _ProductDetailSheetState extends State<ProductDetailSheet> {
             fontSize: 12,
           ),
         ),
-        backgroundColor: Colors.grey[850],
+        backgroundColor: AppColors.scannerSnackSurface,
         snackPosition: SnackPosition.BOTTOM,
         margin: const EdgeInsets.all(16),
         borderRadius: 12,
@@ -83,7 +84,7 @@ class _ProductDetailSheetState extends State<ProductDetailSheet> {
       Get.snackbar(
         'Stock limit reached',
         'Cannot add more ${product.name}',
-        backgroundColor: Colors.orange[900],
+        backgroundColor: AppColors.warning,
         colorText: Colors.white,
         snackPosition: SnackPosition.BOTTOM,
         margin: const EdgeInsets.all(16),
@@ -100,7 +101,7 @@ class _ProductDetailSheetState extends State<ProductDetailSheet> {
     return Container(
       constraints: BoxConstraints(maxHeight: mq.size.height * 0.88),
       decoration: BoxDecoration(
-        color: Colors.grey[900],
+        color: AppColors.scannerSheetSurface,
         borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
       ),
       child: Column(
@@ -182,15 +183,15 @@ class _ProductDetailSheetState extends State<ProductDetailSheet> {
                           padding: const EdgeInsets.symmetric(
                               horizontal: 7, vertical: 3),
                           decoration: BoxDecoration(
-                            color: Colors.orange.withValues(alpha: 0.15),
+                            color: AppColors.warningSubtle,
                             borderRadius: BorderRadius.circular(6),
                             border: Border.all(
-                                color: Colors.orange.withValues(alpha: 0.3)),
+                                color: AppColors.warningBorder),
                           ),
                           child: Text(
                             '$_discountPct% off',
                             style: const TextStyle(
-                              color: Colors.orange,
+                              color: AppColors.warning,
                               fontSize: 11,
                               fontWeight: FontWeight.bold,
                             ),
@@ -308,7 +309,7 @@ class _ProductDetailSheetState extends State<ProductDetailSheet> {
                         style: ElevatedButton.styleFrom(
                           backgroundColor: _kGreen,
                           foregroundColor: Colors.black,
-                          disabledBackgroundColor: Colors.grey[750],
+                          disabledBackgroundColor: AppColors.scannerDisabled,
                           disabledForegroundColor:
                               Colors.white.withValues(alpha: 0.4),
                           shape: RoundedRectangleBorder(
@@ -419,9 +420,9 @@ class _StockBadge extends StatelessWidget {
     final bool lowStock = stock > 0 && stock <= 5;
 
     final Color color = outOfStock
-        ? Colors.red
+        ? AppColors.error
         : lowStock
-            ? Colors.orange
+            ? AppColors.warning
             : _kGreen;
 
     return Container(
