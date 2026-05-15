@@ -1,3 +1,4 @@
+import 'package:dq_app/design_system/design_system.dart';
 import 'package:dq_app/src/domain/entity/order_entity.dart';
 import 'package:dq_app/src/domain/usecase/get_my_orders_usecase.dart';
 import 'package:flutter/material.dart';
@@ -27,7 +28,7 @@ class OrderController extends GetxController {
         'Error',
         'Could not load orders. Please try again.',
         snackPosition: SnackPosition.BOTTOM,
-        backgroundColor: Colors.red,
+        backgroundColor: AppColors.error,
         colorText: Colors.white,
       );
     } finally {

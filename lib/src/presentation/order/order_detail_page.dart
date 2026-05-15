@@ -1,3 +1,4 @@
+import 'package:dq_app/design_system/design_system.dart';
 import 'package:dq_app/src/domain/entity/order_entity.dart';
 import 'package:dq_app/src/theme/theme_controller.dart';
 import 'package:dq_app/widgets/app_glass_card.dart';
@@ -52,11 +53,11 @@ class OrderDetailPage extends StatelessWidget {
                           width: 32,
                           height: 32,
                           decoration: BoxDecoration(
-                            color: Colors.green.withValues(alpha: 0.12),
+                            color: AppColors.successSubtle,
                             shape: BoxShape.circle,
                           ),
                           child: const Icon(Icons.qr_code_rounded,
-                              color: Colors.green, size: 17),
+                              color: AppColors.success, size: 17),
                         ),
                         const SizedBox(width: 10),
                         Expanded(
@@ -369,12 +370,12 @@ class _StatusBadge extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final (color, icon, label) = switch (status.toLowerCase()) {
-      'pending' => (Colors.grey.shade500, Icons.hourglass_empty_rounded, 'Pending'),
-      'preparing' => (Colors.orange.shade600, Icons.restaurant_rounded, 'Preparing'),
-      'ready' => (Colors.blue.shade500, Icons.shopping_bag_rounded, 'Ready'),
-      'completed' => (Colors.green.shade600, Icons.check_circle_rounded, 'Confirmed'),
-      'cancelled' => (Colors.red.shade600, Icons.cancel_rounded, 'Cancelled'),
-      _ => (Colors.orange.shade400, Icons.info_outline_rounded, status),
+      'pending' => (AppColors.neutral, Icons.hourglass_empty_rounded, 'Pending'),
+      'preparing' => (AppColors.warning, Icons.restaurant_rounded, 'Preparing'),
+      'ready' => (AppColors.info, Icons.shopping_bag_rounded, 'Ready'),
+      'completed' => (AppColors.success, Icons.check_circle_rounded, 'Confirmed'),
+      'cancelled' => (AppColors.error, Icons.cancel_rounded, 'Cancelled'),
+      _ => (AppColors.warning, Icons.info_outline_rounded, status),
     };
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
@@ -404,9 +405,9 @@ class _PaymentBadge extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final (color, icon, label) = switch (paymentStatus.toLowerCase()) {
-      'success' => (Colors.green.shade600, Icons.verified_rounded, 'Payment: Success'),
-      'failed' => (Colors.red.shade600, Icons.error_outline_rounded, 'Payment: Failed'),
-      _ => (Colors.grey.shade500, Icons.schedule_rounded, 'Payment: Pending'),
+      'success' => (AppColors.success, Icons.verified_rounded, 'Payment: Success'),
+      'failed' => (AppColors.error, Icons.error_outline_rounded, 'Payment: Failed'),
+      _ => (AppColors.neutral, Icons.schedule_rounded, 'Payment: Pending'),
     };
     return Row(
       mainAxisSize: MainAxisSize.min,

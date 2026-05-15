@@ -94,7 +94,7 @@ class _LoginPageState extends State<LoginPage> {
                   Get.snackbar(
                     'Could Not Add Customer Access',
                     msg,
-                    backgroundColor: Colors.red,
+                    backgroundColor: AppColors.error,
                     colorText: Colors.white,
                     snackPosition: SnackPosition.BOTTOM,
                     duration: const Duration(seconds: 6),
@@ -306,7 +306,7 @@ class _LoginPageState extends State<LoginPage> {
                                         onAccessDenied: _showAccessDeniedDialog,
                                         onError: (msg) => Get.snackbar(
                                           'Sign In Failed', msg,
-                                          backgroundColor: Colors.red,
+                                          backgroundColor: AppColors.error,
                                           colorText: Colors.white,
                                           snackPosition: SnackPosition.BOTTOM,
                                         ),

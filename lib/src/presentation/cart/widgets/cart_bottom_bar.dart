@@ -1,4 +1,5 @@
 import 'dart:ui';
+import 'package:dq_app/design_system/design_system.dart';
 import 'package:dq_app/src/l10n/translation_keys.dart';
 import 'package:dq_app/src/presentation/cart/cart_controller.dart';
 import 'package:dq_app/src/presentation/dashBoard/dashboard_view_model.dart';
@@ -28,7 +29,7 @@ class CartBottomBar extends StatelessWidget {
                   const BorderRadius.vertical(top: Radius.circular(28)),
               border: Border(
                   top: BorderSide(
-                      color: Colors.red.withValues(alpha: 0.5), width: 1.5)),
+                      color: AppColors.errorBorder, width: 1.5)),
             ),
             child: Column(
               mainAxisSize: MainAxisSize.min,
@@ -38,7 +39,7 @@ class CartBottomBar extends StatelessWidget {
                   height: 4,
                   margin: const EdgeInsets.only(bottom: 20),
                   decoration: BoxDecoration(
-                    color: Colors.red.withValues(alpha: 0.4),
+                    color: AppColors.errorBorder,
                     borderRadius: BorderRadius.circular(2),
                   ),
                 ),
@@ -46,13 +47,13 @@ class CartBottomBar extends StatelessWidget {
                   width: 60,
                   height: 60,
                   decoration: BoxDecoration(
-                    color: Colors.red.withValues(alpha: 0.12),
+                    color: AppColors.errorSubtle,
                     shape: BoxShape.circle,
                     border: Border.all(
-                        color: Colors.red.withValues(alpha: 0.4), width: 2),
+                        color: AppColors.errorBorder, width: 2),
                   ),
                   child: const Icon(Icons.payment_rounded,
-                      color: Colors.red, size: 30),
+                      color: AppColors.error, size: 30),
                 ),
                 const SizedBox(height: 16),
                 Text(

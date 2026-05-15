@@ -123,9 +123,9 @@ class CartItemCard extends StatelessWidget {
                             '₹${mrp!.toStringAsFixed(0)}',
                             style: TextStyle(
                               fontSize: 12,
-                              color: Colors.grey,
+                              color: AppColors.neutral,
                               decoration: TextDecoration.lineThrough,
-                              decorationColor: Colors.grey,
+                              decorationColor: AppColors.neutral,
                             ),
                           ),
                         ],
