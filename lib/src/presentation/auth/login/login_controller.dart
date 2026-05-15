@@ -1,3 +1,4 @@
+import 'package:dq_app/src/domain/entity/auth_exception.dart';
 import 'package:dq_app/src/domain/usecase/login_usecase.dart';
 import 'package:dq_app/src/service_core/auth/customer_auth_service.dart';
 import 'package:dq_app/src/service_core/networks/graphql_client_provider.dart';
@@ -46,19 +47,25 @@ class LoginController extends GetxController {
 
     isLoading.value = true;
     try {
+      debugPrint('[AUTH] signIn: Firebase email/password start');
       await loginUseCase.signInWithEmail(
         email: emailController.text.trim(),
         password: passwordController.text,
       );
+      debugPrint('[AUTH] signIn: Firebase OK → reinitWithToken');
       await GraphQLClientProvider.reinitWithToken();
+      debugPrint('[AUTH] signIn: reinitWithToken OK → validateCustomerAccess');
       await CustomerAuthService.validateCustomerAccess();
+      debugPrint('[AUTH] signIn: validateCustomerAccess OK → success');
       _clearFields();
       isLoading.value = false;
       onSuccess();
     } on AccessDeniedException catch (e) {
+      debugPrint('[AUTH] signIn: AccessDeniedException — ${e.userMessage}');
       isLoading.value = false;
       onAccessDenied(e);
-    } catch (e) {
+    } catch (e, stack) {
+      debugPrint('[AUTH] signIn: ERROR — $e\n$stack');
       isLoading.value = false;
       onError(e.toString().replaceAll('Exception: ', ''));
     }
@@ -76,16 +83,55 @@ class LoginController extends GetxController {
   }) async {
     isLoading.value = true;
     try {
+      debugPrint('[AUTH] signInWithGoogle: start');
       await loginUseCase.signInWithGoogle();
+      debugPrint('[AUTH] signInWithGoogle: Firebase OK → reinitWithToken');
       await GraphQLClientProvider.reinitWithToken();
+      debugPrint('[AUTH] signInWithGoogle: reinitWithToken OK → validateCustomerAccess');
       await CustomerAuthService.validateCustomerAccess();
+      debugPrint('[AUTH] signInWithGoogle: validateCustomerAccess OK → success');
       _clearFields();
       isLoading.value = false;
       onSuccess();
+    } on GoogleSignInRedirectStarted {
+      // Browser is navigating away for the OAuth redirect flow.
+      // Keep isLoading = true so the spinner remains visible.
+      // Auth completes when the app restarts after the OAuth redirect.
+      debugPrint('[AUTH] signInWithGoogle: redirect started — keeping spinner');
     } on AccessDeniedException catch (e) {
+      debugPrint('[AUTH] signInWithGoogle: AccessDeniedException — ${e.userMessage}');
       isLoading.value = false;
       onAccessDenied(e);
+    } catch (e, stack) {
+      debugPrint('[AUTH] signInWithGoogle: ERROR — $e\n$stack');
+      isLoading.value = false;
+      onError(e.toString().replaceAll('Exception: ', ''));
+    }
+  }
+
+  /// Adds the 'customer' role to the currently signed-in Firebase account.
+  ///
+  /// Called directly from the admin/staff detection dialog — skips the signup
+  /// page entirely so the user stays in the login flow. Firebase must be
+  /// signed in when this is called (validateCustomerAccess preserves the
+  /// session for ADMIN_NO_CUSTOMER / STAFF_NO_CUSTOMER).
+  Future<void> addCustomerRole({
+    required void Function() onSuccess,
+    required void Function(String message) onError,
+  }) async {
+    isLoading.value = true;
+    try {
+      debugPrint('[AUTH] addCustomerRole: calling registerAsCustomer');
+      await CustomerAuthService.registerAsCustomer();
+      debugPrint('[AUTH] addCustomerRole: customer role added → success');
+      isLoading.value = false;
+      onSuccess();
+    } on AccessDeniedException catch (e) {
+      debugPrint('[AUTH] addCustomerRole: AccessDeniedException — ${e.userMessage}');
+      isLoading.value = false;
+      onError(e.userMessage);
     } catch (e) {
+      debugPrint('[AUTH] addCustomerRole: ERROR — $e');
       isLoading.value = false;
       onError(e.toString().replaceAll('Exception: ', ''));
     }

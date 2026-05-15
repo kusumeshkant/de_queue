@@ -1,12 +1,15 @@
 import 'dart:ui';
+import 'package:dq_app/design_system/design_system.dart';
 import 'package:dq_app/src/presentation/auth/login/login_binding.dart';
 import 'package:dq_app/src/presentation/auth/login/login_controller.dart';
 import 'package:dq_app/src/presentation/auth/signup/signup_page.dart';
 import 'package:dq_app/src/presentation/dashBoard/bottom_navigation.dart';
 import 'package:dq_app/src/presentation/dashBoard/navigation_controller.dart';
 import 'package:dq_app/src/service_core/auth/customer_auth_service.dart';
+import 'package:flutter/foundation.dart' show debugPrint;
 import 'package:dq_app/src/theme/theme_controller.dart';
 import 'package:dq_app/src/utils/appsystem_ui.dart';
+import 'package:dq_app/src/utils/responsive/responsive.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
@@ -27,18 +30,22 @@ class _LoginPageState extends State<LoginPage> {
     }
   }
 
-  /// Shows a role-specific dialog when the backend denies access.
+  /// Shows a role-specific dialog when the backend denies customer access.
   ///
-  /// For staff/admin accounts without customer role, offers a "Go to Sign Up"
-  /// button — the signup page's Google flow will silently add the customer
-  /// role, so the user lands on home without extra steps.
+  /// Offers two paths:
+  /// - "Add Customer Access": calls [registerAsCustomer] inline — no extra
+  ///   screen required. Works because Firebase is still signed in after an
+  ///   ADMIN_NO_CUSTOMER / STAFF_NO_CUSTOMER denial.
+  /// - "Go to Sign Up": navigates to the signup page as a fallback.
   void _showAccessDeniedDialog(AccessDeniedException error) {
     final isStaff = error.hint == AuthAccessHint.staffNoCustomer;
-    final title = isStaff ? 'Staff Account Detected' : 'Admin Account Detected';
-    final role = isStaff ? 'store staff member' : 'store admin';
+    final title   = isStaff ? 'Staff Account Detected' : 'Admin Account Detected';
+    final role    = isStaff ? 'store staff member' : 'store admin';
+    final c       = Get.find<LoginController>();
 
     showDialog(
       context: context,
+      barrierDismissible: false,
       builder: (_) => AlertDialog(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
         title: Text(title, style: const TextStyle(fontWeight: FontWeight.bold)),
@@ -52,7 +59,7 @@ class _LoginPageState extends State<LoginPage> {
             ),
             const SizedBox(height: 12),
             const Text(
-              'To shop on DQ as a customer, tap "Go to Sign Up" and use Continue with Google — it will add a customer profile to your existing account in seconds.',
+              'Would you like to add customer access to this account so you can also shop on DQ?',
               style: TextStyle(fontSize: 13, height: 1.5),
             ),
           ],
@@ -62,7 +69,7 @@ class _LoginPageState extends State<LoginPage> {
             onPressed: () => Navigator.pop(context),
             child: const Text('Cancel'),
           ),
-          FilledButton(
+          TextButton(
             onPressed: () {
               Navigator.pop(context);
               Navigator.push(
@@ -70,7 +77,32 @@ class _LoginPageState extends State<LoginPage> {
                 MaterialPageRoute(builder: (_) => const SignUpPage()),
               );
             },
-            child: const Text('Go to Sign Up'),
+            child: const Text('Sign Up Instead'),
+          ),
+          FilledButton(
+            onPressed: () {
+              Navigator.pop(context);
+              debugPrint('[UI] _showAccessDeniedDialog: Add Customer Access tapped');
+              c.addCustomerRole(
+                onSuccess: () {
+                  debugPrint('[UI] addCustomerRole: success → navigating to home');
+                  try { Get.find<NavigationController>().goToHome(); } catch (_) {}
+                  Get.offAll(() => const Bottomnavigation());
+                },
+                onError: (msg) {
+                  debugPrint('[UI] addCustomerRole: error — $msg');
+                  Get.snackbar(
+                    'Could Not Add Customer Access',
+                    msg,
+                    backgroundColor: Colors.red,
+                    colorText: Colors.white,
+                    snackPosition: SnackPosition.BOTTOM,
+                    duration: const Duration(seconds: 6),
+                  );
+                },
+              );
+            },
+            child: const Text('Add Customer Access'),
           ),
         ],
       ),
@@ -101,11 +133,14 @@ class _LoginPageState extends State<LoginPage> {
           backgroundColor: Colors.transparent,
           body: SafeArea(
             child: SingleChildScrollView(
-              padding: const EdgeInsets.symmetric(horizontal: 24),
-              child: Obx(() => Column(
+              padding: EdgeInsets.symmetric(horizontal: Responsive.hPad(context)),
+              child: Obx(() => Center(
+                    child: ConstrainedBox(
+                      constraints: const BoxConstraints(maxWidth: Responsive.formMaxWidth),
+                      child: Column(
                     crossAxisAlignment: CrossAxisAlignment.center,
                     children: [
-                      const SizedBox(height: 64),
+                      SizedBox(height: Responsive.vSpace(context, 64)),
 
                       // ── Logo ──────────────────────────────────────────────
                       _LiquidGlassIcon(
@@ -116,17 +151,17 @@ class _LoginPageState extends State<LoginPage> {
                       Text('DQ',
                           style: TextStyle(
                               color: textPrimary,
-                              fontSize: 30,
+                              fontSize: Responsive.fontSize(context, 30),
                               fontWeight: FontWeight.w800,
                               letterSpacing: 5)),
                       const SizedBox(height: 4),
                       Text('Smart Shopping, Simplified',
                           style: TextStyle(
                               color: textSecondary,
-                              fontSize: 13,
+                              fontSize: Responsive.fontSize(context, 13),
                               letterSpacing: 0.4)),
 
-                      const SizedBox(height: 48),
+                      SizedBox(height: Responsive.vSpace(context, 48)),
 
                       // ── Glass card ────────────────────────────────────────
                       _LiquidGlassCard(
@@ -193,9 +228,8 @@ class _LoginPageState extends State<LoginPage> {
                                         const EdgeInsets.only(bottom: 12),
                                     child: Text(
                                       c.validationError.value,
-                                      style: const TextStyle(
-                                          color: Colors.red,
-                                          fontSize: 13),
+                                      style: AppTypography.bodySmall
+                                          .copyWith(color: AppColors.error),
                                     ),
                                   )
                                 : const SizedBox.shrink()),
@@ -222,7 +256,7 @@ class _LoginPageState extends State<LoginPage> {
                                       onAccessDenied: _showAccessDeniedDialog,
                                       onError: (msg) => Get.snackbar(
                                         'Sign In Failed', msg,
-                                        backgroundColor: Colors.red,
+                                        backgroundColor: AppColors.error,
                                         colorText: Colors.white,
                                         snackPosition: SnackPosition.BOTTOM,
                                       ),
@@ -297,7 +331,7 @@ class _LoginPageState extends State<LoginPage> {
                                   children: [
                                     Text('G',
                                         style: TextStyle(
-                                            color: const Color(0xFF4285F4),
+                                            color: AppColors.googleBlue,
                                             fontSize: 20,
                                             fontWeight: FontWeight.w700)),
                                     const SizedBox(width: 10),
@@ -322,7 +356,8 @@ class _LoginPageState extends State<LoginPage> {
                         children: [
                           Text("Don't have an account?  ",
                               style: TextStyle(
-                                  color: textSecondary, fontSize: 14)),
+                                  color: textSecondary,
+                                  fontSize: Responsive.fontSize(context, 14))),
                           GestureDetector(
                             onTap: () => Navigator.push(
                               context,
@@ -332,13 +367,15 @@ class _LoginPageState extends State<LoginPage> {
                             child: Text('Sign Up',
                                 style: TextStyle(
                                     color: primary,
-                                    fontSize: 14,
+                                    fontSize: Responsive.fontSize(context, 14),
                                     fontWeight: FontWeight.w600)),
                           ),
                         ],
                       ),
                       const SizedBox(height: 32),
                     ],
+                  ),
+                    ),
                   )),
             ),
           ),
@@ -570,7 +607,10 @@ class _LiquidButton extends StatelessWidget {
                   ? const LinearGradient(
                       begin: Alignment.topCenter,
                       end: Alignment.bottomCenter,
-                      colors: [Color(0xCC1A1A1A), Color(0xE8000000)],
+                      colors: [
+                        AppColorsDark.buttonGradientStart,
+                        AppColorsDark.buttonGradientEnd,
+                      ],
                     )
                   : LinearGradient(
                       begin: Alignment.topCenter,
@@ -593,12 +633,7 @@ class _LiquidButton extends StatelessWidget {
               ],
             ),
             child: Center(
-              child: Text(text,
-                  style: const TextStyle(
-                      color: Colors.white,
-                      fontSize: 16,
-                      fontWeight: FontWeight.w700,
-                      letterSpacing: 0.3)),
+              child: Text(text, style: AppTypography.button),
             ),
           ),
         ),
