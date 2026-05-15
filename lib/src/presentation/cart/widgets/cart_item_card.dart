@@ -1,3 +1,4 @@
+import 'package:dq_app/design_system/design_system.dart';
 import 'package:dq_app/src/theme/theme_controller.dart';
 import 'package:dq_app/widgets/app_glass_card.dart';
 import 'package:flutter/material.dart';
@@ -165,25 +166,10 @@ class CartItemCard extends StatelessWidget {
 
           // Per-item savings badge — shown only when there's a discount
           if (_hasDiscount) ...[
-            const SizedBox(height: 8),
-            Container(
-              padding:
-                  const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-              decoration: BoxDecoration(
-                color: const Color(0xFF00C853).withValues(alpha: 0.10),
-                borderRadius: BorderRadius.circular(6),
-                border: Border.all(
-                    color: const Color(0xFF00C853).withValues(alpha: 0.25)),
-              ),
-              child: Text(
-                'You save ₹${_savedTotal.toStringAsFixed(0)}'
-                '${quantity > 1 ? ' (₹${_savedPerItem.toStringAsFixed(0)} × $quantity)' : ''}',
-                style: const TextStyle(
-                  color: Color(0xFF00C853),
-                  fontSize: 11,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
+            const SizedBox(height: AppSpacing.sm),
+            DsDiscountBadge(
+              label: 'You save ₹${_savedTotal.toStringAsFixed(0)}'
+                  '${quantity > 1 ? ' (₹${_savedPerItem.toStringAsFixed(0)} × $quantity)' : ''}',
             ),
           ],
         ],

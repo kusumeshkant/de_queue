@@ -1,3 +1,4 @@
+import 'package:dq_app/design_system/design_system.dart';
 import 'package:dq_app/src/domain/entity/order_entity.dart';
 import 'package:dq_app/src/l10n/translation_keys.dart';
 import 'package:dq_app/src/presentation/order/order_controller.dart';
@@ -153,20 +154,21 @@ class _PaymentBadge extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final (color, icon, label) = switch (paymentStatus.toLowerCase()) {
-      'success' => (Colors.green.shade600,  Icons.verified_rounded,       AppKeys.paymentSuccess.tr),
-      'failed'  => (Colors.red.shade600,    Icons.error_outline_rounded,  AppKeys.payStatusFailed.tr),
-      _         => (Colors.grey.shade500,   Icons.schedule_rounded,       AppKeys.payStatusPending.tr),
+    final color = AppColors.statusColor(
+        paymentStatus == 'success' ? 'completed' : paymentStatus);
+    final (icon, label) = switch (paymentStatus.toLowerCase()) {
+      'success' => (Icons.verified_rounded, AppKeys.paymentSuccess.tr),
+      'failed' => (Icons.error_outline_rounded, AppKeys.payStatusFailed.tr),
+      _ => (Icons.schedule_rounded, AppKeys.payStatusPending.tr),
     };
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: [
         Icon(icon, color: color, size: 11),
-        const SizedBox(width: 4),
+        const SizedBox(width: AppSpacing.xs),
         Text(
           '${AppKeys.paymentStatus.tr}: $label',
-          style: TextStyle(
-              color: color, fontSize: 11, fontWeight: FontWeight.w600),
+          style: AppTypography.captionBold.copyWith(color: color),
         ),
       ],
     );
@@ -179,31 +181,6 @@ class _StatusBadge extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final (color, icon, label) = switch (status.toLowerCase()) {
-      'pending'    => (Colors.grey.shade500,    Icons.hourglass_empty_rounded,  AppKeys.statusPending.tr),
-      'preparing'  => (Colors.orange.shade600,  Icons.restaurant_rounded,       AppKeys.statusPreparing.tr),
-      'ready'      => (Colors.blue.shade500,    Icons.shopping_bag_rounded,     AppKeys.statusReady.tr),
-      'completed'  => (Colors.green.shade600,   Icons.check_circle_rounded,     AppKeys.statusConfirmed.tr),
-      'cancelled'  => (Colors.red.shade600,     Icons.cancel_rounded,           AppKeys.statusCancelled.tr),
-      _            => (Colors.orange.shade400,  Icons.info_outline_rounded,     status),
-    };
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-      decoration: BoxDecoration(
-        color: color.withValues(alpha: 0.12),
-        borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: color.withValues(alpha: 0.5)),
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(icon, color: color, size: 12),
-          const SizedBox(width: 4),
-          Text(label,
-              style: TextStyle(
-                  color: color, fontSize: 11, fontWeight: FontWeight.w600)),
-        ],
-      ),
-    );
+    return DsStatusBadge(status: status);
   }
 }
