@@ -1,3 +1,4 @@
+import 'package:dq_app/design_system/design_system.dart';
 import 'package:dq_app/src/l10n/translation_keys.dart';
 import 'package:dq_app/src/presentation/dashBoard/navigation_controller.dart';
 import 'package:dq_app/src/data/datasources/remote/notification_remote_ds.dart';
@@ -206,16 +207,16 @@ class _BottomnavigationState extends State<Bottomnavigation>
                               horizontal: 14, vertical: 10),
                           decoration: BoxDecoration(
                             color: tc.isGreenTheme.value
-                                ? Colors.black.withValues(alpha: 0.82)
-                                : Colors.white.withValues(alpha: 0.97),
+                                ? AppColorsDark.floatSurface
+                                : AppColorsLight.floatSurface,
                             borderRadius: BorderRadius.circular(30),
                             border: Border.all(
-                              color: Colors.orange.withValues(alpha: 0.6),
+                              color: AppColors.warningBorder,
                               width: 1.2,
                             ),
                             boxShadow: [
                               BoxShadow(
-                                color: Colors.orange.withValues(
+                                color: AppColors.warning.withValues(
                                     alpha: 0.25 * _pulseAnimation.value),
                                 blurRadius: 14,
                                 spreadRadius: 2,
@@ -230,7 +231,7 @@ class _BottomnavigationState extends State<Bottomnavigation>
                                 height: 10,
                                 decoration: BoxDecoration(
                                   shape: BoxShape.circle,
-                                  color: Colors.orange.withValues(
+                                  color: AppColors.warning.withValues(
                                       alpha: _pulseAnimation.value),
                                 ),
                               ),
@@ -240,9 +241,7 @@ class _BottomnavigationState extends State<Bottomnavigation>
                                 style: TextStyle(
                                   fontSize: 13,
                                   fontWeight: FontWeight.w600,
-                                  color: tc.isGreenTheme.value
-                                      ? Colors.orange.shade300
-                                      : Colors.orange.shade700,
+                                  color: AppColors.warning,
                                 ),
                               ),
                             ],
@@ -259,8 +258,8 @@ class _BottomnavigationState extends State<Bottomnavigation>
               height: 58,
               decoration: BoxDecoration(
                 color: tc.isGreenTheme.value
-                    ? Colors.black.withValues(alpha: 0.55)
-                    : Colors.white.withValues(alpha: 0.8),
+                    ? AppColorsDark.navBarSurface
+                    : AppColorsLight.navBarSurface,
                 border: Border(
                   top: BorderSide(color: tc.cardBorder, width: 0.8),
                 ),

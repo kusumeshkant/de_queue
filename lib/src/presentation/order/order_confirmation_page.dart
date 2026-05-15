@@ -1,3 +1,4 @@
+import 'package:dq_app/design_system/design_system.dart';
 import 'package:dq_app/src/domain/entity/order_entity.dart';
 import 'package:dq_app/src/l10n/translation_keys.dart';
 import 'package:dq_app/src/presentation/dashBoard/navigation_controller.dart';
@@ -43,13 +44,13 @@ class OrderConfirmationPage extends StatelessWidget {
                   width: 64,
                   height: 64,
                   decoration: BoxDecoration(
-                    color: Colors.green.withValues(alpha: 0.15),
+                    color: AppColors.successSubtle,
                     shape: BoxShape.circle,
                     border: Border.all(
-                        color: Colors.green.withValues(alpha: 0.4), width: 2),
+                        color: AppColors.successBorder, width: 2),
                   ),
                   child: const Icon(Icons.check_rounded,
-                      color: Colors.green, size: 36),
+                      color: AppColors.success, size: 36),
                 ),
                 const SizedBox(height: 12),
                 Text(
@@ -164,7 +165,7 @@ class OrderConfirmationPage extends StatelessWidget {
                               color: tc.textPrimary,
                             ),
                           ),
-                          _StatusBadge(status: order.status),
+                          DsStatusBadge(status: order.status),
                         ],
                       ),
                       const SizedBox(height: 4),
@@ -212,7 +213,7 @@ class OrderConfirmationPage extends StatelessWidget {
                           _summaryRow(
                             tc, 'Discount applied',
                             '−₹${saved.toStringAsFixed(0)}',
-                            valueColor: const Color(0xFF00C853),
+                            valueColor: AppColors.success,
                           ),
                         ]);
                       }),
@@ -276,30 +277,3 @@ class OrderConfirmationPage extends StatelessWidget {
   }
 }
 
-class _StatusBadge extends StatelessWidget {
-  final String status;
-  const _StatusBadge({required this.status});
-
-  @override
-  Widget build(BuildContext context) {
-    final (color, label) = switch (status.toLowerCase()) {
-      'pending' => (Colors.grey.shade500, 'Pending'),
-      'preparing' => (Colors.orange.shade600, 'Preparing'),
-      'ready' => (Colors.blue.shade500, 'Ready'),
-      'completed' => (Colors.green.shade600, 'Completed'),
-      'cancelled' => (Colors.red.shade600, 'Cancelled'),
-      _ => (Colors.orange.shade400, status),
-    };
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-      decoration: BoxDecoration(
-        color: color.withValues(alpha: 0.12),
-        borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: color.withValues(alpha: 0.5)),
-      ),
-      child: Text(label,
-          style: TextStyle(
-              color: color, fontSize: 11, fontWeight: FontWeight.w600)),
-    );
-  }
-}

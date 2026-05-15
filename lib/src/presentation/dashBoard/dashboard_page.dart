@@ -1,5 +1,6 @@
 import 'dart:ui';
 
+import 'package:dq_app/design_system/design_system.dart';
 import 'package:dq_app/src/domain/entity/store_entity.dart';
 import 'package:dq_app/src/l10n/translation_keys.dart';
 import 'package:dq_app/src/presentation/cart/cart_controller.dart';
@@ -66,13 +67,13 @@ class _DashboardPageState extends State<DashboardPage> {
     Get.dialog(
       AlertDialog(
         backgroundColor:
-            tc.isGreenTheme.value ? const Color(0xFF1A2B3C) : Colors.white,
+            tc.isGreenTheme.value ? AppColorsDark.dialogSurface : AppColorsLight.dialogSurface,
         shape:
             RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
         title: Row(
           children: [
             Icon(Icons.warning_amber_rounded,
-                color: Colors.orange.shade400, size: 22),
+                color: AppColors.warning, size: 22),
             const SizedBox(width: 8),
             Text(
               AppKeys.changeStoreTitle.tr,
@@ -101,7 +102,7 @@ class _DashboardPageState extends State<DashboardPage> {
               _c.selectStore(store);
             },
             style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.orange.shade600,
+              backgroundColor: AppColors.warning,
               foregroundColor: Colors.white,
               shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(10)),
@@ -241,8 +242,7 @@ class _DashboardPageState extends State<DashboardPage> {
                           (s) => s.id == recent['id'],
                         );
                         return StoreCard(
-                          imageUrl: store?.imageUrl ??
-                              'https://picsum.photos/id/1011/500/500',
+                          imageUrl: store?.imageUrl ?? '',
                           storeName: recent['name'] ?? '',
                           onTap: () {
                             if (store != null) _trySelectStore(store);
@@ -323,8 +323,8 @@ class _StoreSelectionSheetState extends State<_StoreSelectionSheet> {
             ),
             decoration: BoxDecoration(
               color: isGreen
-                  ? Colors.black.withValues(alpha: 0.82)
-                  : Colors.white.withValues(alpha: 0.95),
+                  ? AppColorsDark.sheetSurface
+                  : AppColorsLight.sheetSurface,
               borderRadius:
                   const BorderRadius.vertical(top: Radius.circular(24)),
               border: Border(
