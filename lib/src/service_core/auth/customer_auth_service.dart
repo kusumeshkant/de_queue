@@ -1,6 +1,9 @@
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/foundation.dart' show debugPrint;
 import 'package:graphql_flutter/graphql_flutter.dart';
+import 'package:dq_app/src/constants/app_config.dart';
 import 'package:dq_app/src/constants/app_roles.dart';
+import 'package:dq_app/core/observability/app_logger.dart';
 import 'package:dq_app/src/service_core/networks/graphql_client_provider.dart';
 
 // ── Typed error ───────────────────────────────────────────────────────────────
@@ -80,6 +83,7 @@ class CustomerAuthService {
   /// The caller must NOT catch [AccessDeniedException] broadly — let it
   /// propagate to the UI so the correct dialog is shown.
   static Future<void> validateCustomerAccess() async {
+    AppLogger.logValidateAccess('started');
     final result = await _executeQuery(_validateQuery);
 
     if (result.hasException) {
@@ -88,6 +92,8 @@ class CustomerAuthService {
       final hint = _parseHint(rawHint);
       final msg = gqlError?.message
           ?? 'Access denied. Please sign up on the DQ App to continue.';
+
+      AppLogger.logValidateAccess('denied', hint: rawHint, error: msg);
 
       // Only sign out for terminal denials. For STAFF_NO_CUSTOMER and
       // ADMIN_NO_CUSTOMER the Firebase session must stay alive so the signup
@@ -99,6 +105,8 @@ class CustomerAuthService {
 
       throw AccessDeniedException(msg, hint);
     }
+
+    AppLogger.logValidateAccess('granted');
   }
 
   /// Adds the 'customer' role to the currently signed-in user on the backend.
@@ -106,17 +114,71 @@ class CustomerAuthService {
   /// Called by the signup flow when a staff or admin Google account wants to
   /// also use DQ as a customer. Idempotent — safe to call if already a customer.
   ///
+  /// Does NOT sign out Firebase on failure — the caller can retry or show a
+  /// specific error without losing the authenticated session.
+  ///
   /// Throws [AccessDeniedException] on network failure or backend error.
   static Future<void> registerAsCustomer() async {
-    final result = await _executeMutation(_registerMutation);
+    AppLogger.logValidateAccess('started', hint: 'registerAsCustomer');
+    // Use login-scoped client (no ErrorLink) so an UNAUTHENTICATED or FORBIDDEN
+    // response from the backend does not trigger SessionManager.expireSession()
+    // mid-signup-flow.
+    final loginClient = GraphQLClientProvider.buildLoginClient();
+    QueryResult result;
+    try {
+      result = await loginClient
+          .mutate(MutationOptions(
+            document: gql(_registerMutation),
+            fetchPolicy: FetchPolicy.networkOnly,
+          ))
+          .timeout(
+            _kTimeout,
+            onTimeout: () => throw const AccessDeniedException(
+              'Connection timed out. Please try again.',
+              AuthAccessHint.network,
+            ),
+          );
+    } on AccessDeniedException {
+      rethrow;
+    } catch (_) {
+      throw const AccessDeniedException(
+        'Unable to reach the server. Please check your connection and try again.',
+        AuthAccessHint.network,
+      );
+    }
 
     if (result.hasException) {
-      await _signOut();
-      throw const AccessDeniedException(
-        'Failed to set up your customer profile. Please try again.',
+      final ex = result.exception!;
+      final gqlError = ex.graphqlErrors.firstOrNull;
+      final rawHint  = gqlError?.extensions?['hint'] as String?;
+      final hint     = _parseHint(rawHint);
+      final backendMsg = gqlError?.message;
+
+      debugPrint('╚══ [CustomerAuth] registerAsCustomer ✗');
+      debugPrint('   graphqlErrors: ${ex.graphqlErrors.map((e) => e.message).toList()}');
+      debugPrint('   linkException type: ${ex.linkException?.runtimeType}');
+      debugPrint('   linkException: ${ex.linkException}');
+      AppLogger.logValidateAccess('error', hint: rawHint, error: ex.toString());
+
+      // If the backend explicitly returned ADMIN_NO_CUSTOMER or STAFF_NO_CUSTOMER
+      // from registerAsCustomer (account-separation policy), re-throw as a
+      // meaningful AccessDeniedException so the UI can show the backend message.
+      if (hint == AuthAccessHint.adminNoCustomer || hint == AuthAccessHint.staffNoCustomer) {
+        throw AccessDeniedException(
+          backendMsg ?? 'This account cannot be linked as a customer. Please use a separate account.',
+          hint,
+        );
+      }
+
+      // For network/schema errors, surface the actual message in UAT builds.
+      final uatDetail = AppConfig.isUat && backendMsg != null ? ' [UAT: $backendMsg]' : '';
+      throw AccessDeniedException(
+        'Failed to set up your customer profile. Please try again.$uatDetail',
         AuthAccessHint.unknown,
       );
     }
+
+    AppLogger.logValidateAccess('granted', hint: 'registerAsCustomer');
   }
 
   // ─── Private helpers ──────────────────────────────────────────────────────
@@ -141,28 +203,6 @@ class CustomerAuthService {
       await _signOut();
       throw const AccessDeniedException(
         'Unable to reach the server. Please check your connection and try again.',
-        AuthAccessHint.network,
-      );
-    }
-  }
-
-  static Future<QueryResult> _executeMutation(String mutation) async {
-    try {
-      return await GraphQLClientProvider.client
-          .mutate(MutationOptions(document: gql(mutation)))
-          .timeout(
-            _kTimeout,
-            onTimeout: () => throw const AccessDeniedException(
-              'Connection timed out. Please try again.',
-              AuthAccessHint.network,
-            ),
-          );
-    } on AccessDeniedException {
-      rethrow;
-    } catch (_) {
-      await _signOut();
-      throw const AccessDeniedException(
-        'Unable to reach the server. Please try again.',
         AuthAccessHint.network,
       );
     }
