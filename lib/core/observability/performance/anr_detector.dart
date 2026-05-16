@@ -7,8 +7,11 @@ import '../analytics_events.dart';
 import '../analytics_service.dart';
 import '../crashlytics_service.dart';
 
-/// Minimum consecutive janky frames before classifying as a UI stall.
+/// Minimum consecutive janky frames before classifying as a UI stall (warning).
 const _kStallFrameThreshold = 8;
+
+/// Consecutive frames that trigger escalation to severe (3× the warning threshold).
+const _kSevereFrameThreshold = _kStallFrameThreshold * 3; // 24
 
 /// Single-frame total duration (ms) that constitutes jank (> 32ms = < 30fps).
 const _kJankyFrameMs = 32;
@@ -20,16 +23,15 @@ const _kJankyFrameMs = 32;
 /// Crashlytics captures automatically on Android). It is a Flutter-layer
 /// supplement that catches rendering stalls before they become hard ANRs.
 ///
-/// Design rationale:
-///   True ANR detection requires a secondary Dart isolate heartbeat, but
-///   isolates cannot access Firebase services. Instead we classify sustained
-///   jank (≥ [_kStallFrameThreshold] consecutive slow frames) as a stall
-///   signal and report it as a non-fatal Crashlytics breadcrumb.
+/// Reports exactly one breadcrumb + analytics at the warning threshold (8 frames)
+/// and one additional pair at the severe threshold (24 frames). Resets all state
+/// when frames recover, so subsequent stall episodes are detected independently.
 ///
 /// No-ops in dev builds.
 class AnrDetector extends GetxService {
   int _consecutiveJankyFrames = 0;
-  bool _stallReportedThisSession = false;
+  bool _warningSent = false;
+  bool _severeSent = false;
 
   @override
   void onInit() {
@@ -49,35 +51,44 @@ class AnrDetector extends GetxService {
   void _onFrameTimings(List<FrameTiming> timings) {
     for (final t in timings) {
       final totalMs = t.totalSpan.inMilliseconds;
-
       if (totalMs >= _kJankyFrameMs) {
         _consecutiveJankyFrames++;
         _checkForStall(totalMs);
       } else {
-        _consecutiveJankyFrames = 0;
+        _onRecovery();
       }
     }
   }
 
   void _checkForStall(int lastFrameMs) {
-    if (_consecutiveJankyFrames < _kStallFrameThreshold) return;
-
-    final severity = _consecutiveJankyFrames >= _kStallFrameThreshold * 3
-        ? 'severe'
-        : 'warning';
-
-    _breadcrumb(
-      'ui_stall[$severity]: '
-      '${_consecutiveJankyFrames} consecutive janky frames, '
-      'last=${lastFrameMs}ms',
-    );
-
-    // Log analytics event once per stall episode to avoid flooding
-    if (!_stallReportedThisSession ||
-        _consecutiveJankyFrames >= _kStallFrameThreshold * 3) {
-      _stallReportedThisSession = true;
-      _logStallEvent(severity);
+    // Write exactly once at the warning threshold — not on every subsequent frame.
+    if (_consecutiveJankyFrames == _kStallFrameThreshold && !_warningSent) {
+      _warningSent = true;
+      _breadcrumb(
+        'ui_stall[warning]: $_consecutiveJankyFrames consecutive janky frames '
+        'last=${lastFrameMs}ms',
+      );
+      _logStallEvent('warning');
     }
+    // Write once more when escalating to severe.
+    if (_consecutiveJankyFrames == _kSevereFrameThreshold && !_severeSent) {
+      _severeSent = true;
+      _breadcrumb(
+        'ui_stall[severe]: $_consecutiveJankyFrames consecutive janky frames '
+        'last=${lastFrameMs}ms',
+      );
+      _logStallEvent('severe');
+    }
+  }
+
+  void _onRecovery() {
+    if (_consecutiveJankyFrames >= _kStallFrameThreshold) {
+      _breadcrumb('ui_stall_end: recovered after $_consecutiveJankyFrames frames');
+    }
+    // Reset fully so the next stall episode is reported independently.
+    _consecutiveJankyFrames = 0;
+    _warningSent = false;
+    _severeSent = false;
   }
 
   void _breadcrumb(String message) {
@@ -91,8 +102,8 @@ class AnrDetector extends GetxService {
     Get.find<AnalyticsService>().logEvent(
       AnalyticsEvents.anrDetected,
       parameters: <String, Object>{
-        'severity': severity,
-        'consecutive_janky_frames': _consecutiveJankyFrames,
+        AnalyticsParams.severity: severity,
+        AnalyticsParams.consecutiveJankyFrames: _consecutiveJankyFrames,
         AnalyticsParams.flavor: AppConfig.flavor,
       },
     );

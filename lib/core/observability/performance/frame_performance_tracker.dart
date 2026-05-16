@@ -28,7 +28,6 @@ const _kReportThreshold = 0.05;
 ///
 /// No-ops in dev builds to keep the debug console clean.
 class FramePerformanceTracker extends GetxService {
-  final List<int> _buildMs = [];
   final List<int> _totalMs = [];
   int _slowCount = 0;
   int _jankyCount = 0;
@@ -50,18 +49,14 @@ class FramePerformanceTracker extends GetxService {
 
   void _onFrameTimings(List<FrameTiming> timings) {
     for (final t in timings) {
-      final buildMs = t.buildDuration.inMilliseconds;
       final totalMs = t.totalSpan.inMilliseconds;
-
-      _buildMs.add(buildMs);
       _totalMs.add(totalMs);
 
       if (totalMs >= _kSlowMs) _slowCount++;
       if (totalMs >= _kJankyMs) _jankyCount++;
 
-      // Immediate breadcrumb for individually severe frames
       if (totalMs >= _kSevereMs) {
-        _breadcrumb('severe_frame: ${totalMs}ms build=${buildMs}ms');
+        _breadcrumb('severe_frame: ${totalMs}ms build=${t.buildDuration.inMilliseconds}ms');
       }
     }
 
@@ -93,7 +88,6 @@ class FramePerformanceTracker extends GetxService {
       );
     }
 
-    _buildMs.clear();
     _totalMs.clear();
     _slowCount = 0;
     _jankyCount = 0;

@@ -58,7 +58,7 @@ class AppLogger {
 
   static void logNetwork(String msg) {
     _log(level: 1000, color: _red, channel: 'NETWORK', msg: '🔴 NETWORK: $msg');
-    _breadcrumb('net: $msg', category: CrashCategory.network);
+    _breadcrumb('net: $msg');
   }
 
   // ── Auth ────────────────────────────────────────────────────────────────────
@@ -168,7 +168,7 @@ class AppLogger {
         name: channel, level: level, error: error, stackTrace: stackTrace);
   }
 
-  static void _breadcrumb(String message, {CrashCategory? category}) {
+  static void _breadcrumb(String message) {
     if (!Get.isRegistered<CrashlyticsService>()) return;
     Get.find<CrashlyticsService>().log(message);
   }
