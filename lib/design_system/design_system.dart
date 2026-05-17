@@ -1,15 +1,16 @@
 /// DQ App Design System — barrel export.
 ///
 /// Import this single file to access all design tokens and components:
-///   import 'package:dq_app/design_system/design_system.dart';
-///
+/// ```dart
+/// import 'package:dq_app/design_system/design_system.dart';
+/// ```
 /// Then use:
-///   AppColors.success, AppSpacing.lg, AppTypography.body
-///   DsGlassCard(child: ...), DsStatusBadge(status: order.status)
+/// - `AppColors.success`, `AppSpacing.lg`, `AppTypography.body`
+/// - `DsGlassCard(child: ...)`, `DsStatusBadge(status: order.status)`
 ///
-/// Note: Theme-aware colors (primary, text, card) are still read from
-/// ThemeController (Get.find<ThemeController>()) since DQ App supports
-/// runtime theme switching.
+/// Note: Theme-aware colors (primary, text, card) are read from
+/// `ThemeController` since DQ App supports runtime theme switching.
+library;
 
 // Tokens
 export 'tokens/app_colors.dart';
