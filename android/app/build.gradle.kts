@@ -3,6 +3,11 @@ plugins {
     id("kotlin-android")
     // The Flutter Gradle Plugin must be applied after the Android and Kotlin Gradle plugins.
     id("dev.flutter.flutter-gradle-plugin")
+    // the dependency for the Google services Gradle plugin
+   // id("com.google.gms.google-services") version "4.4.4" apply false
+   // the Google services Gradle plugin
+    id("com.google.gms.google-services")
+
 }
 
 android {
@@ -11,6 +16,7 @@ android {
     ndkVersion = flutter.ndkVersion
 
     compileOptions {
+        isCoreLibraryDesugaringEnabled = true
         sourceCompatibility = JavaVersion.VERSION_11
         targetCompatibility = JavaVersion.VERSION_11
     }
@@ -30,6 +36,23 @@ android {
         versionName = flutter.versionName
     }
 
+    flavorDimensions += "environment"
+    productFlavors {
+        create("dev") {
+            dimension = "environment"
+            applicationIdSuffix = ".dev"
+            versionNameSuffix = "-dev"
+        }
+        create("uat") {
+            dimension = "environment"
+            applicationIdSuffix = ".uat"
+            versionNameSuffix = "-uat"
+        }
+        create("prod") {
+            dimension = "environment"
+        }
+    }
+
     buildTypes {
         release {
             // TODO: Add your own signing config for the release build.
@@ -41,4 +64,20 @@ android {
 
 flutter {
     source = "../.."
+}
+
+dependencies {
+  coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.1.4")
+
+  // Import the Firebase BoM
+  implementation(platform("com.google.firebase:firebase-bom:34.8.0"))
+
+
+  // TODO: Add the dependencies for Firebase products you want to use
+  // When using the BoM, don't specify versions in Firebase dependencies
+  implementation("com.google.firebase:firebase-analytics")
+
+
+  // Add the dependencies for any other desired Firebase products
+  // https://firebase.google.com/docs/android/setup#available-libraries
 }
