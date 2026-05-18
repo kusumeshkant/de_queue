@@ -6,7 +6,6 @@ import 'package:dq_app/src/presentation/auth/signup/signup_page.dart';
 import 'package:dq_app/src/presentation/dashBoard/bottom_navigation.dart';
 import 'package:dq_app/src/presentation/dashBoard/navigation_controller.dart';
 import 'package:dq_app/src/service_core/auth/customer_auth_service.dart';
-import 'package:flutter/foundation.dart' show debugPrint;
 import 'package:dq_app/src/theme/theme_controller.dart';
 import 'package:dq_app/src/utils/appsystem_ui.dart';
 import 'package:dq_app/src/utils/responsive/responsive.dart';
@@ -132,15 +131,20 @@ class _LoginPageState extends State<LoginPage> {
         child: Scaffold(
           backgroundColor: Colors.transparent,
           body: SafeArea(
-            child: SingleChildScrollView(
-              padding: EdgeInsets.symmetric(horizontal: Responsive.hPad(context)),
-              child: Obx(() => Center(
+            child: LayoutBuilder(
+              builder: (_, lc) => SingleChildScrollView(
+                padding: EdgeInsets.symmetric(horizontal: Responsive.hPad(context)),
+                child: ConstrainedBox(
+                  constraints: BoxConstraints(minHeight: lc.maxHeight),
+                  child: Obx(() => Center(
                     child: ConstrainedBox(
                       constraints: const BoxConstraints(maxWidth: Responsive.formMaxWidth),
                       child: Column(
                     crossAxisAlignment: CrossAxisAlignment.center,
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    mainAxisSize: MainAxisSize.min,
                     children: [
-                      SizedBox(height: Responsive.vSpace(context, 64)),
+                      SizedBox(height: Responsive.vSpace(context, 24)),
 
                       // ── Logo ──────────────────────────────────────────────
                       _LiquidGlassIcon(
@@ -377,6 +381,8 @@ class _LoginPageState extends State<LoginPage> {
                   ),
                     ),
                   )),
+                ),
+              ),
             ),
           ),
         ),

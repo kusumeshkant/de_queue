@@ -418,9 +418,13 @@ class _ScannerPageState extends State<ScannerPage>
                           iconColor: _torchOn
                               ? const Color(0xFFFFD54F)
                               : Colors.white,
-                          onPressed: () {
-                            setState(() => _torchOn = !_torchOn);
-                            _mobileScannerController.toggleTorch();
+                          onPressed: () async {
+                            try {
+                              await _mobileScannerController.toggleTorch();
+                              setState(() => _torchOn = !_torchOn);
+                            } catch (_) {
+                              // Torch not supported on web
+                            }
                           },
                         ),
 
