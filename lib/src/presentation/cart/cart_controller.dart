@@ -269,8 +269,11 @@ class CartController extends GetxController {
         return;
       }
 
-      final razorpayOrder =
-          await createRazorpayOrderUseCase.execute(effectiveGrandTotal);
+      final razorpayOrder = await createRazorpayOrderUseCase.execute(
+        storeId: dashboard.selectedStoreId.value,
+        items: List.from(items),
+        discountCode: appliedDiscountCode,
+      );
 
       razorpayService.openPaymentSheet(
         razorpayOrderId: razorpayOrder.id,

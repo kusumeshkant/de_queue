@@ -2,7 +2,11 @@ import 'package:dq_app/src/domain/entity/cart_item_entity.dart';
 import 'package:dq_app/src/domain/entity/order_entity.dart';
 
 abstract class OrderRepository {
-  Future<RazorpayOrderEntity> createRazorpayOrder(double amount);
+  Future<RazorpayOrderEntity> createRazorpayOrder({
+    required String storeId,
+    required List<CartItemEntity> items,
+    String? discountCode,
+  });
 
   Future<OrderEntity> createOrder({
     required String storeId,

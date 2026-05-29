@@ -4,10 +4,18 @@ import 'package:dq_app/src/domain/entity/order_entity.dart';
 import 'package:dq_app/src/service_core/networks/graphql_service.dart';
 
 class OrderRemoteDataSource {
-  Future<RazorpayOrderEntity> createRazorpayOrder(double amount) async {
-    const mutation = '''
-      mutation CreateRazorpayOrder(\$amount: Float!) {
-        createRazorpayOrder(amount: \$amount) {
+  Future<RazorpayOrderEntity> createRazorpayOrder({
+    required String storeId,
+    required List<CartItemEntity> items,
+    String? discountCode,
+  }) async {
+    const mutation = r'''
+      mutation CreateRazorpayOrder(
+        $storeId: ID!
+        $items: [OrderItemInput!]!
+        $discountCode: String
+      ) {
+        createRazorpayOrder(storeId: $storeId, items: $items, discountCode: $discountCode) {
           id
           amount
           currency
@@ -17,7 +25,20 @@ class OrderRemoteDataSource {
 
     final result = await GraphQLService.performMutation(
       mutation: mutation,
-      variables: {'amount': amount},
+      variables: {
+        'storeId': storeId,
+        'items': items
+            .map((i) => {
+                  'barcode': i.barcode,
+                  'name': i.name,
+                  'price': i.price,
+                  'quantity': i.quantity,
+                  'mrp': i.mrp,
+                  if (i.subtitle.isNotEmpty) 'description': i.subtitle,
+                })
+            .toList(),
+        if (discountCode != null) 'discountCode': discountCode,
+      },
     );
 
     final data = result.data?['createRazorpayOrder'];
