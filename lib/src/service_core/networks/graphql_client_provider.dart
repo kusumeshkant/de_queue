@@ -2,7 +2,9 @@ import 'package:dq_app/src/constants/app_config.dart';
 import 'package:dq_app/src/service_core/auth/session_manager.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
+import 'package:dq_app/core/observability/app_logger.dart';
 import 'graphql_logging_link.dart';
+import 'graphql_observability_link.dart';
 
 class GraphQLClientProvider {
   static GraphQLClient? _client;
@@ -33,8 +35,12 @@ class GraphQLClientProvider {
     final AuthLink authLink = AuthLink(
       getToken: () async {
         final user = FirebaseAuth.instance.currentUser;
-        if (user == null) return null;
+        if (user == null) {
+          AppLogger.logGraphQLAuth(tokenAttached: false);
+          return null;
+        }
         final token = await user.getIdToken();
+        AppLogger.logGraphQLAuth(tokenAttached: token != null, uid: user.uid);
         return token != null ? 'Bearer $token' : null;
       },
     );
@@ -86,7 +92,7 @@ class GraphQLClientProvider {
 
     return GraphQLClient(
       cache: GraphQLCache(store: InMemoryStore()),
-      link: Link.from([LoggingLink(), errorLink, authLink, httpLink]),
+      link: Link.from([GraphQLObservabilityLink(), LoggingLink(), errorLink, authLink, httpLink]),
     );
   }
 
@@ -95,5 +101,25 @@ class GraphQLClientProvider {
       throw Exception('GraphQLClient not initialized. Call init() first.');
     }
     return _client!;
+  }
+
+  // Minimal client without ErrorLink — used during auth mutations (login,
+  // registerAsCustomer) so that an UNAUTHENTICATED backend response does not
+  // trigger SessionManager.expireSession() mid-flow while the user is actively
+  // trying to authenticate.
+  static GraphQLClient buildLoginClient() {
+    final HttpLink httpLink = HttpLink(AppConfig.graphqlEndpoint);
+    final AuthLink authLink = AuthLink(
+      getToken: () async {
+        final user = FirebaseAuth.instance.currentUser;
+        if (user == null) return null;
+        final token = await user.getIdToken();
+        return token != null ? 'Bearer $token' : null;
+      },
+    );
+    return GraphQLClient(
+      cache: GraphQLCache(store: InMemoryStore()),
+      link: authLink.concat(httpLink),
+    );
   }
 }

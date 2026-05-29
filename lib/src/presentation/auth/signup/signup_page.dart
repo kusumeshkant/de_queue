@@ -1,4 +1,5 @@
 import 'dart:ui';
+import 'package:dq_app/design_system/design_system.dart';
 import 'package:dq_app/src/presentation/auth/login/login_page.dart';
 import 'package:dq_app/src/presentation/auth/signup/signup_binding.dart';
 import 'package:dq_app/src/presentation/auth/signup/signup_controller.dart';
@@ -6,6 +7,7 @@ import 'package:dq_app/src/presentation/dashBoard/bottom_navigation.dart';
 import 'package:dq_app/src/presentation/dashBoard/navigation_controller.dart';
 import 'package:dq_app/src/theme/theme_controller.dart';
 import 'package:dq_app/src/utils/appsystem_ui.dart';
+import 'package:dq_app/src/utils/responsive/responsive.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
@@ -49,12 +51,20 @@ class _SignUpPageState extends State<SignUpPage> {
         child: Scaffold(
           backgroundColor: Colors.transparent,
           body: SafeArea(
-            child: SingleChildScrollView(
-              padding: const EdgeInsets.symmetric(horizontal: 24),
-              child: Obx(() => Column(
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    children: [
-                      const SizedBox(height: 52),
+            child: LayoutBuilder(
+              builder: (_, lc) => SingleChildScrollView(
+                padding: EdgeInsets.symmetric(horizontal: Responsive.hPad(context)),
+                child: ConstrainedBox(
+                  constraints: BoxConstraints(minHeight: lc.maxHeight),
+                  child: Center(
+                    child: ConstrainedBox(
+                      constraints: const BoxConstraints(maxWidth: Responsive.formMaxWidth),
+                      child: Obx(() => Column(
+                            crossAxisAlignment: CrossAxisAlignment.center,
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              const SizedBox(height: 24),
 
                       _LiquidGlassIcon(
                           icon: Icons.shopping_bag_rounded,
@@ -154,9 +164,8 @@ class _SignUpPageState extends State<SignUpPage> {
                                         const EdgeInsets.only(bottom: 12),
                                     child: Text(
                                       c.validationError.value,
-                                      style: const TextStyle(
-                                          color: Colors.red,
-                                          fontSize: 13),
+                                      style: AppTypography.bodySmall
+                                          .copyWith(color: AppColors.error),
                                     ),
                                   )
                                 : const SizedBox.shrink()),
@@ -182,7 +191,7 @@ class _SignUpPageState extends State<SignUpPage> {
                                       },
                                       onError: (msg) => Get.snackbar(
                                         'Error', msg,
-                                        backgroundColor: Colors.red,
+                                        backgroundColor: AppColors.error,
                                         colorText: Colors.white,
                                         snackPosition: SnackPosition.BOTTOM,
                                       ),
@@ -231,7 +240,7 @@ class _SignUpPageState extends State<SignUpPage> {
                                         },
                                         onError: (msg) => Get.snackbar(
                                           'Error', msg,
-                                          backgroundColor: Colors.red,
+                                          backgroundColor: AppColors.error,
                                           colorText: Colors.white,
                                           snackPosition: SnackPosition.BOTTOM,
                                         ),
@@ -256,7 +265,7 @@ class _SignUpPageState extends State<SignUpPage> {
                                   children: [
                                     Text('G',
                                         style: TextStyle(
-                                            color: const Color(0xFF4285F4),
+                                            color: AppColors.googleBlue,
                                             fontSize: 20,
                                             fontWeight: FontWeight.w700)),
                                     const SizedBox(width: 10),
@@ -295,7 +304,11 @@ class _SignUpPageState extends State<SignUpPage> {
                       ),
                       const SizedBox(height: 32),
                     ],
-                  )),
+                      )),
+                    ),
+                  ),
+                ),
+              ),
             ),
           ),
         ),
@@ -526,7 +539,10 @@ class _LiquidButton extends StatelessWidget {
                   ? const LinearGradient(
                       begin: Alignment.topCenter,
                       end: Alignment.bottomCenter,
-                      colors: [Color(0xCC1A1A1A), Color(0xE8000000)],
+                      colors: [
+                        AppColorsDark.buttonGradientStart,
+                        AppColorsDark.buttonGradientEnd,
+                      ],
                     )
                   : LinearGradient(
                       begin: Alignment.topCenter,
@@ -549,12 +565,7 @@ class _LiquidButton extends StatelessWidget {
               ],
             ),
             child: Center(
-              child: Text(text,
-                  style: const TextStyle(
-                      color: Colors.white,
-                      fontSize: 16,
-                      fontWeight: FontWeight.w700,
-                      letterSpacing: 0.3)),
+              child: Text(text, style: AppTypography.button),
             ),
           ),
         ),

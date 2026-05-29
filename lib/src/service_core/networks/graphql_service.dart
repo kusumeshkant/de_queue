@@ -3,7 +3,7 @@ import 'dart:async';
 import 'package:dq_app/src/service_core/auth/session_manager.dart';
 import 'package:get/get.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
-import 'app_logger.dart';
+import 'package:dq_app/core/observability/app_logger.dart';
 import 'graphql_client_provider.dart';
 import 'network_service.dart';
 

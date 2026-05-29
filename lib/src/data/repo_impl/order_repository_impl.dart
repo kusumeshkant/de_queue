@@ -9,8 +9,16 @@ class OrderRepositoryImpl implements OrderRepository {
   OrderRepositoryImpl({required this.remote});
 
   @override
-  Future<RazorpayOrderEntity> createRazorpayOrder(double amount) =>
-      remote.createRazorpayOrder(amount);
+  Future<RazorpayOrderEntity> createRazorpayOrder({
+    required String storeId,
+    required List<CartItemEntity> items,
+    String? discountCode,
+  }) =>
+      remote.createRazorpayOrder(
+        storeId: storeId,
+        items: items,
+        discountCode: discountCode,
+      );
 
   @override
   Future<OrderEntity> createOrder({

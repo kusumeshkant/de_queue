@@ -1,5 +1,5 @@
 import 'package:graphql/client.dart';
-import 'app_logger.dart';
+import 'package:dq_app/core/observability/app_logger.dart';
 
 class LoggingLink extends Link {
   @override

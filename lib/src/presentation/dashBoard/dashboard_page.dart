@@ -1,5 +1,6 @@
 import 'dart:ui';
 
+import 'package:dq_app/design_system/design_system.dart';
 import 'package:dq_app/src/domain/entity/store_entity.dart';
 import 'package:dq_app/src/l10n/translation_keys.dart';
 import 'package:dq_app/src/presentation/cart/cart_controller.dart';
@@ -11,6 +12,7 @@ import 'package:dq_app/src/utils/dq_widgets/screen_brightness_overlay.dart';
 import 'package:dq_app/src/utils/dq_widgets/store_card.dart';
 import 'package:dq_app/src/utils/dq_widgets/title_sub_heading.dart';
 import 'package:dq_app/src/presentation/dashBoard/widgets/dashboard_header_banner.dart';
+import 'package:dq_app/src/utils/responsive/responsive.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
@@ -66,13 +68,13 @@ class _DashboardPageState extends State<DashboardPage> {
     Get.dialog(
       AlertDialog(
         backgroundColor:
-            tc.isGreenTheme.value ? const Color(0xFF1A2B3C) : Colors.white,
+            tc.isGreenTheme.value ? AppColorsDark.dialogSurface : AppColorsLight.dialogSurface,
         shape:
             RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
         title: Row(
           children: [
             Icon(Icons.warning_amber_rounded,
-                color: Colors.orange.shade400, size: 22),
+                color: AppColors.warning, size: 22),
             const SizedBox(width: 8),
             Text(
               AppKeys.changeStoreTitle.tr,
@@ -101,7 +103,7 @@ class _DashboardPageState extends State<DashboardPage> {
               _c.selectStore(store);
             },
             style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.orange.shade600,
+              backgroundColor: AppColors.warning,
               foregroundColor: Colors.white,
               shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(10)),
@@ -189,7 +191,10 @@ class _DashboardPageState extends State<DashboardPage> {
               ),
               SliverToBoxAdapter(
                 child: Padding(
-                  padding: const EdgeInsets.only(left: 10, top: 20, right: 10),
+                  padding: EdgeInsets.only(
+                      left: context.pagePadding,
+                      top: 20,
+                      right: context.pagePadding),
                   child: TitleSubheading(titleLabel: AppKeys.nearStores.tr),
                 ),
               ),
@@ -203,12 +208,12 @@ class _DashboardPageState extends State<DashboardPage> {
                         height: 110,
                         child: ListView.builder(
                           scrollDirection: Axis.horizontal,
-                          padding: const EdgeInsets.only(left: 10),
+                          padding: EdgeInsets.only(left: context.pagePadding),
                           itemCount: _c.stores.length,
                           itemBuilder: (context, index) {
                             final store = _c.stores[index];
                             return SizedBox(
-                              width: 260,
+                              width: context.responsive(260.0, tablet: 300.0, desktop: 340.0),
                               child: Padding(
                                 padding: const EdgeInsets.only(right: 10),
                                 child: NearbyStoreTitleTile(
@@ -227,12 +232,16 @@ class _DashboardPageState extends State<DashboardPage> {
               if (_c.recentStores.isNotEmpty) ...[
                 SliverToBoxAdapter(
                   child: Padding(
-                    padding: const EdgeInsets.only(left: 10, top: 20, right: 10),
+                    padding: EdgeInsets.only(
+                        left: context.pagePadding,
+                        top: 20,
+                        right: context.pagePadding),
                     child: TitleSubheading(titleLabel: AppKeys.recentVisit.tr),
                   ),
                 ),
                 SliverPadding(
-                  padding: const EdgeInsets.all(10),
+                  padding: EdgeInsets.symmetric(
+                      horizontal: context.pagePadding, vertical: 10),
                   sliver: SliverGrid(
                     delegate: SliverChildBuilderDelegate(
                       (context, index) {
@@ -241,8 +250,7 @@ class _DashboardPageState extends State<DashboardPage> {
                           (s) => s.id == recent['id'],
                         );
                         return StoreCard(
-                          imageUrl: store?.imageUrl ??
-                              'https://picsum.photos/id/1011/500/500',
+                          imageUrl: store?.imageUrl ?? '',
                           storeName: recent['name'] ?? '',
                           onTap: () {
                             if (store != null) _trySelectStore(store);
@@ -251,9 +259,8 @@ class _DashboardPageState extends State<DashboardPage> {
                       },
                       childCount: _c.recentStores.length,
                     ),
-                    gridDelegate:
-                        const SliverGridDelegateWithFixedCrossAxisCount(
-                      crossAxisCount: 2,
+                    gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                      crossAxisCount: context.gridColumns,
                       crossAxisSpacing: 12,
                       mainAxisSpacing: 12,
                       childAspectRatio: 0.75,
@@ -323,8 +330,8 @@ class _StoreSelectionSheetState extends State<_StoreSelectionSheet> {
             ),
             decoration: BoxDecoration(
               color: isGreen
-                  ? Colors.black.withValues(alpha: 0.82)
-                  : Colors.white.withValues(alpha: 0.95),
+                  ? AppColorsDark.sheetSurface
+                  : AppColorsLight.sheetSurface,
               borderRadius:
                   const BorderRadius.vertical(top: Radius.circular(24)),
               border: Border(

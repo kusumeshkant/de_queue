@@ -1,3 +1,4 @@
+import 'package:dq_app/design_system/design_system.dart';
 import 'package:dq_app/src/l10n/translation_keys.dart';
 import 'package:dq_app/src/presentation/profile/profile_controller.dart';
 import 'package:dq_app/src/theme/theme_controller.dart';
@@ -105,7 +106,7 @@ class ProfilePage extends StatelessWidget {
                                   Get.snackbar(
                                     AppKeys.saved.tr,
                                     AppKeys.profileUpdated.tr,
-                                    backgroundColor: Colors.green,
+                                    backgroundColor: AppColors.success,
                                     colorText: Colors.white,
                                     snackPosition: SnackPosition.BOTTOM,
                                   );
@@ -114,7 +115,7 @@ class ProfilePage extends StatelessWidget {
                                   Get.snackbar(
                                     AppKeys.error.tr,
                                     msg,
-                                    backgroundColor: Colors.red,
+                                    backgroundColor: AppColors.error,
                                     colorText: Colors.white,
                                     snackPosition: SnackPosition.BOTTOM,
                                   );

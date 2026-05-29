@@ -1,3 +1,7 @@
+import 'dart:async';
+import 'dart:ui' show PlatformDispatcher;
+
+import 'package:dq_app/core/observability/observability.dart';
 import 'package:dq_app/core/enums/db_tables_enums.dart';
 import 'package:dq_app/core/manager/hive_manager.dart';
 import 'package:dq_app/src/constants/app_config.dart';
@@ -17,14 +21,87 @@ import 'package:dq_app/src/theme/theme_controller.dart';
 import 'package:dq_app/src/utils/services/local_storage.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'firebase_options.dart';
 
-void main() async {
+void main() {
+  runZonedGuarded(_bootstrap, (error, stack) {
+    if (Get.isRegistered<CrashlyticsService>()) {
+      Get.find<CrashlyticsService>().recordError(
+        error, stack, category: CrashCategory.unknown, fatal: true,
+      );
+    }
+    debugPrint('\n=== [DQ-App] UNCAUGHT ZONE ERROR ===\n$error\n$stack\n=====================================\n');
+  });
+}
+
+Future<void> _bootstrap() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
+  try {
+    await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
+    AppLogger.logFirebaseInit(success: true);
+    final opts = Firebase.app().options;
+    // ignore: avoid_print
+    print('[DQ] flavor=${AppConfig.flavor}');
+    // ignore: avoid_print
+    print('[DQ] firebase.projectId=${opts.projectId}');
+    // ignore: avoid_print
+    print('[DQ] firebase.authDomain=${opts.authDomain}');
+    // ignore: avoid_print
+    print('[DQ] firebase.appId=${opts.appId}');
+    if (kIsWeb) {
+      // ignore: avoid_print
+      print('[DQ] window.origin=${Uri.base.origin}');
+    }
+  } catch (e) {
+    AppLogger.logFirebaseInit(success: false, error: e.toString());
+    rethrow;
+  }
+
+  // Observability services — initialize immediately after Firebase.
+  final crashlytics = Get.put(CrashlyticsService(), permanent: true);
+  Get.put(AnalyticsService(), permanent: true);
+  Get.put(PerformanceService(), permanent: true);
+  Get.put(BreadcrumbService(), permanent: true);
+  Get.put(ReleaseHealthService(), permanent: true);
+  Get.put(FramePerformanceTracker(), permanent: true);
+  Get.put(AnrDetector(), permanent: true);
+
+  // Wire global error handlers to Crashlytics.
+  FlutterError.onError = (FlutterErrorDetails details) {
+    FlutterError.presentError(details);
+    crashlytics.recordFlutterError(details);
+  };
+  PlatformDispatcher.instance.onError = (error, stack) {
+    crashlytics.recordError(error, stack,
+        category: CrashCategory.rendering, fatal: true);
+    return true;
+  };
+
+  // Capture Google Sign-In redirect result (web only).
+  // Must run before GraphQLClientProvider.init() so the auth state
+  // (currentUser) is established when the GraphQL client is created.
+  if (kIsWeb) {
+    try {
+      final redirectResult = await FirebaseAuth.instance.getRedirectResult();
+      if (redirectResult.user != null) {
+        // ignore: avoid_print
+        print('[DQ] redirect-auth completed: uid=${redirectResult.user!.uid}');
+      } else {
+        // ignore: avoid_print
+        print('[DQ] redirect-auth: no pending redirect');
+      }
+    } on FirebaseAuthException catch (e) {
+      // ignore: avoid_print
+      print('[DQ] redirect-auth error: ${e.code} — ${e.message}');
+    } catch (e) {
+      // ignore: avoid_print
+      print('[DQ] redirect-auth: $e');
+    }
+  }
 
   await HiveManager.init();
 
@@ -51,7 +128,9 @@ void main() async {
   // Cold-start role validation.
   // If Firebase says the user is logged in, verify they still have customer-
   // only access via the backend before showing the home screen.
+  AppLogger.logValidateAccess('started', hint: 'cold-start');
   final bool coldStartValid = await _validateColdStart();
+  AppLogger.logValidateAccess(coldStartValid ? 'granted' : 'denied', hint: 'cold-start');
 
   runApp(
     MyApp(
@@ -80,7 +159,12 @@ Future<bool> _validateColdStart() async {
   ''';
 
   try {
-    final result = await GraphQLClientProvider.client.query(
+    // Use login client (no ErrorLink) so that UNAUTHENTICATED from the backend
+    // does not trigger SessionManager.expireSession() and a false "Session
+    // Expired" snackbar before _validateColdStart can evaluate the error type.
+    // Only FORBIDDEN should cause a sign-out here — all other failures preserve
+    // the Firebase session so the user can retry once the network is available.
+    final result = await GraphQLClientProvider.buildLoginClient().query(
       QueryOptions(document: gql(query), fetchPolicy: FetchPolicy.networkOnly),
     );
 
@@ -132,6 +216,7 @@ class MyApp extends StatelessWidget {
         theme: initialThemeController.isGreenTheme.value
             ? AppTheme.green
             : AppTheme.light,
+        navigatorObservers: [AnalyticsNavigatorObserver()],
         home: _getInitialPage(),
       ),
     );

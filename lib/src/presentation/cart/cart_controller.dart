@@ -1,6 +1,7 @@
 import 'package:dq_app/src/data/datasources/remote/order_remote_ds.dart';
 import 'package:dq_app/src/domain/entity/cart_item_entity.dart';
 import 'package:dq_app/src/domain/entity/order_entity.dart';
+import 'package:dq_app/design_system/design_system.dart';
 import 'package:dq_app/src/domain/usecase/create_order_usecase.dart';
 import 'package:dq_app/src/domain/usecase/create_razorpay_order_usecase.dart';
 import 'package:dq_app/src/domain/usecase/validate_cart_stock_usecase.dart';
@@ -131,7 +132,7 @@ class CartController extends GetxController {
         Get.snackbar(
           'Stock Limit',
           'Only ${item.stock} unit(s) of ${item.name} available.',
-          backgroundColor: Colors.orange,
+          backgroundColor: AppColors.warning,
           colorText: Colors.white,
           snackPosition: SnackPosition.BOTTOM,
           duration: const Duration(seconds: 3),
@@ -174,14 +175,14 @@ class CartController extends GetxController {
     final code = discountCodeCtrl.text.trim().toUpperCase();
     if (code.isEmpty) {
       Get.snackbar('Missing', 'Enter a discount code.',
-          backgroundColor: Colors.orange,
+          backgroundColor: AppColors.warning,
           colorText: Colors.white,
           snackPosition: SnackPosition.BOTTOM);
       return;
     }
     if (items.isEmpty) {
       Get.snackbar('Empty Cart', 'Add items to cart before applying a discount.',
-          backgroundColor: Colors.orange,
+          backgroundColor: AppColors.warning,
           colorText: Colors.white,
           snackPosition: SnackPosition.BOTTOM);
       return;
@@ -191,7 +192,7 @@ class CartController extends GetxController {
     final storeId = dashboard.selectedStoreId.value;
     if (storeId.isEmpty) {
       Get.snackbar('No Store', 'Select a store first.',
-          backgroundColor: Colors.orange,
+          backgroundColor: AppColors.warning,
           colorText: Colors.white,
           snackPosition: SnackPosition.BOTTOM);
       return;
@@ -210,7 +211,7 @@ class CartController extends GetxController {
         'Discount Applied!',
         '${(result['discountPercent'] as num).toStringAsFixed(0)}% off — '
             'saving ₹${(result['discountAmount'] as num).toStringAsFixed(0)}',
-        backgroundColor: Colors.green.shade700,
+        backgroundColor: AppColors.success,
         colorText: Colors.white,
         snackPosition: SnackPosition.BOTTOM,
         duration: const Duration(seconds: 3),
@@ -218,7 +219,7 @@ class CartController extends GetxController {
     } catch (e) {
       Get.snackbar('Invalid Code',
           e.toString().replaceAll('Exception: ', ''),
-          backgroundColor: Colors.red,
+          backgroundColor: AppColors.error,
           colorText: Colors.white,
           snackPosition: SnackPosition.BOTTOM);
     } finally {
@@ -268,8 +269,11 @@ class CartController extends GetxController {
         return;
       }
 
-      final razorpayOrder =
-          await createRazorpayOrderUseCase.execute(effectiveGrandTotal);
+      final razorpayOrder = await createRazorpayOrderUseCase.execute(
+        storeId: dashboard.selectedStoreId.value,
+        items: List.from(items),
+        discountCode: appliedDiscountCode,
+      );
 
       razorpayService.openPaymentSheet(
         razorpayOrderId: razorpayOrder.id,

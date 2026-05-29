@@ -1,3 +1,4 @@
+import 'package:dq_app/design_system/design_system.dart';
 import 'package:dq_app/src/l10n/translation_keys.dart';
 import 'package:dq_app/src/presentation/dashBoard/navigation_controller.dart';
 import 'package:dq_app/src/data/datasources/remote/notification_remote_ds.dart';
@@ -46,6 +47,8 @@ class _BottomnavigationState extends State<Bottomnavigation>
   late final AnimationController _pulseController;
   late final Animation<double> _pulseAnimation;
 
+  static const double _railBreakpoint = 720;
+
   @override
   void initState() {
     super.initState();
@@ -69,14 +72,12 @@ class _BottomnavigationState extends State<Bottomnavigation>
   }
 
   void _setupNotificationHandlers() {
-    // Handle notification taps while app is running (foreground/background)
     NotificationService.onNotificationTap = (type) {
       if (type == 'order_confirmed' || type == 'order_status_update') {
         Get.to(() => const OrderPage(), binding: OrderBinding());
       }
     };
 
-    // Handle cold-start: app was terminated and user tapped a notification
     final pending = NotificationService.pendingNotificationType;
     if (pending != null) {
       NotificationService.pendingNotificationType = null;
@@ -117,7 +118,6 @@ class _BottomnavigationState extends State<Bottomnavigation>
       permanent: true,
     );
 
-    // FCM token registration
     Get.put(NotificationRemoteDataSource(), permanent: true);
     Get.put<NotificationRepository>(
         NotificationRepositoryImpl(remote: Get.find()), permanent: true);
@@ -131,7 +131,6 @@ class _BottomnavigationState extends State<Bottomnavigation>
       if (token != null) {
         await Get.find<UpdateFcmTokenUseCase>().execute(token);
       }
-      // Re-register if token rotates
       NotificationService.onTokenRefresh.listen((newToken) {
         Get.find<UpdateFcmTokenUseCase>().execute(newToken);
       });
@@ -151,161 +150,264 @@ class _BottomnavigationState extends State<Bottomnavigation>
     final tc = Get.find<ThemeController>();
 
     return ThemedBackground(
-      child: Scaffold(
-        body: Obx(() => Stack(
-          children: [
-            IndexedStack(
-              index: _navController.selectedIndex.value,
-              children: _screens,
-            ),
-            if (_navController.selectedIndex.value == 0)
-              Positioned(
-                bottom: 15,
-                left: 0,
-                right: 0,
-                child: Center(
-                  child: Semantics(
-                    identifier: 'scanner_fab',
-                    child: FloatingActionButton(
-                      backgroundColor: tc.primary.withValues(alpha: 0.85),
-                      elevation: 12,
-                      onPressed: () => Get.to(
-                        () => const ScannerPage(),
-                        binding: ScannerBinding(),
-                      ),
-                      child: const Icon(Icons.qr_code_scanner,
-                          size: 28, color: Colors.white),
-                    ),
-                  ),
-                ),
-              ),
+      child: LayoutBuilder(
+        builder: (context, constraints) {
+          final isWide = constraints.maxWidth >= _railBreakpoint;
 
-            // ── Active Order FAB ──────────────────────────────────────────
-            if (_navController.selectedIndex.value == 0)
-              Obx(() {
-                final dc = Get.find<DashboardController>();
-                if (!dc.hasActiveOrder) return const SizedBox.shrink();
-                return Positioned(
-                  bottom: 85,
-                  right: 16,
-                  child: GestureDetector(
-                    onTap: () {
-                      final order = dc.activeOrder.value;
-                      if (order != null) {
-                        Get.to(
-                          () => OrderConfirmationPage(order: order),
-                          transition: Transition.upToDown,
-                        );
-                      }
-                    },
-                    child: AnimatedBuilder(
-                      animation: _pulseAnimation,
-                      builder: (context, child) {
-                        return Container(
-                          padding: const EdgeInsets.symmetric(
-                              horizontal: 14, vertical: 10),
-                          decoration: BoxDecoration(
-                            color: tc.isGreenTheme.value
-                                ? Colors.black.withValues(alpha: 0.82)
-                                : Colors.white.withValues(alpha: 0.97),
-                            borderRadius: BorderRadius.circular(30),
-                            border: Border.all(
-                              color: Colors.orange.withValues(alpha: 0.6),
-                              width: 1.2,
+          return Scaffold(
+            backgroundColor: Colors.transparent,
+            body: Obx(() {
+              final selectedIndex = _navController.selectedIndex.value;
+              final isGreen = tc.isGreenTheme.value;
+
+              return Row(
+                children: [
+                  // ── Navigation Rail (tablet / desktop) ───────────────
+                  if (isWide) ...[
+                    NavigationRail(
+                      selectedIndex: selectedIndex,
+                      onDestinationSelected: _onTabTap,
+                      labelType: NavigationRailLabelType.all,
+                      backgroundColor: isGreen
+                          ? AppColorsDark.navBarSurface
+                          : AppColorsLight.navBarSurface,
+                      selectedIconTheme:
+                          IconThemeData(color: tc.primary, size: 22),
+                      unselectedIconTheme:
+                          IconThemeData(color: tc.textSecondary, size: 22),
+                      selectedLabelTextStyle: TextStyle(
+                          color: tc.primary,
+                          fontSize: 11,
+                          fontWeight: FontWeight.w600),
+                      unselectedLabelTextStyle: TextStyle(
+                          color: tc.textSecondary, fontSize: 11),
+                      destinations: [
+                        NavigationRailDestination(
+                          icon: const Icon(Icons.home_outlined),
+                          selectedIcon: const Icon(Icons.home_rounded),
+                          label: Text(AppKeys.home.tr),
+                        ),
+                        NavigationRailDestination(
+                          icon: const Icon(Icons.shopping_cart_outlined),
+                          selectedIcon:
+                              const Icon(Icons.shopping_cart_rounded),
+                          label: Text(AppKeys.cart.tr),
+                        ),
+                        NavigationRailDestination(
+                          icon: const Icon(Icons.settings_outlined),
+                          selectedIcon: const Icon(Icons.settings_rounded),
+                          label: Text(AppKeys.settings.tr),
+                        ),
+                      ],
+                    ),
+                    VerticalDivider(
+                      thickness: 1,
+                      width: 1,
+                      color: tc.cardBorder.withValues(alpha: 0.4),
+                    ),
+                  ],
+
+                  // ── Main content ─────────────────────────────────────
+                  Expanded(
+                    child: Stack(
+                      children: [
+                        IndexedStack(
+                          index: selectedIndex,
+                          children: _screens,
+                        ),
+
+                        // Scanner FAB (dashboard tab only)
+                        if (selectedIndex == 0)
+                          Positioned(
+                            bottom: 15,
+                            left: 0,
+                            right: 0,
+                            child: Center(
+                              child: Semantics(
+                                identifier: 'scanner_fab',
+                                child: FloatingActionButton(
+                                  backgroundColor:
+                                      tc.primary.withValues(alpha: 0.85),
+                                  elevation: 12,
+                                  onPressed: () => Get.to(
+                                    () => const ScannerPage(),
+                                    binding: ScannerBinding(),
+                                  ),
+                                  child: const Icon(Icons.qr_code_scanner,
+                                      size: 28, color: Colors.white),
+                                ),
+                              ),
                             ),
-                            boxShadow: [
-                              BoxShadow(
-                                color: Colors.orange.withValues(
-                                    alpha: 0.25 * _pulseAnimation.value),
-                                blurRadius: 14,
-                                spreadRadius: 2,
-                              ),
-                            ],
                           ),
-                          child: Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              Container(
-                                width: 10,
-                                height: 10,
-                                decoration: BoxDecoration(
-                                  shape: BoxShape.circle,
-                                  color: Colors.orange.withValues(
-                                      alpha: _pulseAnimation.value),
+
+                        // Active order FAB (dashboard tab only)
+                        if (selectedIndex == 0)
+                          Obx(() {
+                            final dc = Get.find<DashboardController>();
+                            if (!dc.hasActiveOrder) {
+                              return const SizedBox.shrink();
+                            }
+                            return Positioned(
+                              bottom: 85,
+                              right: 16,
+                              child: GestureDetector(
+                                onTap: () {
+                                  final order = dc.activeOrder.value;
+                                  if (order != null) {
+                                    Get.to(
+                                      () =>
+                                          OrderConfirmationPage(order: order),
+                                      transition: Transition.upToDown,
+                                    );
+                                  }
+                                },
+                                child: AnimatedBuilder(
+                                  animation: _pulseAnimation,
+                                  builder: (context, child) {
+                                    return Container(
+                                      padding: const EdgeInsets.symmetric(
+                                          horizontal: 14, vertical: 10),
+                                      decoration: BoxDecoration(
+                                        color: isGreen
+                                            ? AppColorsDark.floatSurface
+                                            : AppColorsLight.floatSurface,
+                                        borderRadius:
+                                            BorderRadius.circular(30),
+                                        border: Border.all(
+                                          color: AppColors.warningBorder,
+                                          width: 1.2,
+                                        ),
+                                        boxShadow: [
+                                          BoxShadow(
+                                            color: AppColors.warning
+                                                .withValues(
+                                                    alpha: 0.25 *
+                                                        _pulseAnimation
+                                                            .value),
+                                            blurRadius: 14,
+                                            spreadRadius: 2,
+                                          ),
+                                        ],
+                                      ),
+                                      child: Row(
+                                        mainAxisSize: MainAxisSize.min,
+                                        children: [
+                                          Container(
+                                            width: 10,
+                                            height: 10,
+                                            decoration: BoxDecoration(
+                                              shape: BoxShape.circle,
+                                              color: AppColors.warning
+                                                  .withValues(
+                                                      alpha:
+                                                          _pulseAnimation
+                                                              .value),
+                                            ),
+                                          ),
+                                          const SizedBox(width: 8),
+                                          Text(
+                                            'Awaiting Confirmation',
+                                            style: TextStyle(
+                                              fontSize: 13,
+                                              fontWeight: FontWeight.w600,
+                                              color: AppColors.warning,
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    );
+                                  },
                                 ),
                               ),
-                              const SizedBox(width: 8),
-                              Text(
-                                'Awaiting Confirmation',
-                                style: TextStyle(
-                                  fontSize: 13,
-                                  fontWeight: FontWeight.w600,
-                                  color: tc.isGreenTheme.value
-                                      ? Colors.orange.shade300
-                                      : Colors.orange.shade700,
-                                ),
-                              ),
-                            ],
-                          ),
-                        );
-                      },
+                            );
+                          }),
+                      ],
                     ),
                   ),
-                );
-              }),
-          ],
-        )),
-        bottomNavigationBar: Obx(() => Container(
-              height: 58,
-              decoration: BoxDecoration(
-                color: tc.isGreenTheme.value
-                    ? Colors.black.withValues(alpha: 0.55)
-                    : Colors.white.withValues(alpha: 0.8),
-                border: Border(
-                  top: BorderSide(color: tc.cardBorder, width: 0.8),
-                ),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withValues(alpha: 0.12),
-                    blurRadius: 12,
-                    offset: const Offset(0, -3),
-                  ),
                 ],
-              ),
-              child: Row(
-                children: [
-                  Expanded(child: _navItem(icon: Icons.home, label: AppKeys.home.tr, index: 0)),
-                  Expanded(child: _navItem(icon: Icons.shopping_cart, label: AppKeys.cart.tr, index: 1)),
-                  Expanded(child: _navItem(icon: Icons.settings, label: AppKeys.settings.tr, index: 2)),
-                ],
-              ),
-            )),
+              );
+            }),
+
+            // ── Bottom Navigation Bar (mobile only) ──────────────────────
+            bottomNavigationBar: isWide
+                ? null
+                : Obx(() {
+                    final isGreen = tc.isGreenTheme.value;
+                    final selectedIndex = _navController.selectedIndex.value;
+                    return Container(
+                      height: 58,
+                      decoration: BoxDecoration(
+                        color: isGreen
+                            ? AppColorsDark.navBarSurface
+                            : AppColorsLight.navBarSurface,
+                        border: Border(
+                          top: BorderSide(color: tc.cardBorder, width: 0.8),
+                        ),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withValues(alpha: 0.12),
+                            blurRadius: 12,
+                            offset: const Offset(0, -3),
+                          ),
+                        ],
+                      ),
+                      child: Row(
+                        children: [
+                          Expanded(
+                              child: _navItem(
+                                  icon: Icons.home,
+                                  label: AppKeys.home.tr,
+                                  index: 0,
+                                  selectedIndex: selectedIndex,
+                                  tc: tc)),
+                          Expanded(
+                              child: _navItem(
+                                  icon: Icons.shopping_cart,
+                                  label: AppKeys.cart.tr,
+                                  index: 1,
+                                  selectedIndex: selectedIndex,
+                                  tc: tc)),
+                          Expanded(
+                              child: _navItem(
+                                  icon: Icons.settings,
+                                  label: AppKeys.settings.tr,
+                                  index: 2,
+                                  selectedIndex: selectedIndex,
+                                  tc: tc)),
+                        ],
+                      ),
+                    );
+                  }),
+          );
+        },
       ),
     );
   }
 
-  Widget _navItem(
-      {required IconData icon, required String label, required int index}) {
-    final tc = Get.find<ThemeController>();
+  Widget _navItem({
+    required IconData icon,
+    required String label,
+    required int index,
+    required int selectedIndex,
+    required ThemeController tc,
+  }) {
+    final isSelected = selectedIndex == index;
     return GestureDetector(
       onTap: () => _onTabTap(index),
       behavior: HitTestBehavior.opaque,
-      child: Obx(() {
-        final isSelected = _navController.selectedIndex.value == index;
-        return Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(icon,
-                size: 22,
-                color: isSelected ? tc.primary : tc.textSecondary),
-            const SizedBox(height: 2),
-            Text(label,
-                style: TextStyle(
-                    fontSize: 11,
-                    color: isSelected ? tc.primary : tc.textSecondary)),
-          ],
-        );
-      }),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(icon,
+              size: 22,
+              color: isSelected ? tc.primary : tc.textSecondary),
+          const SizedBox(height: 2),
+          Text(label,
+              style: TextStyle(
+                  fontSize: 11,
+                  color: isSelected ? tc.primary : tc.textSecondary)),
+        ],
+      ),
     );
   }
 }
