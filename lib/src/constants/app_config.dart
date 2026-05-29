@@ -26,5 +26,9 @@ class AppConfig {
                   : 'https://ca-dq-uat.ashysea-f5376b70.centralindia.azurecontainerapps.io/graphql')
           : 'https://ca-dq-backend.ashysea-f5376b70.centralindia.azurecontainerapps.io/graphql';
 
-  static const String razorpayKeyId = 'rzp_test_SNjNbfNOTtc2oC';
+  // For prod builds pass --dart-define=RAZORPAY_KEY_ID=rzp_live_xxx to use the
+  // live key. Dev and UAT always use the test key regardless of dart-define.
+  static const String razorpayKeyId = _flavor == 'prod'
+      ? String.fromEnvironment('RAZORPAY_KEY_ID', defaultValue: 'rzp_test_SNjNbfNOTtc2oC')
+      : 'rzp_test_SNjNbfNOTtc2oC';
 }
