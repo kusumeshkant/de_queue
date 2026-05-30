@@ -122,7 +122,16 @@ class LoginController extends GetxController {
     isLoading.value = true;
     try {
       debugPrint('[AUTH] addCustomerRole: calling registerAsCustomer');
-      await CustomerAuthService.registerAsCustomer();
+      try {
+        await CustomerAuthService.registerAsCustomer();
+      } on AccessDeniedException catch (e) {
+        if (e.hint != AuthAccessHint.network) rethrow;
+        // Network/timeout — wait and retry once with a fresh token.
+        debugPrint('[AUTH] addCustomerRole: timeout on attempt 1 — retrying');
+        await Future.delayed(const Duration(seconds: 5));
+        await GraphQLClientProvider.reinitWithToken();
+        await CustomerAuthService.registerAsCustomer();
+      }
       debugPrint('[AUTH] addCustomerRole: customer role added → success');
       isLoading.value = false;
       onSuccess();

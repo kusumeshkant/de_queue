@@ -61,13 +61,20 @@ class SignupController extends GetxController {
       );
       await GraphQLClientProvider.reinitWithToken();
       // Confirm backend session — creates the MongoDB user doc as customer.
-      await CustomerAuthService.validateCustomerAccess();
+      // Retry once on network/timeout (Vercel cold-start on first real request).
+      try {
+        await CustomerAuthService.validateCustomerAccess();
+      } on AccessDeniedException catch (e) {
+        if (e.hint != AuthAccessHint.network) rethrow;
+        // Network/timeout — wait and retry once with a fresh token.
+        await Future.delayed(const Duration(seconds: 5));
+        await GraphQLClientProvider.reinitWithToken();
+        await CustomerAuthService.validateCustomerAccess();
+      }
       _clearFields();
       isLoading.value = false;
       onSuccess();
     } on AccessDeniedException catch (e) {
-      // A brand-new Firebase account should never hit FORBIDDEN, but handle
-      // it defensively. The service already signed out Firebase.
       isLoading.value = false;
       onError(e.userMessage);
     } catch (e) {
@@ -101,9 +108,15 @@ class SignupController extends GetxController {
         if (e.hint == AuthAccessHint.staffNoCustomer ||
             e.hint == AuthAccessHint.adminNoCustomer) {
           // Account exists but has no customer role yet — add it.
-          // Firebase is still signed in at this point (signOut not called for
-          // FORBIDDEN on validateCustomerAccess before registerAsCustomer).
-          await CustomerAuthService.registerAsCustomer();
+          // Retry once on network/timeout (same cold-start pattern).
+          try {
+            await CustomerAuthService.registerAsCustomer();
+          } on AccessDeniedException catch (retryEx) {
+            if (retryEx.hint != AuthAccessHint.network) rethrow;
+            await Future.delayed(const Duration(seconds: 5));
+            await GraphQLClientProvider.reinitWithToken();
+            await CustomerAuthService.registerAsCustomer();
+          }
           // Fall through to onSuccess below
         } else {
           // Network error or truly unknown denial — propagate as plain error

@@ -52,7 +52,7 @@ class AccessDeniedException implements Exception {
 /// the right UI path, so it calls [GraphQLClientProvider.client] directly and
 /// inspects the result before deciding what to throw.
 class CustomerAuthService {
-  static const _kTimeout = Duration(seconds: 20);
+  static const _kTimeout = Duration(seconds: 30);
 
   // ─── GraphQL documents ────────────────────────────────────────────────────
 
