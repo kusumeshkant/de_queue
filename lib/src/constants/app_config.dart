@@ -24,7 +24,7 @@ class AppConfig {
               : _backendProvider == 'render'
                   ? 'https://dq-backend-uat.onrender.com/graphql'
                   : 'https://ca-dq-uat.ashysea-f5376b70.centralindia.azurecontainerapps.io/graphql')
-          : 'https://ca-dq-backend.ashysea-f5376b70.centralindia.azurecontainerapps.io/graphql';
+          : 'https://de-backend-iota.vercel.app/graphql';
 
   // For prod builds pass --dart-define=RAZORPAY_KEY_ID=rzp_live_xxx to use the
   // live key. Dev and UAT always use the test key regardless of dart-define.
