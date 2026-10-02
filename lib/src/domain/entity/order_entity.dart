@@ -54,9 +54,14 @@ class RazorpayOrderEntity {
   final int amount;
   final String currency;
 
+  /// Razorpay key the server created this order with — checkout must use it.
+  /// Null only against a backend older than A3.
+  final String? keyId;
+
   const RazorpayOrderEntity({
     required this.id,
     required this.amount,
     required this.currency,
+    this.keyId,
   });
 }

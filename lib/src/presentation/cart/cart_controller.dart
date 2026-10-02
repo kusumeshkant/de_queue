@@ -5,25 +5,25 @@ import 'package:dq_app/design_system/design_system.dart';
 import 'package:dq_app/src/domain/usecase/create_order_usecase.dart';
 import 'package:dq_app/src/domain/usecase/create_razorpay_order_usecase.dart';
 import 'package:dq_app/src/domain/usecase/validate_cart_stock_usecase.dart';
+import 'package:dq_app/src/constants/app_config.dart';
 import 'package:dq_app/src/presentation/dashBoard/dashboard_view_model.dart';
-import 'package:dq_app/src/service_core/payment/razorpay_service.dart';
+import 'package:dq_app/src/service_core/payment/payment_gateway.dart';
 import 'package:dq_app/src/utils/services/local_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:razorpay_flutter/razorpay_flutter.dart';
 
 class CartController extends GetxController {
   final CreateRazorpayOrderUseCase createRazorpayOrderUseCase;
   final CreateOrderUseCase createOrderUseCase;
   final ValidateCartStockUseCase validateCartStockUseCase;
-  final RazorpayService razorpayService;
+  final PaymentGateway paymentGateway;
   final OrderRemoteDataSource _orderDs;
 
   CartController({
     required this.createRazorpayOrderUseCase,
     required this.createOrderUseCase,
     required this.validateCartStockUseCase,
-    required this.razorpayService,
+    required this.paymentGateway,
     OrderRemoteDataSource? orderDs,
   }) : _orderDs = orderDs ?? OrderRemoteDataSource();
 
@@ -63,19 +63,9 @@ class CartController extends GetxController {
   int get totalItemCount => items.fold(0, (sum, item) => sum + item.quantity);
 
   @override
-  void onInit() {
-    super.onInit();
-    razorpayService.registerCallbacks(
-      onSuccess: _handlePaymentSuccess,
-      onError: _handlePaymentError,
-      onExternalWallet: _handleExternalWallet,
-    );
-  }
-
-  @override
   void onClose() {
     discountCodeCtrl.dispose();
-    razorpayService.dispose();
+    paymentGateway.dispose();
     super.onClose();
   }
 
@@ -237,6 +227,10 @@ class CartController extends GetxController {
     required void Function(OrderEntity order) onSuccess,
     required void Function(String message) onError,
   }) async {
+    // Duplicate-submit guard: a second tap while a checkout is in flight
+    // must not create a second Razorpay order or open a second sheet.
+    if (isCheckingOut.value) return;
+
     // Reset previous failure state on new attempt
     hasPaymentFailed.value = false;
     failureMessage.value = '';
@@ -275,9 +269,21 @@ class CartController extends GetxController {
         discountCode: appliedDiscountCode,
       );
 
-      razorpayService.openPaymentSheet(
-        razorpayOrderId: razorpayOrder.id,
-        amountInPaise: razorpayOrder.amount,
+      // Open checkout with the key the server created the order with, so the
+      // client and server keys can never disagree. AppConfig is only a
+      // fallback for a backend that predates keyId.
+      await paymentGateway.open(
+        PaymentRequest(
+          orderId: razorpayOrder.id,
+          amountInPaise: razorpayOrder.amount,
+          keyId: razorpayOrder.keyId ?? AppConfig.razorpayKeyId,
+          currency: razorpayOrder.currency,
+        ),
+        PaymentCallbacks(
+          onSuccess: _handlePaymentSuccess,
+          onFailure: _handlePaymentFailure,
+          onCancelled: _handlePaymentCancelled,
+        ),
       );
     } catch (e) {
       isCheckingOut.value = false;
@@ -285,20 +291,14 @@ class CartController extends GetxController {
     }
   }
 
-  void _handlePaymentSuccess(PaymentSuccessResponse response) async {
+  void _handlePaymentSuccess(PaymentSuccess payment) async {
     try {
-      final dashboard = Get.find<DashboardController>();
-
+      // Only the three Razorpay values are sent. The server builds the order —
+      // store, items, totals, discount — from its own record of what was paid for.
       final order = await createOrderUseCase.execute(
-        storeId: dashboard.selectedStoreId.value,
-        items: List.from(items),
-        total: subtotal,
-        tax: tax,
-        grandTotal: effectiveGrandTotal,
-        razorpayOrderId: response.orderId ?? '',
-        razorpayPaymentId: response.paymentId ?? '',
-        razorpaySignature: response.signature ?? '',
-        discountCode: appliedDiscountCode,
+        razorpayOrderId: payment.orderId,
+        razorpayPaymentId: payment.paymentId,
+        razorpaySignature: payment.signature,
       );
 
       // Persist the order BEFORE clearing cart — if the app is killed between
@@ -316,16 +316,16 @@ class CartController extends GetxController {
     }
   }
 
-  void _handlePaymentError(PaymentFailureResponse response) {
+  void _handlePaymentFailure(PaymentFailure failure) {
     isCheckingOut.value = false;
-    final msg = response.message ?? 'Payment failed. Please try again.';
     hasPaymentFailed.value = true;
-    failureMessage.value = msg;
-    _onError?.call(msg);
+    failureMessage.value = failure.message;
+    _onError?.call(failure.message);
   }
 
-  void _handleExternalWallet(ExternalWalletResponse response) {
-    isCheckingOut.value = false;
-    _onError?.call('External wallet payment is not supported. Please use a card or UPI.');
+  // Closing the sheet behaves as it always has on mobile (razorpay_flutter
+  // reported it as a payment error): the cart stays, the retry sheet shows.
+  void _handlePaymentCancelled() {
+    _handlePaymentFailure(const PaymentFailure(code: 'CANCELLED', message: 'Payment cancelled.'));
   }
 }

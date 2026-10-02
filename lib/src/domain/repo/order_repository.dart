@@ -8,16 +8,11 @@ abstract class OrderRepository {
     String? discountCode,
   });
 
+  /// Only the Razorpay proof of payment — the server builds the order.
   Future<OrderEntity> createOrder({
-    required String storeId,
-    required List<CartItemEntity> items,
-    required double total,
-    required double tax,
-    required double grandTotal,
     required String razorpayOrderId,
     required String razorpayPaymentId,
     required String razorpaySignature,
-    String? discountCode,
   });
 
   Future<List<OrderEntity>> getMyOrders();

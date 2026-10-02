@@ -22,26 +22,14 @@ class OrderRepositoryImpl implements OrderRepository {
 
   @override
   Future<OrderEntity> createOrder({
-    required String storeId,
-    required List<CartItemEntity> items,
-    required double total,
-    required double tax,
-    required double grandTotal,
     required String razorpayOrderId,
     required String razorpayPaymentId,
     required String razorpaySignature,
-    String? discountCode,
   }) =>
       remote.createOrder(
-        storeId: storeId,
-        items: items,
-        total: total,
-        tax: tax,
-        grandTotal: grandTotal,
         razorpayOrderId: razorpayOrderId,
         razorpayPaymentId: razorpayPaymentId,
         razorpaySignature: razorpaySignature,
-        discountCode: discountCode,
       );
 
   @override

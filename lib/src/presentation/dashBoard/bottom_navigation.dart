@@ -30,7 +30,8 @@ import 'package:dq_app/src/routes/app_routes.dart';
 import 'package:dq_app/src/presentation/scanner_page/scanner_binding.dart';
 import 'package:dq_app/src/presentation/scanner_page/scanner_page.dart';
 import 'package:dq_app/src/service_core/notifications/notification_service.dart';
-import 'package:dq_app/src/service_core/payment/razorpay_service.dart';
+import 'package:dq_app/src/service_core/payment/payment_gateway.dart';
+import 'package:dq_app/src/service_core/payment/payment_gateway_factory.dart';
 import 'package:dq_app/src/theme/theme_controller.dart';
 import 'package:dq_app/widgets/themed_background.dart';
 import 'package:flutter/material.dart';
@@ -117,13 +118,14 @@ class _BottomnavigationState extends State<Bottomnavigation>
       getOrderByIdUseCase: Get.find(),
       getStoreByCodeUseCase: Get.find(),
     ));
-    Get.put(RazorpayService(), permanent: true);
+    // Platform payment gateway: razorpay_flutter on mobile, checkout.js on web.
+    Get.put<PaymentGateway>(createPaymentGateway(), permanent: true);
     Get.put(
       CartController(
         createRazorpayOrderUseCase: Get.find(),
         createOrderUseCase: Get.find(),
         validateCartStockUseCase: Get.find(),
-        razorpayService: Get.find(),
+        paymentGateway: Get.find<PaymentGateway>(),
       ),
       permanent: true,
     );

@@ -19,6 +19,7 @@ class OrderRemoteDataSource {
           id
           amount
           currency
+          keyId
         }
       }
     ''';
@@ -48,42 +49,28 @@ class OrderRemoteDataSource {
       id: data['id'] as String,
       amount: data['amount'] as int,
       currency: data['currency'] as String,
+      keyId: data['keyId'] as String?,
     );
   }
 
+  /// Sends ONLY the three Razorpay values. The server builds the order —
+  /// store, items, totals, discount — from its own record of what was paid
+  /// for (backend A3), so nothing the client computes is trusted or sent.
   Future<OrderModel> createOrder({
-    required String storeId,
-    required List<CartItemEntity> items,
-    required double total,
-    required double tax,
-    required double grandTotal,
     required String razorpayOrderId,
     required String razorpayPaymentId,
     required String razorpaySignature,
-    String? discountCode,
   }) async {
     const mutation = '''
       mutation CreateOrder(
-        \$storeId: ID!
-        \$items: [OrderItemInput!]!
-        \$total: Float!
-        \$tax: Float!
-        \$grandTotal: Float!
         \$razorpayOrderId: String!
         \$razorpayPaymentId: String!
         \$razorpaySignature: String!
-        \$discountCode: String
       ) {
         createOrder(
-          storeId: \$storeId
-          items: \$items
-          total: \$total
-          tax: \$tax
-          grandTotal: \$grandTotal
           razorpayOrderId: \$razorpayOrderId
           razorpayPaymentId: \$razorpayPaymentId
           razorpaySignature: \$razorpaySignature
-          discountCode: \$discountCode
         ) {
           id
           status
@@ -101,25 +88,9 @@ class OrderRemoteDataSource {
     final result = await GraphQLService.performMutation(
       mutation: mutation,
       variables: {
-        'storeId': storeId,
-        'items': items
-            .map((i) => {
-                  'barcode': i.barcode,
-                  'name': i.name,
-                  'mrp': i.mrp,
-                  'price': i.price,
-                  'quantity': i.quantity,
-                  'sku': i.sku,
-                  'description': i.subtitle,
-                })
-            .toList(),
-        'total': total,
-        'tax': tax,
-        'grandTotal': grandTotal,
         'razorpayOrderId': razorpayOrderId,
         'razorpayPaymentId': razorpayPaymentId,
         'razorpaySignature': razorpaySignature,
-        if (discountCode != null) 'discountCode': discountCode,
       },
     );
 

@@ -16,7 +16,13 @@ class AppConfig {
   // azure  → Azure UAT Container App (ca-dq-uat)
   static const _backendProvider = String.fromEnvironment('BACKEND_PROVIDER', defaultValue: 'azure');
 
-  static const String graphqlEndpoint = _flavor == 'dev'
+  // Explicit backend override for dev/uat builds — e.g. a local backend or a
+  // Vercel preview: --dart-define=GRAPHQL_ENDPOINT=http://localhost:4100/graphql
+  // IGNORED for the prod flavor, so a production build can never be pointed
+  // anywhere but the production backend by accident.
+  static const _endpointOverride = String.fromEnvironment('GRAPHQL_ENDPOINT');
+
+  static const String _defaultGraphqlEndpoint = _flavor == 'dev'
       ? 'https://de-backend-iota.vercel.app/graphql'
       : _flavor == 'uat'
           ? (_backendProvider == 'vercel'
@@ -25,6 +31,9 @@ class AppConfig {
                   ? 'https://dq-backend-uat.onrender.com/graphql'
                   : 'https://ca-dq-uat.ashysea-f5376b70.centralindia.azurecontainerapps.io/graphql')
           : 'https://de-backend-iota.vercel.app/graphql';
+
+  static const String graphqlEndpoint =
+      (_endpointOverride != '' && _flavor != 'prod') ? _endpointOverride : _defaultGraphqlEndpoint;
 
   // For prod builds pass --dart-define=RAZORPAY_KEY_ID=rzp_live_xxx to use the
   // live key. Dev and UAT always use the test key regardless of dart-define.

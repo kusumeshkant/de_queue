@@ -6,7 +6,6 @@ import 'package:dq_app/src/presentation/dashBoard/dashboard_view_model.dart';
 import 'package:dq_app/src/presentation/dashBoard/navigation_controller.dart';
 import 'package:dq_app/src/presentation/order/order_confirmation_page.dart';
 import 'package:dq_app/src/theme/theme_controller.dart';
-import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'primary_button.dart';
@@ -343,75 +342,47 @@ class CartBottomBar extends StatelessWidget {
                 const SizedBox(height: 14),
 
                 // ── Checkout button ────────────────────────────────────────
-                if (kIsWeb) ...[
-                  // Razorpay SDK is not available on web — instruct users to use the mobile app.
-                  Container(
-                    width: double.infinity,
-                    padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 16),
-                    decoration: BoxDecoration(
-                      color: tc.cardBorder.withValues(alpha: 0.3),
-                      borderRadius: BorderRadius.circular(14),
-                      border: Border.all(color: tc.cardBorder),
-                    ),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Icon(Icons.smartphone_rounded, size: 16, color: tc.textSecondary),
-                        const SizedBox(width: 8),
-                        Flexible(
-                          child: Text(
-                            'Open the DQ app on your phone to complete payment',
-                            textAlign: TextAlign.center,
-                            style: TextStyle(
-                              fontSize: 13,
-                              color: tc.textSecondary,
-                              fontWeight: FontWeight.w500,
-                            ),
+                // Same button on every platform: mobile pays through
+                // razorpay_flutter, web through Razorpay Standard Checkout
+                // (see service_core/payment/payment_gateway.dart).
+                SizedBox(
+                  width: double.infinity,
+                  height: 50,
+                  child: c.isCheckingOut.value
+                      ? Center(child: CircularProgressIndicator(color: tc.primary))
+                      : PrimaryButton(
+                          title: AppKeys.checkout.tr,
+                          onTap: () => c.checkout(
+                            onSuccess: (order) {
+                              Get.to(
+                                () => OrderConfirmationPage(order: order),
+                                transition: Transition.fadeIn,
+                              );
+                            },
+                            onError: (msg) => _showPaymentFailedSheet(msg),
                           ),
                         ),
-                      ],
-                    ),
-                  ),
-                ] else ...[
-                  SizedBox(
-                    width: double.infinity,
-                    height: 50,
-                    child: c.isCheckingOut.value
-                        ? Center(child: CircularProgressIndicator(color: tc.primary))
-                        : PrimaryButton(
-                            title: AppKeys.checkout.tr,
-                            onTap: () => c.checkout(
-                              onSuccess: (order) {
-                                Get.to(
-                                  () => OrderConfirmationPage(order: order),
-                                  transition: Transition.fadeIn,
-                                );
-                              },
-                              onError: (msg) => _showPaymentFailedSheet(msg),
-                            ),
-                          ),
-                  ),
+                ),
 
-                  const SizedBox(height: 10),
+                const SizedBox(height: 10),
 
-                  // ── Security badge ───────────────────────────────────────
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Icon(Icons.lock_rounded,
-                          size: 12,
-                          color: tc.textSecondary.withValues(alpha: 0.55)),
-                      const SizedBox(width: 4),
-                      Text(
-                        'Payments secured by Razorpay',
-                        style: TextStyle(
-                          fontSize: 11,
-                          color: tc.textSecondary.withValues(alpha: 0.55),
-                        ),
+                // ── Security badge ───────────────────────────────────────
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Icon(Icons.lock_rounded,
+                        size: 12,
+                        color: tc.textSecondary.withValues(alpha: 0.55)),
+                    const SizedBox(width: 4),
+                    Text(
+                      'Payments secured by Razorpay',
+                      style: TextStyle(
+                        fontSize: 11,
+                        color: tc.textSecondary.withValues(alpha: 0.55),
                       ),
-                    ],
-                  ),
-                ],
+                    ),
+                  ],
+                ),
               ],
             ),
           ),
