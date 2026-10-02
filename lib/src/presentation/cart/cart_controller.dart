@@ -1,4 +1,5 @@
 import 'package:dq_app/src/data/datasources/remote/order_remote_ds.dart';
+import 'package:dq_app/src/data/datasources/remote/profile_remote_ds.dart';
 import 'package:dq_app/src/domain/entity/cart_item_entity.dart';
 import 'package:dq_app/src/domain/entity/order_entity.dart';
 import 'package:dq_app/design_system/design_system.dart';
@@ -7,6 +8,7 @@ import 'package:dq_app/src/domain/usecase/create_razorpay_order_usecase.dart';
 import 'package:dq_app/src/domain/usecase/validate_cart_stock_usecase.dart';
 import 'package:dq_app/src/constants/app_config.dart';
 import 'package:dq_app/src/presentation/dashBoard/dashboard_view_model.dart';
+import 'package:dq_app/src/service_core/payment/checkout_contact.dart';
 import 'package:dq_app/src/service_core/payment/payment_gateway.dart';
 import 'package:dq_app/src/utils/services/local_storage.dart';
 import 'package:flutter/material.dart';
@@ -18,6 +20,7 @@ class CartController extends GetxController {
   final ValidateCartStockUseCase validateCartStockUseCase;
   final PaymentGateway paymentGateway;
   final OrderRemoteDataSource _orderDs;
+  final ProfileLoader _profileLoader;
 
   CartController({
     required this.createRazorpayOrderUseCase,
@@ -25,7 +28,9 @@ class CartController extends GetxController {
     required this.validateCartStockUseCase,
     required this.paymentGateway,
     OrderRemoteDataSource? orderDs,
-  }) : _orderDs = orderDs ?? OrderRemoteDataSource();
+    ProfileLoader? profileLoader,
+  })  : _orderDs = orderDs ?? OrderRemoteDataSource(),
+        _profileLoader = profileLoader ?? ProfileRemoteDataSource().getProfile;
 
   final RxList<CartItemEntity> items = <CartItemEntity>[].obs;
   final RxBool isCheckingOut = false.obs;
@@ -254,6 +259,9 @@ class CartController extends GetxController {
     _onError = onError;
 
     isCheckingOut.value = true;
+    // Fetched alongside the stock check and Razorpay order, so pre-filling the
+    // customer's phone/email adds no wait. Missing or failed → empty prefill.
+    final contactFuture = loadCheckoutContact(_profileLoader);
     try {
       // Validate stock before opening payment sheet
       final outOfStock = await validateCartStockUseCase.execute(
@@ -273,6 +281,8 @@ class CartController extends GetxController {
         discountCode: appliedDiscountCode,
       );
 
+      final contact = await contactFuture;
+
       // Open checkout with the key the server created the order with, so the
       // client and server keys can never disagree. AppConfig is only a
       // fallback for a backend that predates keyId.
@@ -282,6 +292,8 @@ class CartController extends GetxController {
           amountInPaise: razorpayOrder.amount,
           keyId: razorpayOrder.keyId ?? AppConfig.razorpayKeyId,
           currency: razorpayOrder.currency,
+          contact: contact.contact,
+          email: contact.email,
         ),
         PaymentCallbacks(
           onSuccess: _handlePaymentSuccess,
