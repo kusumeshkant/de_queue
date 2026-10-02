@@ -52,7 +52,10 @@ class _Dashboard extends DashboardController {
           getStoreByCodeUseCase: GetStoreByCodeUseCase(repository: _StoreRepo()),
         );
 
+  // Deliberately skips DashboardController.onInit (store list, saved order,
+  // local storage) — none of it is under test and it needs platform plugins.
   @override
+  // ignore: must_call_super
   void onInit() {}
 }
 
