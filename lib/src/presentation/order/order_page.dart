@@ -9,6 +9,7 @@ import 'package:dq_app/widgets/app_glass_card.dart';
 import 'package:dq_app/widgets/themed_background.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:dq_app/src/utils/money.dart';
 
 class OrderPage extends StatelessWidget {
   const OrderPage({super.key});
@@ -126,7 +127,7 @@ class _OrderCard extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.end,
               children: [
                 Text(
-                  '₹${order.grandTotal.toStringAsFixed(0)}',
+                  formatRupees(order.grandTotal),
                   style: TextStyle(
                       fontWeight: FontWeight.bold,
                       fontSize: 16,

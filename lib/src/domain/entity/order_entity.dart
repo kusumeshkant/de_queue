@@ -1,3 +1,4 @@
+import 'package:dq_app/src/utils/money.dart';
 class OrderItemEntity {
   final String barcode;
   final String name;
@@ -19,7 +20,11 @@ class OrderItemEntity {
 class OrderEntity {
   final String id;
   final String? storeName;
+  /// Discounted subtotal (server S-7: total + tax == grandTotal).
   final double total;
+
+  /// Staff discount the server applied to the subtotal; 0 when none.
+  final double discountAmount;
   final double tax;
   final double grandTotal;
   final String status;
@@ -31,6 +36,7 @@ class OrderEntity {
     required this.id,
     this.storeName,
     required this.total,
+    this.discountAmount = 0,
     required this.tax,
     required this.grandTotal,
     required this.status,
@@ -38,6 +44,9 @@ class OrderEntity {
     required this.createdAt,
     required this.items,
   });
+
+  /// Subtotal before the staff discount, in exact paise.
+  double get subtotalBeforeDiscount => (toPaise(total) + toPaise(discountAmount)) / 100;
 
   String get formattedDate {
     try {

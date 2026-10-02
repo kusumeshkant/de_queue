@@ -13,6 +13,7 @@ import 'package:dq_app/src/service_core/payment/payment_gateway.dart';
 import 'package:dq_app/src/utils/services/local_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:dq_app/src/utils/money.dart';
 
 class CartController extends GetxController {
   final CreateRazorpayOrderUseCase createRazorpayOrderUseCase;
@@ -43,28 +44,26 @@ class CartController extends GetxController {
   final discountResult      = Rx<Map<String, dynamic>?>(null);
   String? _appliedCode;
 
-  /// The grand total after discount (falls back to grandTotal if no discount applied).
-  double get effectiveGrandTotal {
-    final result = discountResult.value;
-    if (result == null) return grandTotal;
-    return (result['finalAmount'] as num).toDouble();
-  }
+  /// Grand total after any staff discount — what Razorpay will charge.
+  double get effectiveGrandTotal => totals.grandTotal;
 
-  double get discountAmount {
-    final result = discountResult.value;
-    if (result == null) return 0;
-    return (result['discountAmount'] as num).toDouble();
-  }
+  double get discountAmount => totals.discount;
 
   String? get appliedDiscountCode => discountResult.value != null ? _appliedCode : null;
 
   void Function(OrderEntity order)? _onSuccess;
   void Function(String message)? _onError;
 
-  double get subtotal =>
-      items.fold(0, (sum, item) => sum + item.price * item.quantity);
-  double get tax => subtotal * 0.18;
-  double get grandTotal => subtotal + tax;
+  /// Totals exactly as the server computes the order (whole paise; discount on
+  /// the subtotal, then 18% GST on the discounted subtotal).
+  CartTotals get totals => CartTotals.compute(
+        items.map((i) => (i.price, i.quantity)),
+        discountPercent: discountResult.value?['discountPercent'] as num?,
+      );
+
+  double get subtotal => totals.subtotal;
+  double get tax => totals.tax;
+  double get grandTotal => totals.grandTotal;
   int get totalItemCount => items.fold(0, (sum, item) => sum + item.quantity);
 
   @override
@@ -202,14 +201,14 @@ class CartController extends GetxController {
       final result = await _orderDs.validateDiscountCode(
         code: code,
         storeId: storeId,
-        subtotal: grandTotal,
+        subtotal: subtotal,
       );
       _appliedCode = code;
       discountResult.value = result;
       Get.snackbar(
         'Discount Applied!',
         '${(result['discountPercent'] as num).toStringAsFixed(0)}% off — '
-            'saving ₹${(result['discountAmount'] as num).toStringAsFixed(0)}',
+            'saving ${formatRupees(discountAmount)}',
         backgroundColor: AppColors.success,
         colorText: Colors.white,
         snackPosition: SnackPosition.BOTTOM,

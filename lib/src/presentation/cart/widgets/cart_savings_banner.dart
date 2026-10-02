@@ -1,6 +1,7 @@
 import 'package:dq_app/src/presentation/cart/cart_controller.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:dq_app/src/utils/money.dart';
 
 /// Green savings banner — shown only when at least one item has MRP > price.
 class CartSavingsBanner extends StatelessWidget {
@@ -36,7 +37,7 @@ class CartSavingsBanner extends StatelessWidget {
             const SizedBox(width: 8),
             Expanded(
               child: Text(
-                'You\'re saving ₹${totalSaved.toStringAsFixed(0)} on this order!',
+                'You\'re saving ${formatRupees(totalSaved)} on this order!',
                 style: const TextStyle(
                   color: Color(0xFF00C853),
                   fontSize: 13,

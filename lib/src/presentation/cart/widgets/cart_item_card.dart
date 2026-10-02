@@ -4,6 +4,7 @@ import 'package:dq_app/widgets/app_glass_card.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'quantity_button.dart';
+import 'package:dq_app/src/utils/money.dart';
 
 class CartItemCard extends StatelessWidget {
   final String title;
@@ -110,7 +111,7 @@ class CartItemCard extends StatelessWidget {
                       textBaseline: TextBaseline.alphabetic,
                       children: [
                         Obx(() => Text(
-                              '₹${price.toStringAsFixed(0)}',
+                              formatRupees(price),
                               style: TextStyle(
                                 fontWeight: FontWeight.bold,
                                 fontSize: 15,
@@ -120,7 +121,7 @@ class CartItemCard extends StatelessWidget {
                         if (_hasDiscount) ...[
                           const SizedBox(width: 6),
                           Text(
-                            '₹${mrp!.toStringAsFixed(0)}',
+                            formatRupees(mrp!),
                             style: TextStyle(
                               fontSize: 12,
                               color: AppColors.neutral,
@@ -168,8 +169,8 @@ class CartItemCard extends StatelessWidget {
           if (_hasDiscount) ...[
             const SizedBox(height: AppSpacing.sm),
             DsDiscountBadge(
-              label: 'You save ₹${_savedTotal.toStringAsFixed(0)}'
-                  '${quantity > 1 ? ' (₹${_savedPerItem.toStringAsFixed(0)} × $quantity)' : ''}',
+              label: 'You save ${formatRupees(_savedTotal)}'
+                  '${quantity > 1 ? ' (${formatRupees(_savedPerItem)} × $quantity)' : ''}',
             ),
           ],
         ],

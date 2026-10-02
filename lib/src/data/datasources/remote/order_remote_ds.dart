@@ -76,6 +76,7 @@ class OrderRemoteDataSource {
           status
           paymentStatus
           total
+          discountAmount
           tax
           grandTotal
           createdAt
@@ -156,6 +157,7 @@ class OrderRemoteDataSource {
           id
           storeName
           total
+          discountAmount
           tax
           grandTotal
           status
@@ -182,6 +184,7 @@ class OrderRemoteDataSource {
           id
           storeName
           total
+          discountAmount
           tax
           grandTotal
           status

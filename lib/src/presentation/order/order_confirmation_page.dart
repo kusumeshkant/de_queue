@@ -11,6 +11,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import 'package:qr_flutter/qr_flutter.dart';
+import 'package:dq_app/src/utils/money.dart';
 
 class OrderConfirmationPage extends StatelessWidget {
   final OrderEntity order;
@@ -192,7 +193,7 @@ class OrderConfirmationPage extends StatelessWidget {
                                           color: tc.textPrimary)),
                                 ),
                                 Text(
-                                  '${item.quantity} × ₹${item.price.toStringAsFixed(0)}',
+                                  '${item.quantity} × ${formatRupees(item.price)}',
                                   style: TextStyle(
                                       fontSize: 13, color: tc.textSecondary),
                                 ),
@@ -204,26 +205,26 @@ class OrderConfirmationPage extends StatelessWidget {
 
                       // Totals
                       _summaryRow(tc, AppKeys.orderSubtotal.tr,
-                          '₹${order.total.toStringAsFixed(0)}'),
+                          formatRupees(order.subtotalBeforeDiscount)),
                       const SizedBox(height: 4),
                       _summaryRow(
-                          tc, AppKeys.tax.tr, '₹${order.tax.toStringAsFixed(0)}'),
+                          tc, AppKeys.tax.tr, formatRupees(order.tax)),
                       // Discount row — shown only when a code was applied
                       Builder(builder: (_) {
-                        final saved = (order.total + order.tax) - order.grandTotal;
-                        if (saved < 0.5) return const SizedBox.shrink();
+                        final saved = order.discountAmount;
+                        if (saved <= 0) return const SizedBox.shrink();
                         return Column(children: [
                           const SizedBox(height: 4),
                           _summaryRow(
                             tc, 'Discount applied',
-                            '−₹${saved.toStringAsFixed(0)}',
+                            '−${formatRupees(saved)}',
                             valueColor: AppColors.success,
                           ),
                         ]);
                       }),
                       const SizedBox(height: 6),
                       _summaryRow(
-                          tc, AppKeys.total.tr, '₹${order.grandTotal.toStringAsFixed(0)}',
+                          tc, AppKeys.total.tr, formatRupees(order.grandTotal),
                           bold: true),
                     ],
                   ),

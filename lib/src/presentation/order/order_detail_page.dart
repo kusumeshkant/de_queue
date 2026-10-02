@@ -8,6 +8,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import 'package:qr_flutter/qr_flutter.dart';
+import 'package:dq_app/src/utils/money.dart';
 
 class OrderDetailPage extends StatelessWidget {
   final OrderEntity order;
@@ -216,15 +217,20 @@ class OrderDetailPage extends StatelessWidget {
                 child: Column(
                   children: [
                     _totalRow(tc, 'Subtotal',
-                        '₹${order.total.toStringAsFixed(0)}'),
+                        formatRupees(order.subtotalBeforeDiscount)),
+                    if (order.discountAmount > 0) ...[
+                      const SizedBox(height: 6),
+                      _totalRow(tc, 'Discount',
+                          '−${formatRupees(order.discountAmount)}'),
+                    ],
                     const SizedBox(height: 6),
                     _totalRow(
-                        tc, 'Tax (18%)', '₹${order.tax.toStringAsFixed(0)}'),
+                        tc, 'Tax (18%)', formatRupees(order.tax)),
                     Divider(color: tc.cardBorder, height: 16),
                     _totalRow(
                         tc,
                         'Grand Total',
-                        '₹${order.grandTotal.toStringAsFixed(0)}',
+                        formatRupees(order.grandTotal),
                         bold: true),
                   ],
                 ),
@@ -348,7 +354,7 @@ class _ItemCard extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.end,
             children: [
               Text(
-                '₹${(item.price * item.quantity).toStringAsFixed(0)}',
+                formatRupees((item.price * item.quantity)),
                 style: TextStyle(
                     color: tc.textPrimary,
                     fontWeight: FontWeight.bold,
@@ -356,7 +362,7 @@ class _ItemCard extends StatelessWidget {
               ),
               const SizedBox(height: 3),
               Text(
-                '${item.quantity} × ₹${item.price.toStringAsFixed(0)}',
+                '${item.quantity} × ${formatRupees(item.price)}',
                 style: TextStyle(color: tc.textSecondary, fontSize: 11),
               ),
             ],

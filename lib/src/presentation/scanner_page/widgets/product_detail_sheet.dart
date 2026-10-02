@@ -4,6 +4,7 @@ import 'package:dq_app/src/domain/entity/product_entity.dart';
 import 'package:dq_app/src/presentation/scanner_page/product_detail_controller.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:dq_app/src/utils/money.dart';
 
 const _kGreen = Color(0xFF00E676);
 const _kTag = 'product_detail';
@@ -86,7 +87,7 @@ class _ProductDetailSheetState extends State<ProductDetailSheet> {
           ],
         ),
         messageText: Text(
-          '$added× · ₹${(product.price * added).toStringAsFixed(0)}',
+          '$added× · ${formatRupees((product.price * added))}',
           style: TextStyle(
             color: Colors.white.withValues(alpha: 0.65),
             fontSize: 12,
@@ -220,7 +221,7 @@ class _ProductDetailSheetState extends State<ProductDetailSheet> {
                     textBaseline: TextBaseline.alphabetic,
                     children: [
                       Text(
-                        '₹${product.price.toStringAsFixed(0)}',
+                        formatRupees(product.price),
                         style: const TextStyle(
                           color: _kGreen,
                           fontSize: 28,
@@ -230,7 +231,7 @@ class _ProductDetailSheetState extends State<ProductDetailSheet> {
                       if (_hasMrpDiscount) ...[
                         const SizedBox(width: 10),
                         Text(
-                          '₹${product.mrp!.toStringAsFixed(0)}',
+                          formatRupees(product.mrp!),
                           style: TextStyle(
                             color: Colors.white.withValues(alpha: 0.38),
                             fontSize: 16,
@@ -266,7 +267,7 @@ class _ProductDetailSheetState extends State<ProductDetailSheet> {
                   if (!_hasMrpDiscount && product.mrp != null) ...[
                     const SizedBox(height: 4),
                     Text(
-                      'MRP ₹${product.mrp!.toStringAsFixed(0)}',
+                      'MRP ${formatRupees(product.mrp!)}',
                       style: TextStyle(
                         color: Colors.white.withValues(alpha: 0.55),
                         fontSize: 12,

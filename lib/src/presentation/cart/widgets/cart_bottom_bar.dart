@@ -9,6 +9,7 @@ import 'package:dq_app/src/theme/theme_controller.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'primary_button.dart';
+import 'package:dq_app/src/utils/money.dart';
 
 class CartBottomBar extends StatelessWidget {
   const CartBottomBar({super.key});
@@ -303,9 +304,9 @@ class CartBottomBar extends StatelessWidget {
 
                 // ── Price breakdown ────────────────────────────────────────
                 _row(tc, AppKeys.subtotal.tr,
-                    '₹${c.subtotal.toStringAsFixed(0)}'),
+                    formatRupees(c.subtotal)),
                 const SizedBox(height: 4),
-                _row(tc, 'GST (18%)', '₹${c.tax.toStringAsFixed(0)}'),
+                _row(tc, 'GST (18%)', formatRupees(c.tax)),
 
                 // MRP savings row
                 if (hasSavings) ...[
@@ -313,7 +314,7 @@ class CartBottomBar extends StatelessWidget {
                   _row(
                     tc,
                     'You save',
-                    '−₹${totalSaved.toStringAsFixed(0)}',
+                    '−${formatRupees(totalSaved)}',
                     valueColor: const Color(0xFF00C853),
                   ),
                 ],
@@ -325,7 +326,7 @@ class CartBottomBar extends StatelessWidget {
                         child: _row(
                           tc,
                           'Discount (${(c.discountResult.value!['discountPercent'] as num).toStringAsFixed(0)}%)',
-                          '−₹${c.discountAmount.toStringAsFixed(0)}',
+                          '−${formatRupees(c.discountAmount)}',
                           valueColor: const Color(0xFF00C853),
                         ),
                       )
@@ -336,7 +337,7 @@ class CartBottomBar extends StatelessWidget {
                 const SizedBox(height: 8),
 
                 _row(tc, AppKeys.total.tr,
-                    '₹${c.effectiveGrandTotal.toStringAsFixed(0)}',
+                    formatRupees(c.effectiveGrandTotal),
                     bold: true, valueColor: tc.primary),
 
                 const SizedBox(height: 14),
