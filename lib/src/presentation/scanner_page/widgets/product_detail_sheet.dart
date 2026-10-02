@@ -118,7 +118,7 @@ class _ProductDetailSheetState extends State<ProductDetailSheet> {
     final mq = MediaQuery.of(context);
 
     return Container(
-      constraints: BoxConstraints(maxHeight: mq.size.height * 0.88),
+      constraints: BoxConstraints(maxHeight: mq.size.height * 0.92),
       decoration: BoxDecoration(
         color: AppColors.scannerSheetSurface,
         borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
@@ -147,7 +147,12 @@ class _ProductDetailSheetState extends State<ProductDetailSheet> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   // Product image
-                  _ProductImage(imageUrl: product.imageUrl),
+                  // Shorter image on short screens so name, price and the manual-entry
+                  // note stay above the pinned buttons without scrolling.
+                  _ProductImage(
+                    imageUrl: product.imageUrl,
+                    height: (mq.size.height * 0.2).clamp(72.0, 180.0),
+                  ),
                   const SizedBox(height: 20),
 
                   // Name row + stock badge
@@ -431,7 +436,8 @@ class _ProductDetailSheetState extends State<ProductDetailSheet> {
 // ─────────────────────────────────────────────────────────────────────────────
 class _ProductImage extends StatelessWidget {
   final String? imageUrl;
-  const _ProductImage({this.imageUrl});
+  final double height;
+  const _ProductImage({this.imageUrl, required this.height});
 
   @override
   Widget build(BuildContext context) {
@@ -441,7 +447,7 @@ class _ProductImage extends StatelessWidget {
     return ClipRRect(
       borderRadius: BorderRadius.circular(16),
       child: SizedBox(
-        height: 180,
+        height: height,
         width: double.infinity,
         child: hasImage
             ? Image.network(
