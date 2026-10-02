@@ -301,8 +301,10 @@ class CartController extends GetxController {
         discountCode: appliedDiscountCode,
       );
 
-      clearCart();
+      // Persist the order BEFORE clearing cart — if the app is killed between
+      // these two operations, the user retains the order reference rather than losing both.
       await LocalStorage.savePendingOrder(order);
+      clearCart();
       if (Get.isRegistered<DashboardController>()) {
         Get.find<DashboardController>().setActiveOrder(order);
       }

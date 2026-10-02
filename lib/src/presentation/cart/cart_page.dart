@@ -2,6 +2,7 @@ import 'dart:ui';
 import 'package:dq_app/src/l10n/translation_keys.dart';
 import 'package:dq_app/src/presentation/cart/cart_controller.dart';
 import 'package:dq_app/src/theme/theme_controller.dart';
+import 'package:dq_app/src/utils/responsive/responsive.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'widgets/cart_item_card.dart';
@@ -21,11 +22,11 @@ class CartPage extends StatelessWidget {
       backgroundColor: Colors.transparent,
       body: Column(
         children: [
-          const SizedBox(height: 52),
+          const SizedBox(height: 12),
 
           // ── Glassy header ──────────────────────────────────────────────────
           Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 20),
+            padding: EdgeInsets.symmetric(horizontal: context.pagePadding),
             child: Obx(() {
               final isDark = tc.isGreenTheme.value;
               return ClipRRect(
@@ -112,7 +113,7 @@ class CartPage extends StatelessWidget {
                 );
               }
               return ListView.builder(
-                padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
+                padding: EdgeInsets.fromLTRB(context.pagePadding, 16, context.pagePadding, 8),
                 itemCount: c.items.length,
                 itemBuilder: (context, index) {
                   final item = c.items[index];

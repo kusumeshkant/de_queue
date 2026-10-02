@@ -4,6 +4,7 @@ import 'package:dq_app/src/l10n/translation_keys.dart';
 import 'package:dq_app/src/presentation/order/order_controller.dart';
 import 'package:dq_app/src/presentation/order/order_detail_page.dart';
 import 'package:dq_app/src/theme/theme_controller.dart';
+import 'package:dq_app/src/utils/responsive/responsive.dart';
 import 'package:dq_app/widgets/app_glass_card.dart';
 import 'package:dq_app/widgets/themed_background.dart';
 import 'package:flutter/material.dart';
@@ -47,7 +48,7 @@ class OrderPage extends StatelessWidget {
             onRefresh: c.loadOrders,
             color: tc.primary,
             child: ListView.builder(
-              padding: const EdgeInsets.all(16),
+              padding: EdgeInsets.fromLTRB(context.pagePadding, 16, context.pagePadding, 16),
               itemCount: c.orders.length,
               itemBuilder: (context, index) =>
                   _OrderCard(order: c.orders[index]),

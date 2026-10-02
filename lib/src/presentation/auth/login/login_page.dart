@@ -2,9 +2,8 @@ import 'dart:ui';
 import 'package:dq_app/design_system/design_system.dart';
 import 'package:dq_app/src/presentation/auth/login/login_binding.dart';
 import 'package:dq_app/src/presentation/auth/login/login_controller.dart';
-import 'package:dq_app/src/presentation/auth/signup/signup_page.dart';
-import 'package:dq_app/src/presentation/dashBoard/bottom_navigation.dart';
 import 'package:dq_app/src/presentation/dashBoard/navigation_controller.dart';
+import 'package:dq_app/src/routes/app_routes.dart';
 import 'package:dq_app/src/service_core/auth/customer_auth_service.dart';
 import 'package:dq_app/src/theme/theme_controller.dart';
 import 'package:dq_app/src/utils/appsystem_ui.dart';
@@ -70,11 +69,8 @@ class _LoginPageState extends State<LoginPage> {
           ),
           TextButton(
             onPressed: () {
-              Navigator.pop(context);
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (_) => const SignUpPage()),
-              );
+              Get.back();
+              Get.toNamed(AppRoutes.signup);
             },
             child: const Text('Sign Up Instead'),
           ),
@@ -86,7 +82,7 @@ class _LoginPageState extends State<LoginPage> {
                 onSuccess: () {
                   debugPrint('[UI] addCustomerRole: success → navigating to home');
                   try { Get.find<NavigationController>().goToHome(); } catch (_) {}
-                  Get.offAll(() => const Bottomnavigation());
+                  Get.offAllNamed(AppRoutes.home);
                 },
                 onError: (msg) {
                   debugPrint('[UI] addCustomerRole: error — $msg');
@@ -223,7 +219,45 @@ class _LoginPageState extends State<LoginPage> {
                               isDark: isDark,
                             ),
 
-                            const SizedBox(height: 12),
+                            const SizedBox(height: 4),
+
+                            // ── Forgot password ───────────────────────────
+                            Align(
+                              alignment: Alignment.centerRight,
+                              child: TextButton(
+                                style: TextButton.styleFrom(
+                                  padding: const EdgeInsets.symmetric(
+                                      horizontal: 0, vertical: 4),
+                                  minimumSize: Size.zero,
+                                  tapTargetSize:
+                                      MaterialTapTargetSize.shrinkWrap,
+                                ),
+                                onPressed: () => c.sendPasswordReset(
+                                  onSuccess: () => Get.snackbar(
+                                    'Email Sent',
+                                    'Password reset email sent to ${c.emailController.text.trim()}.',
+                                    snackPosition: SnackPosition.BOTTOM,
+                                    duration: const Duration(seconds: 5),
+                                  ),
+                                  onError: (msg) => Get.snackbar(
+                                    'Error', msg,
+                                    backgroundColor: AppColors.error,
+                                    colorText: Colors.white,
+                                    snackPosition: SnackPosition.BOTTOM,
+                                  ),
+                                ),
+                                child: Text(
+                                  'Forgot Password?',
+                                  style: TextStyle(
+                                    color: primary,
+                                    fontSize: 13,
+                                    fontWeight: FontWeight.w500,
+                                  ),
+                                ),
+                              ),
+                            ),
+
+                            const SizedBox(height: 8),
 
                             // ── Inline validation error ───────────────────
                             Obx(() => c.validationError.isNotEmpty
@@ -254,8 +288,7 @@ class _LoginPageState extends State<LoginPage> {
                                           Get.find<NavigationController>()
                                               .goToHome();
                                         } catch (_) {}
-                                        Get.offAll(
-                                            () => const Bottomnavigation());
+                                        Get.offAllNamed(AppRoutes.home);
                                       },
                                       onAccessDenied: _showAccessDeniedDialog,
                                       onError: (msg) => Get.snackbar(
@@ -304,8 +337,7 @@ class _LoginPageState extends State<LoginPage> {
                                             Get.find<NavigationController>()
                                                 .goToHome();
                                           } catch (_) {}
-                                          Get.offAll(
-                                              () => const Bottomnavigation());
+                                          Get.offAllNamed(AppRoutes.home);
                                         },
                                         onAccessDenied: _showAccessDeniedDialog,
                                         onError: (msg) => Get.snackbar(
@@ -363,11 +395,7 @@ class _LoginPageState extends State<LoginPage> {
                                   color: textSecondary,
                                   fontSize: Responsive.fontSize(context, 14))),
                           GestureDetector(
-                            onTap: () => Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                  builder: (_) => const SignUpPage()),
-                            ),
+                            onTap: () => Get.toNamed(AppRoutes.signup),
                             child: Text('Sign Up',
                                 style: TextStyle(
                                     color: primary,
@@ -508,6 +536,7 @@ class _LiquidInputField extends StatelessWidget {
                   controller: controller,
                   keyboardType: keyboardType,
                   obscureText: obscureText,
+                  onChanged: (_) {},
                   autocorrect: false,
                   enableSuggestions: false,
                   style: TextStyle(color: textColor, fontSize: 15),

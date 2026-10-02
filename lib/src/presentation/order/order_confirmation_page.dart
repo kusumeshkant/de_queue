@@ -3,6 +3,7 @@ import 'package:dq_app/src/domain/entity/order_entity.dart';
 import 'package:dq_app/src/l10n/translation_keys.dart';
 import 'package:dq_app/src/presentation/dashBoard/navigation_controller.dart';
 import 'package:dq_app/src/theme/theme_controller.dart';
+import 'package:dq_app/src/utils/responsive/responsive.dart';
 import 'package:dq_app/src/utils/services/local_storage.dart';
 import 'package:dq_app/widgets/app_glass_card.dart';
 import 'package:dq_app/widgets/themed_background.dart';
@@ -35,9 +36,12 @@ class OrderConfirmationPage extends StatelessWidget {
         ),
         body: SafeArea(
           child: SingleChildScrollView(
-            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
-            child: Column(
-              children: [
+            padding: EdgeInsets.fromLTRB(context.pagePadding, 8, context.pagePadding, 16),
+            child: Center(
+              child: ConstrainedBox(
+                constraints: BoxConstraints(maxWidth: context.maxContentWidth),
+                child: Column(
+                  children: [
                 // Success icon + heading
                 const SizedBox(height: 8),
                 Container(
@@ -83,7 +87,7 @@ class OrderConfirmationPage extends StatelessWidget {
                         child: QrImageView(
                           data: order.id,
                           version: QrVersions.auto,
-                          size: 200,
+                          size: context.responsive(200.0, tablet: 220.0, desktop: 240.0),
                           backgroundColor: Colors.white,
                           eyeStyle: const QrEyeStyle(
                             eyeShape: QrEyeShape.square,
@@ -252,6 +256,8 @@ class OrderConfirmationPage extends StatelessWidget {
                 ),
                 const SizedBox(height: 16),
               ],
+            ),
+              ),
             ),
           ),
         ),

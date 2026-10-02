@@ -2,6 +2,7 @@ import 'package:dq_app/src/domain/entity/auth_exception.dart';
 import 'package:dq_app/src/domain/usecase/login_usecase.dart';
 import 'package:dq_app/src/service_core/auth/customer_auth_service.dart';
 import 'package:dq_app/src/service_core/networks/graphql_client_provider.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
@@ -142,6 +143,23 @@ class LoginController extends GetxController {
     } catch (e) {
       debugPrint('[AUTH] addCustomerRole: ERROR — $e');
       isLoading.value = false;
+      onError(e.toString().replaceAll('Exception: ', ''));
+    }
+  }
+
+  Future<void> sendPasswordReset({
+    required void Function() onSuccess,
+    required void Function(String message) onError,
+  }) async {
+    final email = emailController.text.trim();
+    if (email.isEmpty || !GetUtils.isEmail(email)) {
+      onError('Enter a valid email address first.');
+      return;
+    }
+    try {
+      await FirebaseAuth.instance.sendPasswordResetEmail(email: email);
+      onSuccess();
+    } catch (e) {
       onError(e.toString().replaceAll('Exception: ', ''));
     }
   }

@@ -4,15 +4,14 @@ import 'package:dq_app/core/manager/hive_manager.dart';
 import 'package:dq_app/src/constants/app_config.dart';
 import 'package:dq_app/src/l10n/language_controller.dart';
 import 'package:dq_app/src/l10n/translation_keys.dart';
-import 'package:dq_app/src/presentation/auth/login/login_page.dart';
+import 'package:dq_app/src/presentation/cart/cart_controller.dart';
 import 'package:dq_app/src/presentation/dashBoard/dashboard_view_model.dart';
 import 'package:dq_app/src/presentation/dashBoard/navigation_controller.dart';
-import 'package:dq_app/src/presentation/order/order_binding.dart';
-import 'package:dq_app/src/presentation/order/order_page.dart';
-import 'package:dq_app/src/presentation/profile/profile_binding.dart';
-import 'package:dq_app/src/presentation/profile/profile_page.dart';
+import 'package:dq_app/src/routes/app_routes.dart';
 import 'package:dq_app/src/service_core/networks/graphql_client_provider.dart';
+import 'package:dq_app/src/utils/services/local_storage.dart';
 import 'package:dq_app/src/theme/theme_controller.dart';
+import 'package:dq_app/src/utils/responsive/responsive.dart';
 import 'package:dq_app/widgets/themed_background.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
@@ -30,9 +29,9 @@ class SettingsPage extends StatelessWidget {
       child: Scaffold(
         backgroundColor: Colors.transparent,
         body: ListView(
-          padding: const EdgeInsets.all(16),
+          padding: EdgeInsets.fromLTRB(context.pagePadding, 16, context.pagePadding, 16),
           children: [
-            const SizedBox(height: 50),
+            const SizedBox(height: 12),
             Obx(() => _buildSectionTitle(AppKeys.setting.tr, tc)),
             Obx(() => _buildSettingsGroup(tc, [
                   _buildSettingsTile(
@@ -40,7 +39,7 @@ class SettingsPage extends StatelessWidget {
                     icon: Icons.person_outline,
                     title: AppKeys.profile.tr,
                     onTap: () {
-                      Get.to(() => const ProfilePage(), binding: ProfileBinding());
+                      Get.toNamed(AppRoutes.profile);
                     },
                   ),
                   _buildDivider(tc),
@@ -49,7 +48,7 @@ class SettingsPage extends StatelessWidget {
                     icon: Icons.receipt_long_outlined,
                     title: AppKeys.yourOrders.tr,
                     onTap: () {
-                      Get.to(() => const OrderPage(), binding: OrderBinding());
+                      Get.toNamed(AppRoutes.orders);
                     },
                   ),
                   _buildDivider(tc),
@@ -89,6 +88,10 @@ class SettingsPage extends StatelessWidget {
                         await FirebaseAuth.instance.signOut();
                       } catch (_) {}
                       await HiveManager.clear(DbTable.auth);
+                      await LocalStorage.clearPendingOrder();
+                      try {
+                        Get.find<CartController>().clearCart();
+                      } catch (_) {}
                       await GraphQLClientProvider.init(
                         baseUrl: AppConfig.graphqlEndpoint,
                       );
@@ -99,7 +102,7 @@ class SettingsPage extends StatelessWidget {
                       // Delete so next login creates a fresh controller
                       // (isStoreConfirmed = false → store confirmation shows)
                       Get.delete<DashboardController>(force: true);
-                      Get.offAll(() => const LoginPage());
+                      Get.offAllNamed(AppRoutes.login);
                     },
                   ),
                 ])),

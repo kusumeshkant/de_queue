@@ -13,4 +13,8 @@ class StoreRepositoryImpl implements StoreRepository {
   @override
   Future<List<StoreEntity>> getNearbyStores(double lat, double lon) =>
       remote.getNearbyStores(lat, lon);
+
+  @override
+  Future<StoreEntity?> getStoreByCode(String code) =>
+      remote.getStoreByCode(code);
 }

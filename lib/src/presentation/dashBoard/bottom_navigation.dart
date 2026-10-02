@@ -15,16 +15,18 @@ import 'package:dq_app/src/domain/usecase/create_razorpay_order_usecase.dart';
 import 'package:dq_app/src/domain/usecase/validate_cart_stock_usecase.dart';
 import 'package:dq_app/src/domain/usecase/get_nearby_stores_usecase.dart';
 import 'package:dq_app/src/domain/usecase/get_order_by_id_usecase.dart';
+import 'package:dq_app/src/domain/usecase/get_store_by_code_usecase.dart';
 import 'package:dq_app/src/domain/usecase/get_stores_usecase.dart';
 import 'package:dq_app/src/domain/usecase/update_fcm_token_usecase.dart';
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:dq_app/src/presentation/Setting/setting_page.dart';
 import 'package:dq_app/src/presentation/cart/cart_controller.dart';
+import 'package:dq_app/src/presentation/store/store_code_entry_sheet.dart';
 import 'package:dq_app/src/presentation/cart/cart_page.dart';
 import 'package:dq_app/src/presentation/dashBoard/dashboard_page.dart';
 import 'package:dq_app/src/presentation/order/order_confirmation_page.dart';
 import 'package:dq_app/src/presentation/dashBoard/dashboard_view_model.dart';
-import 'package:dq_app/src/presentation/order/order_binding.dart';
-import 'package:dq_app/src/presentation/order/order_page.dart';
+import 'package:dq_app/src/routes/app_routes.dart';
 import 'package:dq_app/src/presentation/scanner_page/scanner_binding.dart';
 import 'package:dq_app/src/presentation/scanner_page/scanner_page.dart';
 import 'package:dq_app/src/service_core/notifications/notification_service.dart';
@@ -63,6 +65,12 @@ class _BottomnavigationState extends State<Bottomnavigation>
     _pulseAnimation = Tween<double>(begin: 0.35, end: 1.0).animate(
       CurvedAnimation(parent: _pulseController, curve: Curves.easeInOut),
     );
+
+    if (kIsWeb) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        _showWebStoreCodeEntryIfNeeded();
+      });
+    }
   }
 
   @override
@@ -74,7 +82,7 @@ class _BottomnavigationState extends State<Bottomnavigation>
   void _setupNotificationHandlers() {
     NotificationService.onNotificationTap = (type) {
       if (type == 'order_confirmed' || type == 'order_status_update') {
-        Get.to(() => const OrderPage(), binding: OrderBinding());
+        Get.toNamed(AppRoutes.orders);
       }
     };
 
@@ -83,7 +91,7 @@ class _BottomnavigationState extends State<Bottomnavigation>
       NotificationService.pendingNotificationType = null;
       WidgetsBinding.instance.addPostFrameCallback((_) {
         if (pending == 'order_confirmed' || pending == 'order_status_update') {
-          Get.to(() => const OrderPage(), binding: OrderBinding());
+          Get.toNamed(AppRoutes.orders);
         }
       });
     }
@@ -101,11 +109,13 @@ class _BottomnavigationState extends State<Bottomnavigation>
     Get.put(CreateOrderUseCase(repository: Get.find()), permanent: true);
     Get.put(ValidateCartStockUseCase(repository: Get.find()), permanent: true);
     Get.put(GetOrderByIdUseCase(repository: Get.find()), permanent: true);
+    Get.put(GetStoreByCodeUseCase(repository: Get.find()));
 
     Get.put(DashboardController(
       getStoresUseCase: Get.find(),
       getNearbyStoresUseCase: Get.find(),
       getOrderByIdUseCase: Get.find(),
+      getStoreByCodeUseCase: Get.find(),
     ));
     Get.put(RazorpayService(), permanent: true);
     Get.put(
@@ -135,6 +145,34 @@ class _BottomnavigationState extends State<Bottomnavigation>
         Get.find<UpdateFcmTokenUseCase>().execute(newToken);
       });
     } catch (_) {}
+  }
+
+  void _showWebStoreCodeEntryIfNeeded() {
+    final dc = Get.find<DashboardController>();
+    if (dc.selectedStoreId.value.isNotEmpty) return;
+    if (Get.isBottomSheetOpen ?? false) return; // guard against double-show
+    dc.codeLookupError.value = '';
+    Get.bottomSheet(
+      const StoreCodeEntrySheet(),
+      isScrollControlled: true,
+    );
+  }
+
+  void _onScannerTap() {
+    final dc = Get.find<DashboardController>();
+    if (dc.selectedStoreId.value.isEmpty) {
+      if (kIsWeb) {
+        _showWebStoreCodeEntryIfNeeded();
+      } else {
+        Get.snackbar(
+          'No store selected',
+          'Please select a store before scanning.',
+          snackPosition: SnackPosition.BOTTOM,
+        );
+      }
+      return;
+    }
+    Get.to(() => const ScannerPage(), binding: ScannerBinding());
   }
 
   final List<Widget> _screens = const [
@@ -229,10 +267,7 @@ class _BottomnavigationState extends State<Bottomnavigation>
                                   backgroundColor:
                                       tc.primary.withValues(alpha: 0.85),
                                   elevation: 12,
-                                  onPressed: () => Get.to(
-                                    () => const ScannerPage(),
-                                    binding: ScannerBinding(),
-                                  ),
+                                  onPressed: _onScannerTap,
                                   child: const Icon(Icons.qr_code_scanner,
                                       size: 28, color: Colors.white),
                                 ),
@@ -411,3 +446,4 @@ class _BottomnavigationState extends State<Bottomnavigation>
     );
   }
 }
+

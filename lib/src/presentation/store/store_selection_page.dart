@@ -2,6 +2,7 @@ import 'dart:ui';
 
 import 'package:dq_app/src/domain/entity/store_entity.dart';
 import 'package:dq_app/src/theme/theme_controller.dart';
+import 'package:dq_app/src/utils/responsive/responsive.dart';
 import 'package:dq_app/widgets/themed_background.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -75,7 +76,7 @@ class _StoreSelectionPageState extends State<StoreSelectionPage> {
           children: [
             // ── Search bar ────────────────────────────────────────────────
             Padding(
-              padding: const EdgeInsets.fromLTRB(16, 8, 16, 12),
+              padding: EdgeInsets.fromLTRB(context.pagePadding, 8, context.pagePadding, 12),
               child: ClipRRect(
                 borderRadius: BorderRadius.circular(14),
                 child: BackdropFilter(
@@ -118,7 +119,7 @@ class _StoreSelectionPageState extends State<StoreSelectionPage> {
 
             // ── Section header ────────────────────────────────────────────
             Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+              padding: EdgeInsets.symmetric(horizontal: context.pagePadding, vertical: 4),
               child: Row(
                 children: [
                   Icon(Icons.near_me_rounded,
@@ -159,7 +160,7 @@ class _StoreSelectionPageState extends State<StoreSelectionPage> {
                       ),
                     )
                   : ListView.builder(
-                      padding: const EdgeInsets.symmetric(horizontal: 16),
+                      padding: EdgeInsets.symmetric(horizontal: context.pagePadding),
                       itemCount: _filtered.length,
                       itemBuilder: (context, index) {
                         return _StoreTile(

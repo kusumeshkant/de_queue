@@ -25,8 +25,14 @@ import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'firebase_options.dart';
+import 'src/routes/app_pages.dart';
+// Conditional import: on web uses flutter_web_plugins (dart:ui_web),
+// on mobile/desktop uses a no-op stub to avoid the dart:ui_web compile error.
+import 'url_strategy_stub.dart'
+    if (dart.library.html) 'url_strategy_web.dart';
 
 void main() {
+  usePathUrlStrategy();
   runZonedGuarded(_bootstrap, (error, stack) {
     if (!kIsWeb && Get.isRegistered<CrashlyticsService>()) {
       Get.find<CrashlyticsService>().recordError(
@@ -219,6 +225,7 @@ class MyApp extends StatelessWidget {
             ? AppTheme.green
             : AppTheme.light,
         navigatorObservers: [AnalyticsNavigatorObserver()],
+        getPages: AppPages.routes,
         home: _getInitialPage(),
       ),
     );

@@ -1,7 +1,6 @@
 import 'package:dq_app/core/enums/db_tables_enums.dart';
 import 'package:dq_app/core/manager/hive_manager.dart';
-import 'package:dq_app/src/presentation/auth/login/login_binding.dart';
-import 'package:dq_app/src/presentation/auth/login/login_page.dart';
+import 'package:dq_app/src/routes/app_routes.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -42,11 +41,7 @@ class SessionManager {
     // Deferred to avoid "setState() called after dispose()" when a dialog
     // is still animating closed when Get.offAll fires.
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      Get.offAll(
-        () => const LoginPage(),
-        binding: LoginBinding(),
-        transition: Transition.fadeIn,
-      );
+      Get.offAllNamed(AppRoutes.login);
 
       WidgetsBinding.instance.addPostFrameCallback((_) {
         Get.snackbar(

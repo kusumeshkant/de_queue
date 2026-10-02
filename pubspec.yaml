@@ -10,11 +10,14 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
+  flutter_web_plugins:
+    sdk: flutter
 
   mobile_scanner: ^7.1.4
   fluttertoast: ^9.0.0
   dio: ^5.9.0
   shared_preferences: ^2.5.4
+  flutter_secure_storage: ^9.2.2
   connectivity_plus: ^6.1.5
   hive: ^2.2.3
   hive_flutter: ^1.1.0

@@ -1,6 +1,7 @@
 
 import 'dart:convert';
 import 'package:dq_app/src/domain/entity/order_entity.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class LocalStorage {
@@ -8,27 +9,26 @@ class LocalStorage {
   static const _refreshTokenKey = 'refresh_token';
   static const _pendingOrderKey = 'pending_order';
 
-  static Future<void> saveAccessToken(String token) async {
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setString(_accessTokenKey, token);
-  }
+  // Auth tokens are stored in secure storage (Keychain on iOS, Keystore-backed
+  // EncryptedSharedPreferences on Android, localStorage on web).
+  static const _secure = FlutterSecureStorage(
+    aOptions: AndroidOptions(encryptedSharedPreferences: true),
+  );
 
-  static Future<String?> getAccessToken() async {
-    final prefs = await SharedPreferences.getInstance();
-    return prefs.getString(_accessTokenKey);
-  }
+  static Future<void> saveAccessToken(String token) =>
+      _secure.write(key: _accessTokenKey, value: token);
 
-  static Future<void> saveRefreshToken(String token) async {
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setString(_refreshTokenKey, token);
-  }
+  static Future<String?> getAccessToken() =>
+      _secure.read(key: _accessTokenKey);
 
-  static Future<String?> getRefreshToken() async {
-    final prefs = await SharedPreferences.getInstance();
-    return prefs.getString(_refreshTokenKey);
-  }
+  static Future<void> saveRefreshToken(String token) =>
+      _secure.write(key: _refreshTokenKey, value: token);
+
+  static Future<String?> getRefreshToken() =>
+      _secure.read(key: _refreshTokenKey);
 
   static Future<void> clearAll() async {
+    await _secure.deleteAll();
     final prefs = await SharedPreferences.getInstance();
     await prefs.clear();
   }

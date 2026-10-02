@@ -5,6 +5,7 @@ import 'package:dq_app/src/domain/entity/store_entity.dart';
 import 'package:dq_app/src/l10n/translation_keys.dart';
 import 'package:dq_app/src/presentation/cart/cart_controller.dart';
 import 'package:dq_app/src/presentation/dashBoard/dashboard_view_model.dart';
+import 'package:dq_app/src/presentation/store/store_code_entry_sheet.dart';
 import 'package:dq_app/src/presentation/store/store_selection_page.dart';
 import 'package:dq_app/src/theme/theme_controller.dart';
 import 'package:dq_app/src/utils/dq_widgets/nearby_store_title_tile.dart';
@@ -26,18 +27,30 @@ class DashboardPage extends StatefulWidget {
 class _DashboardPageState extends State<DashboardPage> {
   late final DashboardController _c;
   Worker? _loadWorker;
+  bool _storePromptShown = false;
 
   @override
   void initState() {
     super.initState();
     _c = Get.find<DashboardController>();
 
-    // Show store confirmation once after stores load
-    _loadWorker = ever(_c.isLoading, (bool loading) {
-      if (!loading && _c.stores.isNotEmpty && !_c.isStoreConfirmed.value) {
+    // Watch the dedicated signal from the controller.
+    // Fires when loadStores() completes — regardless of success or failure.
+    _loadWorker = ever(_c.needsStoreSelection, (bool needed) {
+      if (needed && !_c.isStoreConfirmed.value) {
         WidgetsBinding.instance.addPostFrameCallback((_) {
-          if (mounted) _showStoreConfirmation();
+          if (mounted && !_c.isStoreConfirmed.value) _promptStoreSelection();
         });
+      }
+    });
+
+    // Race-condition guard: if loadStores() finished before ever was registered
+    // (e.g. instant cache hit), needsStoreSelection is already true — check now.
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted &&
+          _c.needsStoreSelection.value &&
+          !_c.isStoreConfirmed.value) {
+        _promptStoreSelection();
       }
     });
   }
@@ -134,6 +147,19 @@ class _DashboardPageState extends State<DashboardPage> {
 
   // ── Store selection bottom sheet (shown on app open) ──────────────────────
 
+  // ── Store prompt ─────────────────────────────────────────────────────────────
+
+  void _promptStoreSelection() {
+    if (_storePromptShown) return;
+    if (Get.isBottomSheetOpen ?? false) return;
+    _storePromptShown = true;
+    if (_c.stores.isNotEmpty) {
+      _showStoreConfirmation();
+    } else {
+      _showCodeEntrySheet();
+    }
+  }
+
   void _showStoreConfirmation() {
     Get.bottomSheet(
       isDismissible: true,
@@ -150,6 +176,14 @@ class _DashboardPageState extends State<DashboardPage> {
           Get.back();
         },
       ),
+    );
+  }
+
+  void _showCodeEntrySheet() {
+    _c.codeLookupError.value = '';
+    Get.bottomSheet(
+      const StoreCodeEntrySheet(),
+      isScrollControlled: true,
     );
   }
 

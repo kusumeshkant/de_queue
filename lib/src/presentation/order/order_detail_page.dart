@@ -1,6 +1,7 @@
 import 'package:dq_app/design_system/design_system.dart';
 import 'package:dq_app/src/domain/entity/order_entity.dart';
 import 'package:dq_app/src/theme/theme_controller.dart';
+import 'package:dq_app/src/utils/responsive/responsive.dart';
 import 'package:dq_app/widgets/app_glass_card.dart';
 import 'package:dq_app/widgets/themed_background.dart';
 import 'package:flutter/material.dart';
@@ -38,10 +39,13 @@ class OrderDetailPage extends StatelessWidget {
           centerTitle: true,
         ),
         body: SingleChildScrollView(
-          padding: const EdgeInsets.fromLTRB(16, 8, 16, 32),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
+          padding: EdgeInsets.fromLTRB(context.pagePadding, 8, context.pagePadding, 32),
+          child: Center(
+            child: ConstrainedBox(
+              constraints: BoxConstraints(maxWidth: context.maxContentWidth),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
               // ── QR Code card ─────────────────────────────────────────────
               AppGlassCard(
                 padding: const EdgeInsets.all(20),
@@ -225,7 +229,9 @@ class OrderDetailPage extends StatelessWidget {
                   ],
                 ),
               ),
-            ],
+                ],
+              ),
+            ),
           ),
         ),
       ),

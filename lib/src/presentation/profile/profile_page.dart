@@ -2,6 +2,7 @@ import 'package:dq_app/design_system/design_system.dart';
 import 'package:dq_app/src/l10n/translation_keys.dart';
 import 'package:dq_app/src/presentation/profile/profile_controller.dart';
 import 'package:dq_app/src/theme/theme_controller.dart';
+import 'package:dq_app/src/utils/responsive/responsive.dart';
 import 'package:dq_app/widgets/app_glass_card.dart';
 import 'package:dq_app/widgets/themed_background.dart';
 import 'package:flutter/material.dart';
@@ -30,7 +31,7 @@ class ProfilePage extends StatelessWidget {
           final user = c.user.value;
 
           return ListView(
-            padding: const EdgeInsets.all(20),
+            padding: EdgeInsets.fromLTRB(context.pagePadding, 20, context.pagePadding, 20),
             children: [
               const SizedBox(height: 12),
 

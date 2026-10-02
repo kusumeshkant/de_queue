@@ -2,6 +2,7 @@ import 'package:dq_app/src/constants/images_path_const.dart';
 import 'package:dq_app/src/l10n/translation_keys.dart';
 import 'package:dq_app/src/utils/dq_widgets/custom_search_text_field.dart';
 import 'package:dq_app/src/utils/dq_widgets/darkened_image_banner.dart';
+import 'package:dq_app/src/utils/responsive/responsive.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
@@ -48,7 +49,7 @@ class DashboardHeaderBanner extends StatelessWidget {
           SafeArea(
             bottom: false,
             child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16),
+              padding: EdgeInsets.symmetric(horizontal: context.pagePadding),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [

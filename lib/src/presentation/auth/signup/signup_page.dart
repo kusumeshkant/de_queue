@@ -1,10 +1,9 @@
 import 'dart:ui';
 import 'package:dq_app/design_system/design_system.dart';
-import 'package:dq_app/src/presentation/auth/login/login_page.dart';
 import 'package:dq_app/src/presentation/auth/signup/signup_binding.dart';
 import 'package:dq_app/src/presentation/auth/signup/signup_controller.dart';
-import 'package:dq_app/src/presentation/dashBoard/bottom_navigation.dart';
 import 'package:dq_app/src/presentation/dashBoard/navigation_controller.dart';
+import 'package:dq_app/src/routes/app_routes.dart';
 import 'package:dq_app/src/theme/theme_controller.dart';
 import 'package:dq_app/src/utils/appsystem_ui.dart';
 import 'package:dq_app/src/utils/responsive/responsive.dart';
@@ -186,8 +185,7 @@ class _SignUpPageState extends State<SignUpPage> {
                                           Get.find<NavigationController>()
                                               .goToHome();
                                         } catch (_) {}
-                                        Get.offAll(
-                                            () => const Bottomnavigation());
+                                        Get.offAllNamed(AppRoutes.home);
                                       },
                                       onError: (msg) => Get.snackbar(
                                         'Error', msg,
@@ -235,8 +233,7 @@ class _SignUpPageState extends State<SignUpPage> {
                                             Get.find<NavigationController>()
                                                 .goToHome();
                                           } catch (_) {}
-                                          Get.offAll(
-                                              () => const Bottomnavigation());
+                                          Get.offAllNamed(AppRoutes.home);
                                         },
                                         onError: (msg) => Get.snackbar(
                                           'Error', msg,
@@ -291,9 +288,7 @@ class _SignUpPageState extends State<SignUpPage> {
                               style: TextStyle(
                                   color: textSecondary, fontSize: 14)),
                           GestureDetector(
-                            onTap: () => Navigator.pushReplacement(context,
-                                MaterialPageRoute(
-                                    builder: (_) => const LoginPage())),
+                            onTap: () => Get.offAllNamed(AppRoutes.login),
                             child: Text('Sign In',
                                 style: TextStyle(
                                     color: primary,
@@ -434,6 +429,7 @@ class _LiquidInputField extends StatelessWidget {
                   controller: controller,
                   keyboardType: keyboardType,
                   obscureText: obscureText,
+                  onChanged: (_) {},
                   autocorrect: false,
                   enableSuggestions: false,
                   style: TextStyle(color: textColor, fontSize: 15),
