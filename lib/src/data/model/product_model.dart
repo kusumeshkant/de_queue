@@ -11,6 +11,8 @@ class ProductModel extends ProductEntity {
     required super.price,
     super.imageUrl,
     super.stock,
+    super.color,
+    super.size,
   });
 
   factory ProductModel.fromJson(Map<String, dynamic> json) => ProductModel(
@@ -23,5 +25,11 @@ class ProductModel extends ProductEntity {
         price: (json['price'] as num).toDouble(),
         imageUrl: json['imageUrl'] as String?,
         stock: (json['stock'] as num?)?.toInt() ?? 0,
+        color: _nonEmpty(json['color']),
+        size: _nonEmpty((json['size'] as Map?)?['garment']) ??
+            _nonEmpty((json['size'] as Map?)?['actual']),
       );
+
+  static String? _nonEmpty(Object? v) =>
+      (v is String && v.trim().isNotEmpty) ? v.trim() : null;
 }

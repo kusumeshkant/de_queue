@@ -78,6 +78,7 @@ class CartController extends GetxController {
         return false; // rejected — stock limit reached
       }
       item.quantity++;
+      if (newItem.isManualEntry) item.entryMethod = CartEntryMethod.manual;
       items.refresh();
     } else {
       items.add(newItem);
@@ -95,6 +96,8 @@ class CartController extends GetxController {
       final toAdd = qty.clamp(0, canAdd);
       if (toAdd == 0) return 0;
       item.quantity += toAdd;
+      // Sticky: once any unit of a line was typed in, the line stays manual.
+      if (newItem.isManualEntry) item.entryMethod = CartEntryMethod.manual;
       items.refresh();
       return toAdd;
     } else {
@@ -109,6 +112,7 @@ class CartController extends GetxController {
         price: newItem.price,
         stock: newItem.stock,
         quantity: effectiveQty,
+        entryMethod: newItem.entryMethod,
       ));
       return effectiveQty;
     }

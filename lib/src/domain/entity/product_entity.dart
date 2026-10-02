@@ -8,6 +8,10 @@ class ProductEntity {
   final double price;
   final String? imageUrl;
   final int stock;
+  final String? color;
+
+  /// Size as shown to the customer: the brand label, falling back to the actual size.
+  final String? size;
 
   const ProductEntity({
     required this.id,
@@ -19,5 +23,7 @@ class ProductEntity {
     required this.price,
     this.imageUrl,
     this.stock = 0,
+    this.color,
+    this.size,
   });
 }

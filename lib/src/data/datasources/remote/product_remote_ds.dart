@@ -16,6 +16,8 @@ class ProductRemoteDataSource {
           price
           imageUrl
           stock
+          color
+          size { garment actual }
         }
       }
     ''';

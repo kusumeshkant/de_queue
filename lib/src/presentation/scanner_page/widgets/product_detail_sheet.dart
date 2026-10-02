@@ -1,4 +1,5 @@
 import 'package:dq_app/design_system/design_system.dart';
+import 'package:dq_app/src/domain/entity/cart_item_entity.dart';
 import 'package:dq_app/src/domain/entity/product_entity.dart';
 import 'package:dq_app/src/presentation/scanner_page/product_detail_controller.dart';
 import 'package:flutter/material.dart';
@@ -10,7 +11,15 @@ const _kTag = 'product_detail';
 class ProductDetailSheet extends StatefulWidget {
   final ProductEntity product;
 
-  const ProductDetailSheet({super.key, required this.product});
+  /// How the barcode was obtained. Manual entries get a check-the-item note
+  /// and are recorded on the cart line.
+  final CartEntryMethod entryMethod;
+
+  const ProductDetailSheet({
+    super.key,
+    required this.product,
+    this.entryMethod = CartEntryMethod.scan,
+  });
 
   @override
   State<ProductDetailSheet> createState() => _ProductDetailSheetState();
@@ -39,8 +48,18 @@ class _ProductDetailSheetState extends State<ProductDetailSheet> {
   int get _discountPct =>
       (((product.mrp! - product.price) / product.mrp!) * 100).round();
 
+  bool get _isManual => widget.entryMethod == CartEntryMethod.manual;
+
+  String? get _variantLine {
+    final parts = [
+      if (product.color != null) 'Colour: ${product.color}',
+      if (product.size != null) 'Size: ${product.size}',
+    ];
+    return parts.isEmpty ? null : parts.join('  ·  ');
+  }
+
   Future<void> _handleAddToCart() async {
-    final added = await _c.addToCart(product);
+    final added = await _c.addToCart(product, entryMethod: widget.entryMethod);
     if (!mounted) return;
 
     if (added > 0) {
@@ -151,6 +170,43 @@ class _ProductDetailSheetState extends State<ProductDetailSheet> {
                     ],
                   ),
 
+                  // Colour / size, when the catalogue has them
+                  if (_variantLine != null) ...[
+                    const SizedBox(height: 6),
+                    Text(
+                      _variantLine!,
+                      style: TextStyle(
+                        color: Colors.white.withValues(alpha: 0.70),
+                        fontSize: 13,
+                      ),
+                    ),
+                  ],
+
+                  // Typed-in barcode: ask the customer to check the item
+                  if (_isManual) ...[
+                    const SizedBox(height: 10),
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+                      decoration: BoxDecoration(
+                        color: AppColors.warningSubtle,
+                        borderRadius: BorderRadius.circular(8),
+                        border: Border.all(color: AppColors.warningBorder),
+                      ),
+                      child: Row(
+                        children: [
+                          const Icon(Icons.keyboard_rounded, size: 16, color: AppColors.warning),
+                          const SizedBox(width: 8),
+                          Expanded(
+                            child: Text(
+                              'Entered by barcode ${product.barcode} — check this matches the item in your hand.',
+                              style: const TextStyle(color: AppColors.warning, fontSize: 12),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+
                   const SizedBox(height: 12),
 
                   // Price row
@@ -200,6 +256,18 @@ class _ProductDetailSheetState extends State<ProductDetailSheet> {
                       ],
                     ],
                   ),
+
+                  // MRP shown explicitly when there is no discount to strike through
+                  if (!_hasMrpDiscount && product.mrp != null) ...[
+                    const SizedBox(height: 4),
+                    Text(
+                      'MRP ₹${product.mrp!.toStringAsFixed(0)}',
+                      style: TextStyle(
+                        color: Colors.white.withValues(alpha: 0.55),
+                        fontSize: 12,
+                      ),
+                    ),
+                  ],
 
                   // SKU
                   if (product.sku != null && product.sku!.isNotEmpty) ...[

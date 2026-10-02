@@ -26,7 +26,9 @@ class ProductDetailController extends GetxController {
   }
 
   /// Returns actual quantity added (0 if stock limit already reached).
-  Future<int> addToCart(ProductEntity product) async {
+  /// [entryMethod] records whether the barcode was scanned or typed in.
+  Future<int> addToCart(ProductEntity product,
+      {CartEntryMethod entryMethod = CartEntryMethod.scan}) async {
     if (_isAdding.value) return 0;
     _isAdding.value = true;
     try {
@@ -40,6 +42,7 @@ class ProductDetailController extends GetxController {
         mrp: product.mrp,
         price: product.price,
         stock: product.stock,
+        entryMethod: entryMethod,
       );
       return cart.addItemWithQuantity(item, _quantity.value);
     } finally {

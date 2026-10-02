@@ -92,6 +92,9 @@ class _ScannerPageState extends State<ScannerPage>
               final barcode = capture.barcodes.first.rawValue;
               if (barcode != null) c.onBarcodeDetected(barcode);
             },
+            // The camera-problem panel (layer 5b) explains the error and
+            // offers manual entry; keep the scanner's own text out of the way.
+            errorBuilder: (context, error) => const ColoredBox(color: Colors.black),
           ),
 
           // ── 2. Dark overlay + corner brackets ─────────────────────────
@@ -283,6 +286,43 @@ class _ScannerPageState extends State<ScannerPage>
               textAlign: TextAlign.center,
               style: TextStyle(color: Colors.white60, fontSize: 13),
             ),
+          ),
+
+          // ── 5a. Manual entry — always available ───────────────────────
+          Positioned(
+            top: scanBoxBottom + 44,
+            left: 0,
+            right: 0,
+            child: Center(
+              child: TextButton.icon(
+                key: const Key('scanner-enter-barcode-link'),
+                onPressed: c.openManualEntry,
+                icon: const Icon(Icons.keyboard_rounded, color: Colors.white, size: 18),
+                label: const Text(
+                  "Can't scan? Enter barcode",
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 14,
+                    fontWeight: FontWeight.w600,
+                    decoration: TextDecoration.underline,
+                    decorationColor: Colors.white70,
+                  ),
+                ),
+              ),
+            ),
+          ),
+
+          // ── 5b. Camera unavailable / permission denied (common on web) ─
+          ValueListenableBuilder<MobileScannerState>(
+            valueListenable: _mobileScannerController,
+            builder: (context, state, _) {
+              final error = state.error;
+              if (error == null) return const SizedBox.shrink();
+              return _CameraProblemPanel(
+                message: _cameraProblemMessage(error),
+                onEnterBarcode: c.openManualEntry,
+              );
+            },
           ),
 
           // ── 6. Bottom — feedback card + torch/cart buttons ────────────
@@ -486,6 +526,66 @@ class _ScannerPageState extends State<ScannerPage>
 // ─────────────────────────────────────────────
 // Glass circle button
 // ─────────────────────────────────────────────
+String _cameraProblemMessage(MobileScannerException error) {
+  switch (error.errorCode) {
+    case MobileScannerErrorCode.permissionDenied:
+      return 'Camera access is blocked. Allow camera access in your browser or '
+          'phone settings — or enter the barcode instead.';
+    case MobileScannerErrorCode.unsupported:
+      return 'No camera was found on this device. Enter the barcode instead.';
+    default:
+      return "The camera couldn't start. Enter the barcode instead.";
+  }
+}
+
+/// Shown over the scan area when the camera can't be used, so the customer
+/// is never stuck: one tap to type the barcode.
+class _CameraProblemPanel extends StatelessWidget {
+  final String message;
+  final VoidCallback onEnterBarcode;
+
+  const _CameraProblemPanel({required this.message, required this.onEnterBarcode});
+
+  @override
+  Widget build(BuildContext context) {
+    return Center(
+      child: Container(
+        key: const Key('scanner-camera-problem'),
+        margin: const EdgeInsets.symmetric(horizontal: 28),
+        padding: const EdgeInsets.fromLTRB(20, 20, 20, 16),
+        constraints: const BoxConstraints(maxWidth: 380),
+        decoration: BoxDecoration(
+          color: const Color(0xFF16181D),
+          borderRadius: BorderRadius.circular(18),
+          border: Border.all(color: Colors.white.withValues(alpha: 0.15)),
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Icon(Icons.no_photography_rounded, color: Colors.white70, size: 36),
+            const SizedBox(height: 12),
+            Text(
+              message,
+              textAlign: TextAlign.center,
+              style: const TextStyle(color: Colors.white, fontSize: 14, height: 1.4),
+            ),
+            const SizedBox(height: 16),
+            SizedBox(
+              width: double.infinity,
+              child: FilledButton.icon(
+                key: const Key('scanner-camera-problem-enter-barcode'),
+                onPressed: onEnterBarcode,
+                icon: const Icon(Icons.keyboard_rounded),
+                label: const Text('Enter barcode'),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
 class _GlassCircleButton extends StatelessWidget {
   final IconData icon;
   final Color iconColor;

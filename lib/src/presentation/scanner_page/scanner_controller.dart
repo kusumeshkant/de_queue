@@ -1,5 +1,9 @@
+import 'package:dq_app/src/domain/entity/cart_item_entity.dart';
+import 'package:dq_app/src/domain/entity/product_entity.dart';
 import 'package:dq_app/src/domain/usecase/get_product_by_barcode_usecase.dart';
 import 'package:dq_app/src/presentation/dashBoard/dashboard_view_model.dart';
+import 'package:dq_app/src/presentation/scanner_page/manual_barcode_lookup.dart';
+import 'package:dq_app/src/presentation/scanner_page/widgets/manual_barcode_sheet.dart';
 import 'package:dq_app/src/presentation/scanner_page/widgets/product_detail_sheet.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -62,6 +66,42 @@ class ScannerController extends GetxController {
       isScanningPaused.value = false;
       scanFeedback.value = '';
       scanFeedbackMessage.value = '';
+    }
+  }
+
+  /// "Can't scan? Enter barcode": type the barcode, look it up in the selected
+  /// store, then confirm on the same product sheet scanning uses. The cart
+  /// line is recorded as [CartEntryMethod.manual].
+  Future<void> openManualEntry() async {
+    isScanningPaused.value = true; // no camera detections while typing
+    try {
+      final dashboard = Get.find<DashboardController>();
+      ProductEntity? found;
+      await Get.bottomSheet(
+        ManualBarcodeSheet(
+          lookup: ManualBarcodeLookup(getProductByBarcodeUseCase.execute),
+          storeId: dashboard.selectedStoreId.value,
+          storeName: dashboard.selectedStoreName.value,
+          onFound: (product) {
+            found = product;
+            Get.back();
+          },
+          onCancel: () => Get.back(),
+        ),
+        isScrollControlled: true,
+        backgroundColor: Colors.transparent,
+      );
+      final product = found;
+      if (product != null) {
+        await Get.bottomSheet(
+          ProductDetailSheet(product: product, entryMethod: CartEntryMethod.manual),
+          isScrollControlled: true,
+          backgroundColor: Colors.transparent,
+          enableDrag: true,
+        );
+      }
+    } finally {
+      isScanningPaused.value = false;
     }
   }
 
