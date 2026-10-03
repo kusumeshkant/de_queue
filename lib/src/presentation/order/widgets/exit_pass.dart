@@ -105,12 +105,15 @@ class ExitPassCard extends StatelessWidget {
                     code ?? order.id,
                     key: const Key('exit-pass-code'),
                     textAlign: TextAlign.center,
+                    // Exit codes use only 0-9 and A-Z without I, L, O, U, so no two
+                    // characters look alike; bold, wide spacing and fixed-width digits
+                    // make the groups easy to read out and type.
                     style: TextStyle(
-                      fontFamily: 'monospace',
-                      fontSize: code != null ? 17 : 13,
-                      fontWeight: FontWeight.w700,
+                      fontSize: code != null ? 18 : 13,
+                      fontWeight: FontWeight.w800,
                       color: tc.primary,
-                      letterSpacing: code != null ? 1.2 : 0.5,
+                      letterSpacing: code != null ? 2.0 : 0.5,
+                      fontFeatures: const [FontFeature.tabularFigures()],
                     ),
                   ),
                 ),

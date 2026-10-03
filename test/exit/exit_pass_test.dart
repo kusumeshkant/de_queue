@@ -22,7 +22,7 @@ import 'package:qr_flutter/qr_flutter.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 const _id = '6ac09f45469f468a4ebff14a';
-const _qr = 'DQX1:XECZ08dIUn6USvcGmPjCNQ';
+const _qr = 'DQX1:JCTWB6R0XDPGZ5MBVHFXDD1M';
 
 OrderEntity _order({String status = 'pending', String? exitQr = _qr, String? exitedAt}) => OrderEntity(
       id: _id,
@@ -85,8 +85,8 @@ void main() {
       final o = _order();
       expect(o.canExit, isTrue);
       expect(o.qrData, _qr);
-      expect(o.exitCode, 'XECZ08dIUn6USvcGmPjCNQ');
-      expect(o.exitCodeGrouped, 'DQX1: XECZ 08dI Un6U SvcG mPjC NQ');
+      expect(o.exitCode, 'JCTWB6R0XDPGZ5MBVHFXDD1M');
+      expect(o.exitCodeGrouped, 'DQX1: JCTW B6R0 XDPG Z5MB VHFX DD1M');
     });
 
     test('legacy order (no exit code) keeps the order-id QR', () {
@@ -140,7 +140,7 @@ void main() {
     testWidgets('open order: QR encodes the DQX1 code and the code is printed under it', (t) async {
       await pump(t, ExitPassCard(order: _order()));
       expect(t.widget<QrImageView>(find.byKey(const Key('exit-pass-qr'))), isNotNull);
-      expect(find.text('DQX1: XECZ 08dI Un6U SvcG mPjC NQ'), findsOneWidget);
+      expect(find.text('DQX1: JCTW B6R0 XDPG Z5MB VHFX DD1M'), findsOneWidget);
       expect(find.text('Paid · show this at the exit'), findsOneWidget);
       expect(find.text('Exit code'), findsOneWidget);
     });
