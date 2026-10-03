@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:dq_app/src/data/datasources/remote/order_remote_ds.dart';
 import 'package:dq_app/src/domain/entity/order_entity.dart';
 import 'package:dq_app/src/domain/entity/store_entity.dart';
 import 'package:dq_app/src/domain/usecase/get_nearby_stores_usecase.dart';
@@ -60,6 +61,7 @@ class DashboardController extends GetxController {
     if (order != null) {
       activeOrder.value = order;
       _startPolling();
+      await refreshActiveOrder(); // don't show a stale order for 15 s
     }
   }
 
@@ -77,7 +79,12 @@ class DashboardController extends GetxController {
     );
   }
 
-  Future<void> _pollOrderStatus() async {
+  Future<void> _pollOrderStatus() => refreshActiveOrder();
+
+  /// Re-reads the saved order from the server. Once it has exited or been
+  /// cancelled (or the server no longer knows it for this account), the saved
+  /// copy is dropped; otherwise it is refreshed so the exit QR stays current.
+  Future<void> refreshActiveOrder() async {
     final current = activeOrder.value;
     if (current == null) {
       _pollingTimer?.cancel();
@@ -85,16 +92,23 @@ class DashboardController extends GetxController {
     }
     try {
       final updated = await getOrderByIdUseCase.execute(current.id);
-      activeOrder.value = updated;
-      final status = updated.status.toLowerCase();
-      if (status == 'completed' || status == 'cancelled') {
-        await LocalStorage.clearPendingOrder();
-        activeOrder.value = null;
-        _pollingTimer?.cancel();
+      if (!updated.canExit) {
+        await _dropActiveOrder();
+      } else {
+        activeOrder.value = updated;
+        await LocalStorage.savePendingOrder(updated);
       }
+    } on OrderNotFoundException {
+      await _dropActiveOrder();
     } catch (_) {
-      // Silent — keep polling
+      // Network or server hiccup — keep the saved order and try again later.
     }
+  }
+
+  Future<void> _dropActiveOrder() async {
+    await LocalStorage.clearPendingOrder();
+    activeOrder.value = null;
+    _pollingTimer?.cancel();
   }
 
   // ── Store code lookup (web primary, mobile fallback) ──────────────────────

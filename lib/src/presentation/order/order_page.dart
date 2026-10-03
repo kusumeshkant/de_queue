@@ -10,6 +10,7 @@ import 'package:dq_app/widgets/themed_background.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:dq_app/src/utils/money.dart';
+import 'package:dq_app/src/presentation/order/widgets/exit_pass.dart';
 
 class OrderPage extends StatelessWidget {
   const OrderPage({super.key});
@@ -113,7 +114,7 @@ class _OrderCard extends StatelessWidget {
                   const SizedBox(height: 6),
                   Row(
                     children: [
-                      _StatusBadge(status: order.status),
+                      ExitStatusBadge(order: order),
                       const SizedBox(width: 6),
                       _PaymentBadge(paymentStatus: order.paymentStatus),
                     ],
@@ -177,12 +178,3 @@ class _PaymentBadge extends StatelessWidget {
   }
 }
 
-class _StatusBadge extends StatelessWidget {
-  final String status;
-  const _StatusBadge({required this.status});
-
-  @override
-  Widget build(BuildContext context) {
-    return DsStatusBadge(status: status);
-  }
-}

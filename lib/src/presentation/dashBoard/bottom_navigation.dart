@@ -343,7 +343,7 @@ class _BottomnavigationState extends State<Bottomnavigation>
                                           ),
                                           const SizedBox(width: 8),
                                           Text(
-                                            'Awaiting Confirmation',
+                                            'Show exit QR',
                                             style: TextStyle(
                                               fontSize: 13,
                                               fontWeight: FontWeight.w600,

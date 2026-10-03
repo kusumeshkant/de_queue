@@ -8,10 +8,9 @@ import 'package:dq_app/src/utils/services/local_storage.dart';
 import 'package:dq_app/widgets/app_glass_card.dart';
 import 'package:dq_app/widgets/themed_background.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:get/get.dart';
-import 'package:qr_flutter/qr_flutter.dart';
 import 'package:dq_app/src/utils/money.dart';
+import 'package:dq_app/src/presentation/order/widgets/exit_pass.dart';
 
 class OrderConfirmationPage extends StatelessWidget {
   final OrderEntity order;
@@ -73,82 +72,8 @@ class OrderConfirmationPage extends StatelessWidget {
                 ),
                 const SizedBox(height: 24),
 
-                // QR Code card
-                AppGlassCard(
-                  padding: const EdgeInsets.all(20),
-                  child: Column(
-                    children: [
-                      // QR code
-                      Container(
-                        padding: const EdgeInsets.all(12),
-                        decoration: BoxDecoration(
-                          color: Colors.white,
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        child: QrImageView(
-                          data: order.id,
-                          version: QrVersions.auto,
-                          size: context.responsive(200.0, tablet: 220.0, desktop: 240.0),
-                          backgroundColor: Colors.white,
-                          eyeStyle: const QrEyeStyle(
-                            eyeShape: QrEyeShape.square,
-                            color: Colors.black,
-                          ),
-                          dataModuleStyle: const QrDataModuleStyle(
-                            dataModuleShape: QrDataModuleShape.square,
-                            color: Colors.black,
-                          ),
-                        ),
-                      ),
-                      const SizedBox(height: 16),
-
-                      // Order ID row
-                      Text(
-                        AppKeys.orderIdLabel.tr,
-                        style: TextStyle(
-                            fontSize: 12,
-                            color: tc.textSecondary,
-                            letterSpacing: 0.5),
-                      ),
-                      const SizedBox(height: 6),
-                      GestureDetector(
-                        onTap: () {
-                          Clipboard.setData(ClipboardData(text: order.id));
-                          Get.snackbar(
-                            '',
-                            'Order ID copied',
-                            titleText: const SizedBox.shrink(),
-                            messageText: Text(
-                              AppKeys.orderIdCopied.tr,
-                              style: const TextStyle(color: Colors.white),
-                            ),
-                            backgroundColor: Colors.black87,
-                            snackPosition: SnackPosition.BOTTOM,
-                            duration: const Duration(seconds: 2),
-                          );
-                        },
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Text(
-                              order.id,
-                              style: TextStyle(
-                                fontSize: 13,
-                                fontWeight: FontWeight.w600,
-                                color: tc.primary,
-                                letterSpacing: 0.5,
-                              ),
-                            ),
-                            const SizedBox(width: 6),
-                            Icon(Icons.copy_rounded,
-                                size: 14, color: tc.primary),
-                          ],
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
+                // Exit pass: QR + typeable code while paid, exit confirmation once exited
+                ExitPassCard(order: order, qrSize: context.responsive(200.0, tablet: 220.0, desktop: 240.0)),
 
                 const SizedBox(height: 16),
 
@@ -170,7 +95,7 @@ class OrderConfirmationPage extends StatelessWidget {
                               color: tc.textPrimary,
                             ),
                           ),
-                          DsStatusBadge(status: order.status),
+                          ExitStatusBadge(order: order),
                         ],
                       ),
                       const SizedBox(height: 4),

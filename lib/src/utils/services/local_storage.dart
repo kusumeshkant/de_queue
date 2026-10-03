@@ -73,6 +73,8 @@ class LocalStorage {
         'grandTotal': order.grandTotal,
         'status': order.status,
         'paymentStatus': order.paymentStatus,
+        'exitQr': order.exitQr,
+        'exitedAt': order.exitedAt,
         'createdAt': order.createdAt,
         'items': order.items
             .map((i) => {
@@ -103,6 +105,8 @@ class LocalStorage {
         grandTotal: (m['grandTotal'] as num).toDouble(),
         status: m['status'] as String,
         paymentStatus: m['paymentStatus'] as String? ?? 'success',
+        exitQr: m['exitQr'] as String?,
+        exitedAt: m['exitedAt'] as String?,
         createdAt: m['createdAt'] as String,
         items: (m['items'] as List)
             .map((i) => OrderItemEntity(

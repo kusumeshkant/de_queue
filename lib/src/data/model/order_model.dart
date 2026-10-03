@@ -32,6 +32,8 @@ class OrderModel extends OrderEntity {
     super.paymentStatus = 'success',
     required super.createdAt,
     required super.items,
+    super.exitQr,
+    super.exitedAt,
   });
 
   factory OrderModel.fromJson(Map<String, dynamic> json) => OrderModel(
@@ -47,5 +49,7 @@ class OrderModel extends OrderEntity {
         items: (json['items'] as List<dynamic>)
             .map((i) => OrderItemModel.fromJson(i))
             .toList(),
+        exitQr: json['exitQr'] as String?,
+        exitedAt: json['exitedAt'] as String?,
       );
 }

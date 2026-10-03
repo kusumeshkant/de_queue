@@ -3,7 +3,29 @@ import 'package:dq_app/src/domain/entity/cart_item_entity.dart';
 import 'package:dq_app/src/domain/entity/order_entity.dart';
 import 'package:dq_app/src/service_core/networks/graphql_service.dart';
 
+class OrderNotFoundException implements Exception {
+  final String orderId;
+  const OrderNotFoundException(this.orderId);
+  @override
+  String toString() => 'Order not found';
+}
+
 class OrderRemoteDataSource {
+  /// Cart lines as createRazorpayOrder's OrderItemInput. The server prices
+  /// every line from its own catalogue; entryMethod only tells exit staff
+  /// which lines were typed in, so they check those tags closely.
+  static List<Map<String, dynamic>> checkoutItemsInput(List<CartItemEntity> items) => items
+      .map((i) => {
+            'barcode': i.barcode,
+            'name': i.name,
+            'price': i.price,
+            'quantity': i.quantity,
+            'mrp': i.mrp,
+            if (i.subtitle.isNotEmpty) 'description': i.subtitle,
+            'entryMethod': i.isManualEntry ? 'MANUAL' : 'SCAN',
+          })
+      .toList();
+
   Future<RazorpayOrderEntity> createRazorpayOrder({
     required String storeId,
     required List<CartItemEntity> items,
@@ -28,16 +50,7 @@ class OrderRemoteDataSource {
       mutation: mutation,
       variables: {
         'storeId': storeId,
-        'items': items
-            .map((i) => {
-                  'barcode': i.barcode,
-                  'name': i.name,
-                  'price': i.price,
-                  'quantity': i.quantity,
-                  'mrp': i.mrp,
-                  if (i.subtitle.isNotEmpty) 'description': i.subtitle,
-                })
-            .toList(),
+        'items': checkoutItemsInput(items),
         if (discountCode != null) 'discountCode': discountCode,
       },
     );
@@ -82,6 +95,8 @@ class OrderRemoteDataSource {
           createdAt
           items { barcode name mrp price quantity sku description }
           storeName
+          exitQr
+          exitedAt
         }
       }
     ''';
@@ -153,7 +168,7 @@ class OrderRemoteDataSource {
   Future<OrderModel> getOrderById(String orderId) async {
     const query = '''
       query GetOrderById(\$id: ID!) {
-        orderById(id: \$id) {
+        order(id: \$id) {
           id
           storeName
           total
@@ -164,6 +179,8 @@ class OrderRemoteDataSource {
           paymentStatus
           createdAt
           items { barcode name mrp price quantity sku description }
+          exitQr
+          exitedAt
         }
       }
     ''';
@@ -172,8 +189,10 @@ class OrderRemoteDataSource {
       query: query,
       variables: {'id': orderId},
     );
-    final data = result.data?['orderById'];
-    if (data == null) throw Exception('Order not found');
+    final data = result.data?['order'];
+    // The server answers null for an order this account does not own or that
+    // no longer exists — not a network problem, so callers can drop it.
+    if (data == null) throw OrderNotFoundException(orderId);
     return OrderModel.fromJson(data);
   }
 
@@ -198,6 +217,8 @@ class OrderRemoteDataSource {
             sku
             description
           }
+          exitQr
+          exitedAt
         }
       }
     ''';
