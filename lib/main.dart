@@ -26,6 +26,8 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'firebase_options.dart';
 import 'src/routes/app_pages.dart';
+import 'package:dq_app/src/utils/services/pending_order.dart';
+import 'package:dq_app/src/data/datasources/remote/order_remote_ds.dart';
 // Conditional import: on web uses flutter_web_plugins (dart:ui_web),
 // on mobile/desktop uses a no-op stub to avoid the dart:ui_web compile error.
 import 'url_strategy_stub.dart'
@@ -129,7 +131,7 @@ Future<void> _bootstrap() async {
   // Check for an in-progress order confirmation (app killed mid-confirmation).
   // Use Firebase state instead of the Hive cache to decide — it is the source
   // of truth and is already in memory at this point.
-  final pendingOrder = FirebaseAuth.instance.currentUser != null
+  final savedPendingOrder = FirebaseAuth.instance.currentUser != null
       ? await LocalStorage.loadPendingOrder()
       : null;
 
@@ -139,6 +141,11 @@ Future<void> _bootstrap() async {
   AppLogger.logValidateAccess('started', hint: 'cold-start');
   final bool coldStartValid = await _validateColdStart();
   AppLogger.logValidateAccess(coldStartValid ? 'granted' : 'denied', hint: 'cold-start');
+
+  // Never reopen a saved order the server says has exited or been cancelled.
+  final pendingOrder = savedPendingOrder != null && coldStartValid
+      ? await reconcilePendingOrder(savedPendingOrder, OrderRemoteDataSource().getOrderById)
+      : savedPendingOrder;
 
   runApp(
     MyApp(

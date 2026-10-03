@@ -14,6 +14,7 @@ import 'package:dq_app/src/presentation/order/order_detail_page.dart';
 import 'package:dq_app/src/presentation/order/widgets/exit_pass.dart';
 import 'package:dq_app/src/theme/theme_controller.dart';
 import 'package:dq_app/src/utils/services/local_storage.dart';
+import 'package:dq_app/src/utils/services/pending_order.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:get/get.dart';
@@ -240,6 +241,37 @@ void main() {
       repo.next = Exception('Network error');
       await dash.refreshActiveOrder();
       expect(dash.activeOrder.value, isNotNull);
+      expect(await LocalStorage.loadPendingOrder(), isNotNull);
+    });
+  });
+
+  group('cold start: reconcilePendingOrder decides whether to reopen the saved order', () {
+    setUp(() async {
+      SharedPreferences.setMockInitialValues({});
+      await LocalStorage.savePendingOrder(_order(exitQr: null));
+    });
+
+    test('exited on the server: not reopened, and forgotten', () async {
+      final saved = (await LocalStorage.loadPendingOrder())!;
+      final shown = await reconcilePendingOrder(saved, (_) async => _order(status: 'completed', exitedAt: '2026-10-03T06:54:42.714Z'));
+      expect(shown, isNull);
+      expect(await LocalStorage.loadPendingOrder(), isNull);
+    });
+
+    test('still open: reopened with the fresh copy (now carrying the exit code)', () async {
+      final saved = (await LocalStorage.loadPendingOrder())!;
+      final shown = await reconcilePendingOrder(saved, (_) async => _order());
+      expect(shown!.exitQr, _qr);
+    });
+
+    test('server too slow: the saved copy is shown rather than nothing', () async {
+      final saved = (await LocalStorage.loadPendingOrder())!;
+      final shown = await reconcilePendingOrder(
+        saved,
+        (_) => Future.delayed(const Duration(seconds: 1), () => _order(status: 'cancelled')),
+        timeout: const Duration(milliseconds: 50),
+      );
+      expect(shown!.id, _id);
       expect(await LocalStorage.loadPendingOrder(), isNotNull);
     });
   });

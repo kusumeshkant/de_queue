@@ -1,6 +1,5 @@
 import 'dart:async';
 
-import 'package:dq_app/src/data/datasources/remote/order_remote_ds.dart';
 import 'package:dq_app/src/domain/entity/order_entity.dart';
 import 'package:dq_app/src/domain/entity/store_entity.dart';
 import 'package:dq_app/src/domain/usecase/get_nearby_stores_usecase.dart';
@@ -12,6 +11,7 @@ import 'package:dq_app/src/utils/services/local_storage.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:dq_app/src/utils/services/pending_order.dart';
 
 class DashboardController extends GetxController {
   final GetStoresUseCase getStoresUseCase;
@@ -90,25 +90,9 @@ class DashboardController extends GetxController {
       _pollingTimer?.cancel();
       return;
     }
-    try {
-      final updated = await getOrderByIdUseCase.execute(current.id);
-      if (!updated.canExit) {
-        await _dropActiveOrder();
-      } else {
-        activeOrder.value = updated;
-        await LocalStorage.savePendingOrder(updated);
-      }
-    } on OrderNotFoundException {
-      await _dropActiveOrder();
-    } catch (_) {
-      // Network or server hiccup — keep the saved order and try again later.
-    }
-  }
-
-  Future<void> _dropActiveOrder() async {
-    await LocalStorage.clearPendingOrder();
-    activeOrder.value = null;
-    _pollingTimer?.cancel();
+    final kept = await reconcilePendingOrder(current, getOrderByIdUseCase.execute);
+    activeOrder.value = kept;
+    if (kept == null) _pollingTimer?.cancel();
   }
 
   // ── Store code lookup (web primary, mobile fallback) ──────────────────────
